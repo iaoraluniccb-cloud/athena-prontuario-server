@@ -2003,7 +2003,8 @@ function showTab(tab) {
 async function loadPatients() {
   const r = await apiFetch('/api/patients');
   if (!r) return;
-  state.patients = await r.json();
+  const _raw = await r.json();
+  state.patients = _raw.map(p => ({ ...p, _id: p._id || p.id }));
   const searchEl = document.getElementById('patient-search');
   if (searchEl) searchEl.value = '';
   renderPatientList();
@@ -2084,7 +2085,7 @@ function renderPatientList() {
 async function selectPatient(id) {
   const r = await apiFetch('/api/patients/' + id);
   if (!r) return;
-  state.currentPatient = await r.json();
+  const _p = await r.json(); state.currentPatient = { ..._p, _id: _p._id || _p.id };
   state.currentImageIndex = 0;
   document.getElementById('tab-bar').style.display = 'flex';
   document.getElementById('patient-name').textContent = state.currentPatient.nome;
