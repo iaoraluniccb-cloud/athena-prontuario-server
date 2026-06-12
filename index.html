@@ -1838,17 +1838,19 @@ function logout() {
 
 async function initAuth() {
   let token = getToken();
-  // Sem token salvo — busca automaticamente sem tela de login
+  // Sempre renova o token via auto-token para garantir validade
+  try {
+    const ar = await fetch(API + '/api/auto-token');
+    if (ar.ok) {
+      const ad = await ar.json();
+      token = ad.token;
+      localStorage.setItem('athena_token', token);
+      localStorage.setItem('dio_token', token);
+    }
+  } catch {}
   if (!token) {
-    try {
-      const ar = await fetch(API + '/api/auto-token');
-      if (ar.ok) {
-        const ad = await ar.json();
-        token = ad.token;
-        localStorage.setItem('athena_token', token);
-        localStorage.setItem('dio_token', token);
-      }
-    } catch {}
+    // fallback: tenta localStorage
+    token = getToken();
   }
   if (token) {
     currentToken = token;
