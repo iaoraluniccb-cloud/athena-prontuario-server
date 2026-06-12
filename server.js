@@ -25,9 +25,18 @@ const supa = createClient(
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+// Permite ser carregado em iframe de qualquer origem
+app.use((req, res, next) => {
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  next();
+});
 app.use(express.static(path.join(__dirname), {
   etag: false, lastModified: false,
-  setHeaders: (res) => { res.setHeader('Cache-Control', 'no-store'); }
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.removeHeader('X-Frame-Options');
+  }
 }));
 
 // ── Auth middleware ──────────────────────────────────────────
