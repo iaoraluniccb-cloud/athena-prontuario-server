@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athena — Prontuário Digital | Oral Unic</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  /* ── Paleta Oral Unic ───────────────────────────────────────────
+     #8B2D42 Vinho Rosado  — cor principal / âncora exclusiva
+     #6A1F30 Vinho Profundo — fundos escuros
+     #B85C72 Vinho Claro   — acentos secundários
+     #C4955A Cobre Dourado — detalhes nobres
+     #FDF9F4 Marfim        — fundo principal
+     #F5EDE2 Creme         — fundo quente
+     #EDDDD4 Blush         — fundo suave
+     #E0C9B8 Warm          — bordas / separadores
+     #3D2A20 Moka          — textos secundários
+     #1A0F0A Tinta         — textos principais
+  ─────────────────────────────────────────────────────────────── */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Josefin Sans', 'Segoe UI', sans-serif; font-weight: 300; background: #F5EDE2; color: #1A0F0A; height: 100vh; overflow: hidden; display: flex; flex-direction: column; letter-spacing: 0.04em; }
+
+  /* HEADER */
+  #header {
+    background: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #E0C9B8;
+    min-height: 56px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px #8B2D4211;
+  }
+  #header .logo { font-family: 'Cormorant SC', serif; font-size: 20px; font-weight: 400; color: #8B2D42; letter-spacing: 0.15em; }
+  #header .logo span { color: #3D2A20; }
+  #patient-name { font-family: 'Cormorant SC', serif; font-size: 15px; font-weight: 400; color: #1A0F0A; letter-spacing: 0.12em; }
+  #patient-date { font-size: 11px; color: #3D2A20; letter-spacing: 0.04em; }
+  #header-actions { display: flex; gap: 8px; }
+
+  .btn { padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer; font-family: 'Josefin Sans', sans-serif; font-size: 11px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; transition: all 0.18s; }
+  .btn-primary { background: #8B2D42; color: #FDF9F4; }
+  .btn-primary:hover { background: #6A1F30; }
+  .btn-success { background: #059669; color: #fff; }
+  .btn-success:hover { background: #047857; }
+  .btn-danger { background: #dc2626; color: #fff; }
+  .btn-outline { background: transparent; color: #8B2D42; border: 1.5px solid #8B2D42; }
+  .btn-outline:hover { background: #8B2D42; color: #FDF9F4; }
+  .btn-sm { padding: 5px 12px; font-size: 10px; }
+  .btn-draw-active { background: #8B2D42 !important; color: #FDF9F4 !important; }
+
+  /* MAIN */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* SIDEBAR ESQUERDA */
+  #sidebar-left {
+    width: 210px;
+    background: #FDF9F4;
+    border-right: 2px solid #E0C9B8;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  #sidebar-left h3 { padding: 12px 14px 8px; font-family: 'Josefin Sans', sans-serif; font-size: 10px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; border-bottom: 1px solid #E0C9B8; font-weight: 300; }
+  #btn-new-patient { margin: 10px 10px 4px; }
+  #patient-search { margin: 4px 10px 6px; display: block; width: calc(100% - 20px); padding: 6px 10px; border: 1.5px solid #E0C9B8; border-radius: 6px; font-family: 'Josefin Sans', sans-serif; font-size: 11px; color: #1A0F0A; background: #fff; outline: none; letter-spacing: 0.04em; }
+  #patient-search:focus { border-color: #8B2D42; }
+  #patient-list { flex: 1; overflow-y: auto; }
+  .patient-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #EDDDD4; transition: background 0.15s; }
+  .patient-item:hover { background: #F5EDE2; }
+  .patient-item.active { background: #EDDDD4; border-left: 3px solid #8B2D42; }
+  .patient-item .p-name { font-family: 'Josefin Sans', sans-serif; font-size: 12px; font-weight: 300; color: #1A0F0A; letter-spacing: 0.04em; }
+  .patient-item .p-meta { font-size: 10px; color: #3D2A20; margin-top: 2px; }
+
+  /* ÁREA CENTRAL */
+  #canvas-area { flex: 1; display: flex; flex-direction: column; background: #1a1a1a; overflow: hidden; position: relative; }
+  #canvas-toolbar {
+    background: #FDF9F4;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid #E0C9B8;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    display: none;
+  }
+  #canvas-toolbar label { font-size: 11px; color: #8B2D42; font-weight: 300; letter-spacing: 0.04em; }
+  #canvas-toolbar input[type=range] { width: 75px; accent-color: #8B2D42; }
+  #canvas-toolbar input[type=color] { width: 32px; height: 28px; border: none; border-radius: 4px; cursor: pointer; }
+  .toolbar-sep { width: 1px; height: 24px; background: #E0C9B8; margin: 0 4px; }
+  .draw-tool-btn { background: #F5EDE2; border: 1.5px solid transparent; border-radius: 6px; padding: 5px 9px; cursor: pointer; font-family: 'Josefin Sans', sans-serif; font-size: 10px; color: #8B2D42; font-weight: 300; letter-spacing: 0.04em; transition: all 0.15s; }
+  .draw-tool-btn:hover { border-color: #8B2D42; }
+  .draw-tool-btn.active { border-color: #8B2D42; background: #EDDDD4; }
+
+  #canvas-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #1a1a1a; }
+  #canvas-container { position: relative; display: inline-block; }
+  #bg-image { display: block; max-width: 100%; max-height: calc(100vh - 60px); width: auto; height: auto; user-select: none; -webkit-user-drag: none; }
+  #draw-canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+  #overlay-layer { position: absolute; top: 0; left: 0; }
+
+  #empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #E0C9B8; height: 100%; }
+  #empty-state p { font-size: 14px; letter-spacing: 0.04em; }
+
+  /* SIDEBAR DIREITA */
+  #sidebar-right {
+    width: 256px;
+    background: #FDF9F4;
+    border-left: 2px solid #E0C9B8;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  #sidebar-right h3 { padding: 12px 14px 8px; font-family: 'Josefin Sans', sans-serif; font-size: 10px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; border-bottom: 1px solid #E0C9B8; font-weight: 300; position: sticky; top: 0; background: #FDF9F4; z-index: 1; }
+  .overlay-section { padding: 8px 8px 0; }
+  .overlay-section-title { font-family: 'Josefin Sans', sans-serif; font-size: 9px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; margin-bottom: 5px; padding: 0 4px; font-weight: 300; }
+  .overlay-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
+  .overlay-btn {
+    background: #fff;
+    border: 1.5px solid #E0C9B8;
+    border-radius: 6px;
+    padding: 4px 2px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: all 0.15s;
+    min-height: 58px;
+    justify-content: center;
+  }
+  .overlay-btn:hover { border-color: #8B2D42; background: #F5EDE2; }
+  .overlay-btn.selected { border-color: #8B2D42; background: #EDDDD4; box-shadow: 0 0 0 2px #8B2D4244; }
+  .overlay-btn canvas { display: block; border-radius: 3px; }
+  .overlay-btn span { font-size: 9px; color: #3D2A20; text-align: center; line-height: 1.2; }
+  .overlay-btn.remove-btn { border-color: #fecaca; background: #fff5f5; }
+  .overlay-btn.remove-btn:hover { border-color: #dc2626; background: #fee2e2; }
+  .overlay-btn.remove-btn.selected { border-color: #dc2626; background: #fee2e2; }
+
+  /* ROTATION HANDLE */
+  .placed-overlay { position: absolute; cursor: move; user-select: none; }
+  .placed-overlay.sel { outline: 2px dashed #8B2D42; outline-offset: 3px; }
+  .handle { position: absolute; width: 14px; height: 14px; border-radius: 50%; display: none; z-index: 10; }
+  .placed-overlay.sel .handle { display: flex; align-items: center; justify-content: center; }
+  .handle-del { top: -8px; right: -8px; background: #dc2626; cursor: pointer; font-size: 9px; color: #fff; font-weight: bold; border-radius: 50%; }
+  .handle-resize { bottom: -6px; right: -6px; background: #8B2D42; cursor: se-resize; border-radius: 3px; }
+  .handle-rotate { top: -8px; left: -8px; background: #C4955A; cursor: grab; font-size: 9px; color: #fff; border-radius: 50%; }
+  .handle-flip-h { bottom: -8px; left: -8px; background: #B85C72; cursor: pointer; font-size: 9px; color: #fff; border-radius: 50%; title: 'Espelhar horizontal'; }
+  .handle-flip-v { bottom: -8px; left: 12px; background: #6A1F30; cursor: pointer; font-size: 8px; color: #fff; border-radius: 50%; }
+
+  /* IMAGES PANEL */
+  #images-panel { padding: 8px; border-top: 1px solid #E0C9B8; }
+  #images-panel h4 { font-family: 'Josefin Sans', sans-serif; font-size: 9px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; font-weight: 300; margin-bottom: 6px; }
+  #images-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .img-thumb { background: #F5EDE2; border: 1.5px solid #E0C9B8; border-radius: 6px; overflow: hidden; cursor: pointer; transition: border 0.15s; }
+  .img-thumb:hover { border-color: #8B2D42; }
+  .img-thumb.active { border-color: #8B2D42; }
+  .img-thumb img { width: 100%; height: 58px; object-fit: cover; display: block; }
+  .img-thumb .img-date { font-size: 9px; color: #3D2A20; padding: 2px 4px; text-align: center; background: #fff; }
+  .add-img-btn { background: #F5EDE2; border: 1.5px dashed #E0C9B8; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: 72px; font-size: 24px; color: #8B2D42; transition: all 0.15s; }
+  .add-img-btn:hover { border-color: #8B2D42; background: #EDDDD4; }
+
+  /* MODALS */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: #1A0F0A99; z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #FDF9F4; border: 1.5px solid #E0C9B8; border-radius: 12px; padding: 24px; min-width: 420px; max-width: 90vw; box-shadow: 0 8px 32px #8B2D4222; }
+  .modal h2 { font-family: 'Cormorant SC', serif; font-size: 18px; margin-bottom: 18px; color: #8B2D42; font-weight: 400; letter-spacing: 0.12em; }
+  .form-group { margin-bottom: 13px; }
+  .form-group label { display: block; font-family: 'Josefin Sans', sans-serif; font-size: 10px; color: #3D2A20; margin-bottom: 4px; font-weight: 300; letter-spacing: 0.28em; text-transform: uppercase; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; background: #fff; border: 1.5px solid #E0C9B8; border-radius: 6px;
+    padding: 8px 12px; color: #1A0F0A; font-family: 'Josefin Sans', sans-serif; font-size: 12px; font-weight: 300; outline: none; transition: border 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #8B2D42; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #F5EDE2; }
+  ::-webkit-scrollbar-thumb { background: #E0C9B8; border-radius: 3px; }
+
+  #no-patient-msg { display: flex; align-items: center; justify-content: center; height: 100%; color: #E0C9B8; font-size: 13px; flex-direction: column; gap: 12px; letter-spacing: 0.04em; }
+
+  /* GERENCIAR PACIENTES */
+  #modal-gerenciar .modal { min-width: 600px; max-width: 96vw; max-height: 85vh; display: flex; flex-direction: column; }
+  #gerenciar-lista { flex: 1; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .gerenciar-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1.5px solid #E0C9B8; border-radius: 8px; padding: 10px 14px;
+    transition: border 0.15s;
+  }
+  .gerenciar-item:hover { border-color: #B85C72; }
+  .gerenciar-item .g-nome { font-family: 'Josefin Sans', sans-serif; font-size: 13px; font-weight: 300; color: #1A0F0A; letter-spacing: 0.04em; }
+  .gerenciar-item .g-meta { font-size: 11px; color: #3D2A20; margin-top: 2px; }
+  .gerenciar-item .g-acoes { display: flex; gap: 6px; flex-shrink: 0; }
+  #gerenciar-busca { width: 100%; padding: 8px 12px; border: 1.5px solid #E0C9B8; border-radius: 6px; font-family: 'Josefin Sans', sans-serif; font-size: 12px; color: #1A0F0A; background: #fff; outline: none; }
+  #gerenciar-busca:focus { border-color: #8B2D42; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo">Athena <span style="color:#C4955A;">·</span> <span>Oral Unic</span></div>
+  <div>
+    <div id="patient-name">— Nenhum paciente selecionado —</div>
+    <div id="patient-date"></div>
+  </div>
+  <div id="header-actions">
+    <button class="btn btn-outline btn-sm" onclick="openPatientModal()">+ Paciente</button>
+    <button class="btn btn-danger btn-sm" onclick="clearOverlays()" title="Remover todas as imagens do raio-x">🖼️ Limpar</button>
+    <button class="btn btn-success btn-sm" onclick="exportPDF()">⬇️ PDF</button>
+    <button class="btn btn-sm" style="background:#f3f0ff;color:#7c3aed;border:2px solid #c4b5fd;" onclick="abrirGerenciar()">👥 Gerenciar Pacientes</button>
+  </div>
+</div>
+
+<div id="main">
+
+  <!-- ESQUERDA -->
+  <div id="sidebar-left">
+    <h3>Pacientes</h3>
+    <button class="btn btn-primary btn-sm" id="btn-new-patient" onclick="openPatientModal()">+ Novo Paciente</button>
+    <input type="text" id="patient-search" placeholder="🔍 Buscar paciente..." oninput="renderPatientList()">
+    <div id="patient-list">
+      <div style="padding:16px;color:#9ca3af;font-size:12px;text-align:center;">Nenhum paciente cadastrado</div>
+    </div>
+  </div>
+
+  <!-- CENTRAL -->
+  <div id="canvas-area">
+    <div id="canvas-toolbar">
+      <label>Ferramenta:</label>
+      <button class="draw-tool-btn active" id="tool-pen" onclick="setDrawTool('pen')">✏️ Livre</button>
+      <button class="draw-tool-btn" id="tool-line" onclick="setDrawTool('line')">— Linha</button>
+      <button class="draw-tool-btn" id="tool-arrow" onclick="setDrawTool('arrow')">→ Seta</button>
+      <button class="draw-tool-btn" id="tool-circle" onclick="setDrawTool('circle')">○ Círculo</button>
+      <button class="draw-tool-btn" id="tool-rect" onclick="setDrawTool('rect')">□ Ret.</button>
+      <button class="draw-tool-btn" id="tool-text" onclick="setDrawTool('text')">T Texto</button>
+      <button class="draw-tool-btn" id="tool-eraser" onclick="setDrawTool('eraser')">⌫ Apagar</button>
+      <div class="toolbar-sep"></div>
+      <label>Cor: <input type="color" id="draw-color" value="#7c3aed"></label>
+      <label>Esp: <input type="range" id="draw-size" min="1" max="20" value="3"> <span id="size-label">3</span></label>
+      <label>Op: <input type="range" id="draw-opacity" min="10" max="100" value="80"> <span id="opacity-label">0.8</span></label>
+      <div class="toolbar-sep"></div>
+      <button class="btn btn-danger btn-sm" onclick="clearOverlays()" title="Remover todas as imagens">🖼️ Limpar Imagens</button>
+      <button class="btn btn-danger btn-sm" onclick="clearDrawings()" title="Apagar todos os desenhos">🗑️</button>
+      <button class="btn btn-outline btn-sm" onclick="undoDrawing()">↩</button>
+    </div>
+
+    <div id="canvas-wrapper">
+      <div id="no-patient-msg">
+        <svg width="56" height="56" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-8h2v6h-2z" fill="#c4b5fd"/></svg>
+        <p>Selecione ou cadastre um paciente</p>
+        <button class="btn btn-primary" onclick="openPatientModal()">+ Cadastrar Paciente</button>
+      </div>
+      <div id="canvas-container" style="display:none;">
+        <img id="bg-image" src="" alt="Raio-X">
+        <canvas id="draw-canvas"></canvas>
+        <div id="overlay-layer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIREITA -->
+  <div id="sidebar-right">
+    <h3>Ferramentas</h3>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🦷 Coroas</div>
+      <div class="overlay-grid" id="grid-dentes"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🔩 Implantes</div>
+      <div class="overlay-grid" id="grid-implantes"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🦷 Próteses</div>
+      <div class="overlay-grid" id="grid-proteses"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🧪 Enxertos</div>
+      <div class="overlay-grid" id="grid-materiais"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">📌 Pinos</div>
+      <div class="overlay-grid" id="grid-pinos"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🦷 Aparelhos</div>
+      <div class="overlay-grid" id="grid-aparelhos"></div>
+    </div>
+    <div class="overlay-section">
+      <div class="overlay-section-title">🗑️ Ações</div>
+      <div class="overlay-grid" id="grid-acoes"></div>
+    </div>
+    <div id="images-panel" style="display:none;">
+      <h4>Imagens do Paciente</h4>
+      <div id="images-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PACIENTE -->
+<div class="modal-overlay" id="modal-patient">
+  <div class="modal">
+    <h2>👤 Cadastro de Paciente</h2>
+    <div class="form-group">
+      <label>Nome completo *</label>
+      <input type="text" id="p-nome" placeholder="Ex: Maria Silva">
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>Data de nascimento</label>
+        <input type="date" id="p-nasc">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>Telefone</label>
+        <input type="text" id="p-tel" placeholder="(xx) xxxxx-xxxx">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="p-obs" rows="2" placeholder="Notas clínicas..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Raio-X / Imagem (opcional)</label>
+      <div id="upload-drop-zone" style="border:2px dashed #c4b5fd;border-radius:8px;padding:16px;text-align:center;cursor:pointer;background:#f8f7ff;transition:all .2s;"
+        onclick="document.getElementById('p-rxfile').click()"
+        ondragover="event.preventDefault();this.style.borderColor='#7c3aed'"
+        ondragleave="this.style.borderColor='#c4b5fd'"
+        ondrop="handleDropZone(event)">
+        <div id="upload-drop-preview" style="display:none;">
+          <img id="upload-preview-img" style="max-height:110px;max-width:100%;border-radius:6px;display:block;margin:0 auto;">
+          <div style="font-size:11px;color:#059669;margin-top:5px;font-weight:600;">✔ Imagem carregada — clique para trocar</div>
+        </div>
+        <div id="upload-drop-placeholder">
+          <div style="font-size:26px;margin-bottom:5px;">🩻</div>
+          <div style="font-size:13px;color:#7c3aed;font-weight:600;">Clique ou arraste o raio-x aqui</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:3px;">JPG, PNG, WEBP</div>
+        </div>
+      </div>
+      <input type="file" id="p-rxfile" accept="image/*" style="display:none" onchange="handlePatientImagePick(event)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePatientModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePatient()">Salvar e Abrir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TEXTO -->
+<div class="modal-overlay" id="modal-text">
+  <div class="modal" style="min-width:300px;">
+    <h2>✏️ Adicionar Texto</h2>
+    <div class="form-group">
+      <input type="text" id="text-input" placeholder="Digite o texto...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeTextModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmText()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+
+<!-- MODAL GERENCIAR PACIENTES -->
+<div class="modal-overlay" id="modal-gerenciar">
+  <div class="modal" style="min-width:600px;max-width:96vw;max-height:85vh;display:flex;flex-direction:column;">
+    <h2>👥 Gerenciar Pacientes</h2>
+    <input type="text" id="gerenciar-busca" placeholder="🔍 Buscar por nome ou telefone..." oninput="renderGerenciarLista()">
+    <div id="gerenciar-lista"></div>
+    <div class="modal-actions" style="border-top:1px solid #e0d6f7;padding-top:14px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="fecharGerenciar()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PACIENTE -->
+<div class="modal-overlay" id="modal-editar-paciente">
+  <div class="modal">
+    <h2>✏️ Editar Paciente</h2>
+    <div class="form-group">
+      <label>Nome completo *</label>
+      <input type="text" id="edit-nome" placeholder="Ex: Maria Silva">
+    </div>
+    <div style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>Data de nascimento</label>
+        <input type="date" id="edit-nasc">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>Telefone</label>
+        <input type="text" id="edit-tel" placeholder="(xx) xxxxx-xxxx">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Observações</label>
+      <textarea id="edit-obs" rows="2" placeholder="Notas clínicas..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharEditarPaciente()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEdicaoPaciente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== RÉGUA STATE (declarado antes de tudo) =====================
+let reguaAtiva = false;
+let reguaSnap = null;
+// drawCanvas declarado aqui para estar disponível em todas as funções
+const drawCanvas = document.getElementById('draw-canvas');
+
+// ===================== STATE =====================
+const state = {
+  patients: JSON.parse(localStorage.getItem('dio_patients') || '[]'),
+  currentPatient: null,
+  currentImageIndex: 0,
+  selectedOverlay: null,       // id do overlay selecionado no painel
+  selectedOverlayDraw: null,
+  drawMode: false,
+  drawTool: 'pen',
+  drawColor: '#7c3aed',
+  drawSize: 3,
+  drawOpacity: 0.8,
+  isDrawing: false,
+  drawHistory: [],
+  startX: 0, startY: 0,
+  lastX: 0, lastY: 0,
+  placedOverlays: [],
+  nextOverlayId: 1,
+};
+
+// ===================== REALISTIC OVERLAY DRAWERS =====================
+
+function drawDente(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2;
+
+  function tooth(topW, botW, height, rootLen, cusps) {
+    const topY = (h - height - rootLen) / 2;
+    const midY = topY + height;
+    const botY = midY + rootLen;
+    // coroa gradiente
+    const gCoroa = ctx.createLinearGradient(cx - topW, topY, cx + topW, topY + height);
+    gCoroa.addColorStop(0, '#f5f0e8');
+    gCoroa.addColorStop(0.4, '#ffffff');
+    gCoroa.addColorStop(1, '#d6cfc0');
+    ctx.fillStyle = gCoroa;
+    ctx.strokeStyle = '#b0a090';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (cusps && cusps.length) {
+      ctx.moveTo(cx - topW, midY);
+      cusps.forEach((c, i) => ctx.quadraticCurveTo(cx - topW + (i + 0.5) * (topW * 2 / cusps.length), topY - c, cx - topW + (i + 1) * (topW * 2 / cusps.length), topY + (i % 2 === 0 ? 2 : 0)));
+      ctx.lineTo(cx + topW, midY);
+      ctx.quadraticCurveTo(cx, midY + 4, cx - topW, midY);
+    } else {
+      ctx.moveTo(cx - topW, midY);
+      ctx.quadraticCurveTo(cx - topW - 2, topY + height * 0.3, cx - topW * 0.6, topY);
+      ctx.quadraticCurveTo(cx, topY - 3, cx + topW * 0.6, topY);
+      ctx.quadraticCurveTo(cx + topW + 2, topY + height * 0.3, cx + topW, midY);
+      ctx.quadraticCurveTo(cx, midY + 4, cx - topW, midY);
+    }
+    ctx.fill(); ctx.stroke();
+    // raiz
+    const numRoots = type === 'molar' ? 2 : type === 'pre-molar' ? 2 : 1;
+    const gRoot = ctx.createLinearGradient(cx, midY, cx, botY);
+    gRoot.addColorStop(0, '#e8dcc8'); gRoot.addColorStop(1, '#c8b89888');
+    ctx.fillStyle = gRoot; ctx.strokeStyle = '#b0a090';
+    if (numRoots === 1) {
+      ctx.beginPath();
+      ctx.moveTo(cx - botW, midY);
+      ctx.quadraticCurveTo(cx - botW, midY + rootLen * 0.7, cx, botY);
+      ctx.quadraticCurveTo(cx + botW, midY + rootLen * 0.7, cx + botW, midY);
+      ctx.fill(); ctx.stroke();
+    } else {
+      [-1, 1].forEach(side => {
+        ctx.beginPath();
+        ctx.moveTo(cx + side * botW * 0.1, midY);
+        ctx.quadraticCurveTo(cx + side * botW * 1.1, midY + rootLen * 0.5, cx + side * botW * 0.8, botY);
+        ctx.quadraticCurveTo(cx + side * botW * 0.3, midY + rootLen * 0.6, cx + side * botW * 0.1, midY);
+        ctx.fill(); ctx.stroke();
+      });
+    }
+    // linha cervical
+    ctx.strokeStyle = '#c8b8a855'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(cx - topW, midY); ctx.lineTo(cx + topW, midY); ctx.stroke();
+  }
+
+  if (type === 'molar')          tooth(13, 5, 14, 11, [4, 3, 4, 3]);
+  else if (type === 'pre-molar') tooth(10, 4, 13, 11, [3, 3]);
+  else if (type === 'canino')    tooth(8, 3, 16, 13, null);
+  else if (type === 'inc-lat')   tooth(7, 3, 14, 12, null);
+  else                           tooth(8, 3, 15, 12, null);
+}
+
+function drawImplante(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2;
+
+  function screw(x, y, sw, sh, color1, color2) {
+    const g = ctx.createLinearGradient(x - sw, y, x + sw, y);
+    g.addColorStop(0, color1); g.addColorStop(0.4, color2); g.addColorStop(1, color1);
+    ctx.fillStyle = g; ctx.strokeStyle = '#78909c66'; ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x - sw, y); ctx.lineTo(x - sw, y + sh - sw);
+    ctx.quadraticCurveTo(x - sw, y + sh, x, y + sh + sw * 0.6);
+    ctx.quadraticCurveTo(x + sw, y + sh, x + sw, y + sh - sw);
+    ctx.lineTo(x + sw, y); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    for (let i = 0; i < sh; i += 3.5) {
+      ctx.strokeStyle = '#78909c33'; ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(x - sw - 1.5, y + i);
+      ctx.lineTo(x - sw + 1, y + i + 2);
+      ctx.moveTo(x + sw + 1.5, y + i);
+      ctx.lineTo(x + sw - 1, y + i + 2);
+      ctx.stroke();
+    }
+  }
+
+  function crown(x, y, cw, ch) {
+    const g = ctx.createLinearGradient(x - cw, y, x + cw, y + ch);
+    g.addColorStop(0, '#f0ebe0'); g.addColorStop(0.5, '#fff'); g.addColorStop(1, '#d8d0c0');
+    ctx.fillStyle = g; ctx.strokeStyle = '#b0a090'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x - cw, y + ch);
+    ctx.quadraticCurveTo(x - cw - 2, y + ch * 0.4, x - cw * 0.7, y);
+    ctx.quadraticCurveTo(x, y - 2, x + cw * 0.7, y);
+    ctx.quadraticCurveTo(x + cw + 2, y + ch * 0.4, x + cw, y + ch);
+    ctx.quadraticCurveTo(x, y + ch + 2, x - cw, y + ch);
+    ctx.fill(); ctx.stroke();
+  }
+
+  function abutment(x, y, aw, ah) {
+    const g = ctx.createLinearGradient(x - aw, y, x + aw, y);
+    g.addColorStop(0, '#b0bec5'); g.addColorStop(0.5, '#eceff1'); g.addColorStop(1, '#b0bec5');
+    ctx.fillStyle = g; ctx.strokeStyle = '#90a4ae88'; ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x - aw, y + ah); ctx.lineTo(x - aw * 0.7, y); ctx.lineTo(x + aw * 0.7, y); ctx.lineTo(x + aw, y + ah);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  if (type === 'completo') {
+    crown(cx, h * 0.06, 9, 12);
+    abutment(cx, h * 0.28, 5, 8);
+    screw(cx, h * 0.46, 5, h * 0.42, '#78909c', '#cfd8dc');
+  } else if (type === 'fixacao') {
+    screw(cx, h * 0.08, 5, h * 0.8, '#78909c', '#cfd8dc');
+  } else if (type === 'pilar') {
+    abutment(cx, h * 0.08, 7, h * 0.84);
+  } else if (type === 'mini') {
+    screw(cx, h * 0.08, 3.5, h * 0.8, '#90a4ae', '#eceff1');
+  } else if (type === 'curto') {
+    screw(cx, h * 0.25, 5, h * 0.55, '#78909c', '#cfd8dc');
+  } else {
+    screw(cx, h * 0.08, 3, h * 0.65, '#90a4ae', '#eceff1');
+    ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, h * 0.08, 4, 0, Math.PI * 2); ctx.stroke();
+  }
+}
+
+function drawArco(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h * 0.52;
+
+  function archPath(filled, col1, col2) {
+    const g = filled ? ctx.createLinearGradient(0, cy - h * 0.3, 0, cy + h * 0.18) : null;
+    if (g) { g.addColorStop(0, col1 || '#f5f0e8'); g.addColorStop(1, col2 || '#e8dcc8'); }
+    ctx.fillStyle = filled ? g : 'transparent';
+    ctx.strokeStyle = '#b0a090'; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.06, cy + h * 0.12);
+    ctx.quadraticCurveTo(w * 0.04, cy - h * 0.05, w * 0.14, cy - h * 0.28);
+    ctx.quadraticCurveTo(cx, cy - h * 0.42, w * 0.86, cy - h * 0.28);
+    ctx.quadraticCurveTo(w * 0.96, cy - h * 0.05, w * 0.94, cy + h * 0.12);
+    ctx.quadraticCurveTo(w * 0.78, cy + h * 0.22, cx, cy + h * 0.24);
+    ctx.quadraticCurveTo(w * 0.22, cy + h * 0.22, w * 0.06, cy + h * 0.12);
+    if (filled) ctx.fill();
+    ctx.stroke();
+  }
+
+  function drawTeeth(positions, size) {
+    positions.forEach(([px, py]) => {
+      const g2 = ctx.createRadialGradient(px - 1, py - 1, 0, px, py, size);
+      g2.addColorStop(0, '#fff'); g2.addColorStop(1, '#d8d0c0');
+      ctx.fillStyle = g2; ctx.strokeStyle = '#b0a09088'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.ellipse(px, py, size * 0.8, size, 0, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+    });
+  }
+
+  function implantPins(xPositions) {
+    xPositions.forEach(x => {
+      const g = ctx.createLinearGradient(x - 2, 0, x + 2, 0);
+      g.addColorStop(0, '#90a4ae'); g.addColorStop(0.5, '#eceff1'); g.addColorStop(1, '#90a4ae');
+      ctx.fillStyle = g; ctx.strokeStyle = '#78909c44'; ctx.lineWidth = 0.7;
+      const py = cy - h * 0.12;
+      ctx.beginPath();
+      ctx.moveTo(x - 2.5, py - h * 0.1);
+      ctx.lineTo(x - 2.5, py + h * 0.2);
+      ctx.quadraticCurveTo(x - 2.5, py + h * 0.23, x, py + h * 0.26);
+      ctx.quadraticCurveTo(x + 2.5, py + h * 0.23, x + 2.5, py + h * 0.2);
+      ctx.lineTo(x + 2.5, py - h * 0.1);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      for (let i = 0; i < h * 0.28; i += 3) {
+        ctx.strokeStyle = '#78909c22'; ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(x - 3.5, py - h * 0.1 + i); ctx.lineTo(x + 3.5, py - h * 0.1 + i); ctx.stroke();
+      }
+    });
+  }
+
+  const teethPos6 = [
+    [w*0.13, cy - h*0.22], [w*0.24, cy - h*0.32], [w*0.37, cy - h*0.36],
+    [w*0.63, cy - h*0.36], [w*0.76, cy - h*0.32], [w*0.87, cy - h*0.22],
+  ];
+  const teethPos12 = [
+    [w*0.09, cy - h*0.15], [w*0.17, cy - h*0.27], [w*0.27, cy - h*0.34], [w*0.38, cy - h*0.37],
+    [cx, cy - h*0.38],
+    [w*0.62, cy - h*0.37], [w*0.73, cy - h*0.34], [w*0.83, cy - h*0.27], [w*0.91, cy - h*0.15],
+  ];
+
+  if (type === 'arco-completo') { archPath(true); drawTeeth(teethPos12, 3.5); }
+  else if (type === 'arco-inferior') {
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(1, -1); ctx.translate(-cx, -cy);
+    archPath(true); drawTeeth(teethPos12, 3.5); ctx.restore();
+  }
+  else if (type === 'arco-4') { archPath(true); implantPins([w*0.27, w*0.38, w*0.62, w*0.73]); }
+  else if (type === 'arco-6') { archPath(true); implantPins([w*0.15, w*0.28, w*0.4, w*0.6, w*0.72, w*0.85]); }
+  else if (type === 'arco-impl') { archPath(true); implantPins([w*0.2, w*0.35, w*0.5, w*0.65, w*0.8]); drawTeeth(teethPos6, 3); }
+  else if (type === 'arco-sem') {
+    ctx.strokeStyle = '#dc2626'; ctx.setLineDash([3, 2]);
+    archPath(false, null, null);
+    ctx.setLineDash([]);
+  }
+  else if (type === 'arco-parc-d') {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, cx, h); ctx.clip();
+    archPath(true); drawTeeth(teethPos6.slice(0, 3), 3.5);
+    ctx.restore();
+  }
+  else if (type === 'arco-parc-e') {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(cx, 0, cx, h); ctx.clip();
+    archPath(true); drawTeeth(teethPos6.slice(3), 3.5);
+    ctx.restore();
+  }
+  else if (type === 'barra') {
+    const g = ctx.createLinearGradient(0, cy - 3, 0, cy + 3);
+    g.addColorStop(0, '#eceff1'); g.addColorStop(0.5, '#b0bec5'); g.addColorStop(1, '#90a4ae');
+    ctx.fillStyle = g; ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(w * 0.08, cy - 3, w * 0.84, 6, 3); ctx.fill(); ctx.stroke();
+    [w*0.18, w*0.32, w*0.5, w*0.68, w*0.82].forEach(x => {
+      ctx.beginPath(); ctx.arc(x, cy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#b0bec5'; ctx.fill(); ctx.strokeStyle = '#78909c'; ctx.stroke();
+    });
+  }
+  else if (type === 'barra-impl') {
+    const g = ctx.createLinearGradient(0, h * 0.35, 0, h * 0.45);
+    g.addColorStop(0, '#eceff1'); g.addColorStop(1, '#90a4ae');
+    ctx.fillStyle = g; ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(w * 0.08, h * 0.38, w * 0.84, 5, 2); ctx.fill(); ctx.stroke();
+    implantPins([w * 0.22, w * 0.4, w * 0.6, w * 0.78]);
+  }
+  else if (type === 'locator') {
+    ctx.strokeStyle = '#78909c'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(w * 0.08, cy); ctx.lineTo(w * 0.92, cy); ctx.stroke();
+    [w*0.25, w*0.5, w*0.75].forEach(x => {
+      const g2 = ctx.createRadialGradient(x - 1, cy - 4, 1, x, cy - 2, 5);
+      g2.addColorStop(0, '#eceff1'); g2.addColorStop(1, '#78909c');
+      ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(x, cy - 2, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#78909c'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(x, cy + 3); ctx.lineTo(x - 2.5, cy + h * 0.38); ctx.lineTo(x + 2.5, cy + h * 0.38); ctx.closePath(); ctx.stroke();
+    });
+  }
+  else {
+    ctx.strokeStyle = '#7c3aed66'; ctx.lineWidth = 1; ctx.setLineDash([4, 2]);
+    ctx.beginPath(); ctx.moveTo(w * 0.06, cy); ctx.lineTo(w * 0.94, cy); ctx.stroke();
+    ctx.setLineDash([]);
+    [w*0.15, w*0.3, w*0.5, w*0.7, w*0.85].forEach(x => {
+      ctx.beginPath(); ctx.arc(x, cy, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#7c3aed'; ctx.fill();
+    });
+  }
+}
+
+function drawMaterial(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h / 2;
+  if (type === 'enxerto') {
+    const seed = 42;
+    for (let i = 0; i < 28; i++) {
+      const angle = i * 2.4 + seed;
+      const r = 5 + (i % 5) * 2;
+      const px = cx + Math.cos(angle) * r * 1.1;
+      const py = cy + Math.sin(angle) * r * 0.9;
+      const sz = 2 + (i % 3);
+      const g = ctx.createRadialGradient(px - 0.5, py - 0.5, 0, px, py, sz);
+      g.addColorStop(0, '#fff'); g.addColorStop(1, '#d8d0b8');
+      ctx.fillStyle = g; ctx.strokeStyle = '#b0a09088'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.arc(px, py, sz, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+  } else if (type === 'bloco') {
+    const g = ctx.createLinearGradient(cx - 13, cy - 14, cx + 13, cy + 14);
+    g.addColorStop(0, '#f5f0e8'); g.addColorStop(0.5, '#ede8d8'); g.addColorStop(1, '#c8b898');
+    ctx.fillStyle = g; ctx.strokeStyle = '#b0a090'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.roundRect(cx - 12, cy - 14, 24, 28, 3); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#b0a09055'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy + 14); ctx.stroke();
+  } else if (type === 'parafuso') {
+    const gh = ctx.createRadialGradient(cx - 2, cy - 12, 1, cx, cy - 10, 6);
+    gh.addColorStop(0, '#eceff1'); gh.addColorStop(1, '#78909c');
+    ctx.fillStyle = gh; ctx.strokeStyle = '#607d8b'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(cx, cy - 10, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#607d8b'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx - 4, cy - 10); ctx.lineTo(cx + 4, cy - 10); ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy - 6); ctx.stroke();
+    const gb = ctx.createLinearGradient(cx - 4, cy - 4, cx + 4, cy - 4);
+    gb.addColorStop(0, '#90a4ae'); gb.addColorStop(0.5, '#eceff1'); gb.addColorStop(1, '#90a4ae');
+    ctx.fillStyle = gb; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(cx - 4, cy - 4); ctx.lineTo(cx - 4, cy + 10); ctx.lineTo(cx, cy + 14); ctx.lineTo(cx + 4, cy + 10); ctx.lineTo(cx + 4, cy - 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    for (let y = cy - 2; y < cy + 10; y += 3) {
+      ctx.strokeStyle = '#78909c33'; ctx.beginPath(); ctx.moveTo(cx - 5, y); ctx.lineTo(cx + 5, y); ctx.stroke();
+    }
+  } else {
+    const gm = ctx.createLinearGradient(cx - 3, cy - 12, cx + 3, cy + 14);
+    gm.addColorStop(0, '#eceff1'); gm.addColorStop(1, '#90a4ae');
+    ctx.fillStyle = gm; ctx.strokeStyle = '#78909c'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.arc(cx, cy - 10, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - 3, cy - 7); ctx.lineTo(cx - 3, cy + 8); ctx.lineTo(cx, cy + 12); ctx.lineTo(cx + 3, cy + 8); ctx.lineTo(cx + 3, cy - 7); ctx.closePath(); ctx.fill(); ctx.stroke();
+    for (let y = cy - 5; y < cy + 8; y += 3) {
+      ctx.strokeStyle = '#78909c33'; ctx.beginPath(); ctx.moveTo(cx - 4, y); ctx.lineTo(cx + 4, y); ctx.stroke();
+    }
+  }
+}
+
+function drawPino(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2;
+  const colors = {
+    branco: ['#ffffff', '#e8e8e8', '#b0b0b0'],
+    rosa: ['#f48fb1', '#f06292', '#c2185b'],
+    dourado: ['#ffe082', '#ffc107', '#ff8f00'],
+  };
+  const [c1, c2, c3] = type === 'pino-branco' ? colors.branco : type === 'pino-rosa' ? colors.rosa : colors.dourado;
+  const g = ctx.createLinearGradient(cx - 3, 0, cx + 3, 0);
+  g.addColorStop(0, c3); g.addColorStop(0.4, c1); g.addColorStop(0.6, c2); g.addColorStop(1, c3);
+  ctx.fillStyle = g; ctx.strokeStyle = c3 + 'aa'; ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(cx - 2.5, h * 0.08); ctx.lineTo(cx - 2.5, h * 0.84);
+  ctx.quadraticCurveTo(cx - 2.5, h * 0.88, cx, h * 0.92);
+  ctx.quadraticCurveTo(cx + 2.5, h * 0.88, cx + 2.5, h * 0.84);
+  ctx.lineTo(cx + 2.5, h * 0.08); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // reflexo
+  ctx.strokeStyle = c1 + '88'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx - 0.8, h * 0.1); ctx.lineTo(cx - 0.8, h * 0.82); ctx.stroke();
+  // se dourado: espiras
+  if (type === 'pino-dourado') {
+    ctx.strokeStyle = c3 + '88'; ctx.lineWidth = 0.6;
+    for (let y = h * 0.12; y < h * 0.82; y += 4) {
+      ctx.beginPath(); ctx.moveTo(cx - 3, y); ctx.lineTo(cx + 3, y); ctx.stroke();
+    }
+  }
+}
+
+function drawGuia(ctx, w, h, type) {
+  ctx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h * 0.5;
+
+  if (type === 'guia-pontos') {
+    ctx.strokeStyle = '#7c3aed55'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(w * 0.06, cy); ctx.lineTo(w * 0.94, cy); ctx.stroke();
+    ctx.setLineDash([]);
+    [w*0.14, w*0.3, w*0.5, w*0.7, w*0.86].forEach(x => {
+      ctx.beginPath(); ctx.arc(x, cy, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#7c3aed'; ctx.fill();
+    });
+  } else if (type === 'guia-curva') {
+    ctx.strokeStyle = '#7c3aed88'; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.05, h * 0.68);
+    ctx.quadraticCurveTo(cx, h * 0.18, w * 0.95, h * 0.68);
+    ctx.stroke();
+    const pts = [[w*0.17, h*0.46], [w*0.33, h*0.3], [w*0.5, h*0.25], [w*0.67, h*0.3], [w*0.83, h*0.46]];
+    pts.forEach(([px, py]) => {
+      ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#7c3aed'; ctx.fill();
+    });
+  } else if (type === 'guia-dentes') {
+    ctx.strokeStyle = '#b0a09088'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(w * 0.05, h * 0.65); ctx.quadraticCurveTo(cx, h * 0.2, w * 0.95, h * 0.65); ctx.stroke();
+    [[w*0.13, h*0.6], [w*0.24, h*0.41], [w*0.37, h*0.33], [cx, h*0.3], [w*0.63, h*0.33], [w*0.76, h*0.41], [w*0.87, h*0.6]].forEach(([px, py]) => {
+      const g2 = ctx.createRadialGradient(px - 1, py - 1, 0, px, py, 4);
+      g2.addColorStop(0, '#fff'); g2.addColorStop(1, '#d8d0c0');
+      ctx.fillStyle = g2; ctx.strokeStyle = '#b0a09088'; ctx.lineWidth = 0.7;
+      ctx.beginPath(); ctx.ellipse(px, py, 3, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    });
+  } else if (type === 'guia-impl-pts') {
+    ctx.strokeStyle = '#7c3aed44'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(w * 0.06, cy); ctx.lineTo(w * 0.94, cy); ctx.stroke();
+    ctx.setLineDash([]);
+    [w*0.22, w*0.4, w*0.6, w*0.78].forEach(x => {
+      const g3 = ctx.createLinearGradient(x - 2, cy, x + 2, cy);
+      g3.addColorStop(0, '#90a4ae'); g3.addColorStop(0.5, '#eceff1'); g3.addColorStop(1, '#90a4ae');
+      ctx.fillStyle = g3; ctx.strokeStyle = '#78909c88'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(x - 2.5, cy - h * 0.06); ctx.lineTo(x - 2.5, cy + h * 0.3); ctx.lineTo(x, cy + h * 0.34); ctx.lineTo(x + 2.5, cy + h * 0.3); ctx.lineTo(x + 2.5, cy - h * 0.06); ctx.closePath(); ctx.fill(); ctx.stroke();
+    });
+  } else if (type === 'esfera') {
+    const gr = ctx.createRadialGradient(cx - h * 0.15, cy - h * 0.15, h * 0.04, cx, cy, h * 0.42);
+    gr.addColorStop(0, '#f5f5f5'); gr.addColorStop(0.3, '#e0e0e0'); gr.addColorStop(0.7, '#9e9e9e'); gr.addColorStop(1, '#424242');
+    ctx.fillStyle = gr; ctx.strokeStyle = '#616161'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.arc(cx, cy, h * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.beginPath(); ctx.ellipse(cx - h * 0.12, cy - h * 0.12, h * 0.1, h * 0.06, -0.6, 0, Math.PI * 2); ctx.fill();
+  } else {
+    ctx.strokeStyle = '#7c3aed44'; ctx.lineWidth = 1; ctx.setLineDash([4, 2]);
+    ctx.beginPath(); ctx.moveTo(w * 0.06, cy); ctx.lineTo(w * 0.94, cy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+// ===================== OVERLAY CATALOG (SVG-based) =====================
+// svgFile: usado no painel (img preview)
+// draw: usado ao colocar no canvas (desenha SVG via Image)
+function makeSvgDraw(svgFile) {
+  return function(ctx, w, h) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+    img.src = svgFile;
+  };
+}
+
+const A = 'assets/';
+
+// ===================== FORMAS GEOMÉTRICAS =====================
+function drawForma(tipo) {
+  return function(ctx, w, h) {
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#7c3aed';
+    ctx.lineWidth = Math.max(2, w * 0.04);
+    ctx.lineCap = 'round';
+    const cx = w / 2, cy = h / 2;
+    const pad = w * 0.1;
+    if (tipo === 'linha-h') {
+      ctx.beginPath(); ctx.moveTo(pad, cy); ctx.lineTo(w - pad, cy); ctx.stroke();
+    } else if (tipo === 'linha-v') {
+      ctx.beginPath(); ctx.moveTo(cx, pad); ctx.lineTo(cx, h - pad); ctx.stroke();
+    } else if (tipo === 'linha-d') {
+      ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(w - pad, h - pad); ctx.stroke();
+    } else if (tipo === 'circulo') {
+      const r = Math.min(w, h) / 2 - pad;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+    } else if (tipo === 'oval-v') {
+      ctx.beginPath(); ctx.ellipse(cx, cy, w * 0.28, h * 0.44, 0, 0, Math.PI * 2); ctx.stroke();
+    } else if (tipo === 'oval-h') {
+      ctx.beginPath(); ctx.ellipse(cx, cy, w * 0.44, h * 0.28, 0, 0, Math.PI * 2); ctx.stroke();
+    } else if (tipo === 'regua-ov') {
+      // linha com marcações de régua
+      const y0 = cy;
+      ctx.beginPath(); ctx.moveTo(pad, y0); ctx.lineTo(w - pad, y0); ctx.stroke();
+      // marcações
+      const total = w - pad * 2;
+      const passos = 8;
+      for (let i = 0; i <= passos; i++) {
+        const x0 = pad + (total / passos) * i;
+        const alt = (i === 0 || i === passos) ? h * 0.28 : (i % 2 === 0 ? h * 0.2 : h * 0.12);
+        ctx.beginPath(); ctx.moveTo(x0, y0 - alt / 2); ctx.lineTo(x0, y0 + alt / 2); ctx.stroke();
+      }
+    }
+  };
+}
+
+// Gera preview canvas para formas geométricas no painel
+function makeFormaPreview(tipo) {
+  const c = document.createElement('canvas');
+  c.width = 42; c.height = 44;
+  drawForma(tipo)(c.getContext('2d'), 42, 44);
+  return c.toDataURL();
+}
+
+// Tamanhos ajustados por tipo de overlay (largura, altura)
+function getOverlaySize(id) {
+  const sizes = {
+    // Dentes — estreitos e altos
+    'molar':    [52, 80], 'pre-mol': [44, 80], 'canino': [38, 84],
+    'inc-lat':  [36, 80], 'inc-cen': [38, 82],
+    // Implantes — finos e altos
+    'imp-comp': [40, 110], 'imp-fix': [32, 110], 'imp-pil': [36, 90],
+    'imp-inci': [36, 100], 'imp-can': [36, 100],
+    // Próteses — largas e baixas
+    'prot-sup':   [260, 80], 'prot-inf':   [260, 80],
+    'prot-ao4-s': [280, 90], 'prot-ao4-i': [280, 90],
+    'bar-imp':    [260, 70],
+    // Materiais — pequenos
+    'enxerto': [60, 50], 'bloco': [54, 46], 'parafs': [28, 80], 'bpar': [60, 70],
+    // Pinos — finos
+    'pino-b': [24, 90], 'pino-r': [24, 90], 'pino-d': [24, 90],
+    // Aparelhos — largos
+    'ap-metal':    [280, 60], 'ap-metal-az': [280, 60],
+    'alin-sup':    [280, 70], 'alin-inf':    [280, 70],
+    // Formas geométricas
+    'linha-h': [160, 20], 'linha-v': [20, 160], 'linha-d': [120, 120],
+    'circulo': [100, 100], 'oval-v': [70, 120], 'oval-h': [140, 80],
+    'regua-ov': [180, 30],
+  };
+  return sizes[id] || [120, 120];
+}
+
+// png: imagem Canva (preferencial) | svg: fallback vetorial
+const overlays = {
+  dentes: [
+    { id: 'molar',    label: 'Molar',         png: A+'coroa-molar.png',            svg: A+'coroa-molar.svg',            draw: makeSvgDraw(A+'coroa-molar.svg') },
+    { id: 'pre-mol',  label: 'Pré-molar',     png: A+'coroa-premolar.png',         svg: A+'coroa-premolar.svg',         draw: makeSvgDraw(A+'coroa-premolar.svg') },
+    { id: 'canino',   label: 'Canino',        png: A+'coroa-canino.png',           svg: A+'coroa-canino.svg',           draw: makeSvgDraw(A+'coroa-canino.svg') },
+    { id: 'inc-lat',  label: 'Inc. Lateral',  png: A+'coroa-incisivo-lateral.png', svg: A+'coroa-incisivo-lateral.svg', draw: makeSvgDraw(A+'coroa-incisivo-lateral.svg') },
+    { id: 'inc-cen',  label: 'Inc. Central',  png: A+'coroa-incisivo-central.png', svg: A+'coroa-incisivo-central.svg', draw: makeSvgDraw(A+'coroa-incisivo-central.svg') },
+  ],
+  implantes: [
+    { id: 'imp-comp',  label: 'c/ Coroa Molar',    png: A+'implante-completo.png',    svg: A+'implante-completo.svg',  draw: makeSvgDraw(A+'implante-completo.svg') },
+    { id: 'imp-fix',   label: 'Fixação (Parafuso)', png: A+'implante-fixacao.png',    svg: A+'implante-fixacao.svg',   draw: makeSvgDraw(A+'implante-fixacao.svg') },
+    { id: 'imp-pil',   label: 'c/ Pilar Curto',    png: A+'implante-pilar-curto.png', svg: A+'implante-pilar.svg',    draw: makeSvgDraw(A+'implante-pilar.svg') },
+    { id: 'imp-inci',  label: 'c/ Incisivo',       png: A+'implante-incisivo.png',    svg: A+'implante-pilar.svg',    draw: makeSvgDraw(A+'implante-pilar.svg') },
+    { id: 'imp-can',   label: 'c/ Canino',         png: A+'implante-canino.png',      svg: A+'implante-pilar.svg',    draw: makeSvgDraw(A+'implante-pilar.svg') },
+  ],
+  proteses: [
+    { id: 'prot-sup',    label: 'Sup. Completa',   png: A+'protese-sup-completa.png',   svg: A+'protese-sup-completa.png',   draw: makeSvgDraw(A+'protese-sup-completa.png') },
+    { id: 'prot-inf',    label: 'Inf. Completa',   png: A+'protese-inf-completa.png',   svg: A+'protese-inf-completa.png',   draw: makeSvgDraw(A+'protese-inf-completa.png') },
+    { id: 'prot-ao4-s',  label: 'All-on-4 Sup.',   png: A+'protese-all-on-4-sup.png',   svg: A+'protese-all-on-4-sup.png',   draw: makeSvgDraw(A+'protese-all-on-4-sup.png') },
+    { id: 'prot-ao4-i',  label: 'All-on-4 Inf.',   png: A+'protese-all-on-4-inf.png',   svg: A+'protese-all-on-4-inf.png',   draw: makeSvgDraw(A+'protese-all-on-4-inf.png') },
+    { id: 'bar-imp',     label: 'Barra c/ Impl.',  png: A+'barra-implante.png',          svg: A+'barra-implante.png',          draw: makeSvgDraw(A+'barra-implante.png') },
+  ],
+  materiais: [
+    { id: 'enxerto',  label: 'Enxerto Ósseo', png: A+'enxerto-osseo.png',         svg: A+'enxerto-osseo.svg',          draw: makeSvgDraw(A+'enxerto-osseo.svg') },
+    { id: 'bloco',    label: 'Bloco Ósseo',   png: A+'bloco-osseo.png',            svg: A+'bloco-osseo.svg',            draw: makeSvgDraw(A+'bloco-osseo.svg') },
+    { id: 'parafs',   label: 'Parafuso',      png: A+'parafuso.png',               svg: A+'parafuso.svg',               draw: makeSvgDraw(A+'parafuso.svg') },
+    { id: 'bpar',     label: 'Bloco + Paraf.', png: A+'bloco-parafuso.png',        svg: A+'bloco-osseo.svg',            draw: makeSvgDraw(A+'bloco-osseo.svg') },
+  ],
+  pinos: [
+    { id: 'pino-b',   label: 'Fibra',         png: A+'pino-fibra.png',             svg: A+'pino-fibra.svg',             draw: makeSvgDraw(A+'pino-fibra.svg') },
+    { id: 'pino-r',   label: 'Plástico',      png: A+'pino-plastico.png',          svg: A+'pino-plastico.svg',          draw: makeSvgDraw(A+'pino-plastico.svg') },
+    { id: 'pino-d',   label: 'Metálico',      png: A+'pino-metalico.png',          svg: A+'pino-metalico.svg',          draw: makeSvgDraw(A+'pino-metalico.svg') },
+  ],
+  acoes: [
+    { id: 'remove',     label: 'Remover',    png: A+'remover.png', svg: A+'remover.png', draw: makeSvgDraw(A+'remover.png') },
+    { id: 'linha-h',    label: 'Linha H',    draw: drawForma('linha-h') },
+    { id: 'linha-v',    label: 'Linha V',    draw: drawForma('linha-v') },
+    { id: 'linha-d',    label: 'Linha Diag', draw: drawForma('linha-d') },
+    { id: 'circulo',    label: 'Círculo',    draw: drawForma('circulo') },
+    { id: 'oval-v',     label: 'Oval Vert.', draw: drawForma('oval-v') },
+    { id: 'oval-h',     label: 'Oval Horiz.',draw: drawForma('oval-h') },
+    { id: 'regua-ov',   label: 'Régua',      draw: drawForma('regua-ov') },
+  ],
+  aparelhos: [
+    { id: 'ap-metal',    label: 'Ap. Metal',       png: A+'aparelho-metal.png',         svg: A+'aparelho-metal.svg',         draw: makeSvgDraw(A+'aparelho-metal.svg') },
+    { id: 'ap-metal-az', label: 'Ap. Metal Azul',  png: A+'aparelho-metal-azul.png',    svg: A+'aparelho-metal.svg',         draw: makeSvgDraw(A+'aparelho-metal.svg') },
+
+    { id: 'alin-sup',    label: 'Alinhador Sup.',  png: A+'alinhador-superior.png',     svg: A+'aparelho-estetico.svg',      draw: makeSvgDraw(A+'aparelho-estetico.svg') },
+    { id: 'alin-inf',    label: 'Alinhador Inf.',  png: A+'alinhador-inferior.png',     svg: A+'aparelho-estetico.svg',      draw: makeSvgDraw(A+'aparelho-estetico.svg') },
+  ],
+};
+
+// ===================== RENDER GRIDS =====================
+function renderOverlayGrid(gridId, items, isRemove) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  items.forEach(item => {
+    const btn = document.createElement('div');
+    btn.className = 'overlay-btn' + (isRemove ? ' remove-btn' : '');
+    btn.dataset.overlayId = item.id;
+    if (isRemove) {
+      const img = document.createElement('img');
+      img.src = A+'remover.png';
+      img.onerror = () => {
+        img.remove();
+        const c = document.createElement('canvas');
+        c.width = 42; c.height = 44;
+        const ctx = c.getContext('2d');
+        ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(9,9); ctx.lineTo(33,35); ctx.moveTo(33,9); ctx.lineTo(9,35); ctx.stroke();
+        btn.insertBefore(c, btn.firstChild);
+      };
+      img.style.cssText = 'width:36px;height:36px;object-fit:contain;display:block;border-radius:3px;';
+      img.draggable = false;
+      btn.appendChild(img);
+    } else if (!item.png && !item.svg && item.draw) {
+      // forma geométrica: preview via canvas
+      const c = document.createElement('canvas');
+      c.width = 42; c.height = 44;
+      item.draw(c.getContext('2d'), 42, 44);
+      c.style.cssText = 'display:block;border-radius:3px;pointer-events:none;';
+      c.draggable = false;
+      btn.appendChild(c);
+    } else {
+      const img = document.createElement('img');
+      img.src = item.png || item.svg;
+      if (item.png) { img.onerror = () => { img.src = item.svg; }; }
+      img.style.cssText = 'width:42px;height:44px;object-fit:contain;display:block;border-radius:3px;';
+      img.draggable = false;
+      btn.appendChild(img);
+    }
+    const lbl = document.createElement('span');
+    lbl.textContent = item.label;
+    btn.appendChild(lbl);
+    btn.draggable = true;
+    btn.addEventListener('click', () => selectOverlay(item.id, btn, item.draw || null, item.svg || null));
+    grid.appendChild(btn);
+  });
+}
+
+function initOverlayGrids() {
+  renderOverlayGrid('grid-dentes', overlays.dentes, false);
+  renderOverlayGrid('grid-implantes', overlays.implantes, false);
+  renderOverlayGrid('grid-proteses', overlays.proteses, false);
+  renderOverlayGrid('grid-materiais', overlays.materiais, false);
+  renderOverlayGrid('grid-pinos', overlays.pinos, false);
+  renderOverlayGrid('grid-aparelhos', overlays.aparelhos, false);
+  renderOverlayGrid('grid-acoes', overlays.acoes, false);
+}
+
+function selectOverlay(id, btn, drawFn, svgFile) {
+  document.querySelectorAll('.overlay-btn').forEach(b => b.classList.remove('selected'));
+  const dc = document.getElementById('draw-canvas');
+  // desativa modo régua se estava ativo
+  if (reguaAtiva) {
+    reguaAtiva = false; reguaSnap = null;
+    dc.style.cursor = '';
+    dc.getContext('2d').setLineDash([]);
+  }
+  if (state.selectedOverlay === id) {
+    state.selectedOverlay = null;
+    state.selectedOverlayDraw = null;
+    state.selectedOverlaySvg = null;
+    // desativa canvas se estava em modo régua
+    if (!state.drawMode) dc.style.pointerEvents = 'none';
+    return;
+  }
+  btn.classList.add('selected');
+  state.selectedOverlay = id;
+  state.selectedOverlayDraw = drawFn || null;
+  state.selectedOverlaySvg = svgFile || null;
+  if (state.drawMode) toggleDrawMode();
+  // se régua: ativa canvas sem toolbar
+  if (id === 'regua-ov') {
+    dc.style.pointerEvents = 'auto';
+    dc.style.cursor = 'crosshair';
+    state.drawTool = 'regua';
+  }
+}
+
+// ===================== PATIENTS =====================
+let _pendingPatientImage = null;
+
+function savePatients() { localStorage.setItem('dio_patients', JSON.stringify(state.patients)); }
+
+function handlePatientImagePick(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _pendingPatientImage = { src: ev.target.result, date: new Date().toLocaleDateString('pt-BR'), name: file.name };
+    document.getElementById('upload-preview-img').src = ev.target.result;
+    document.getElementById('upload-drop-preview').style.display = 'block';
+    document.getElementById('upload-drop-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleDropZone(e) {
+  e.preventDefault();
+  document.getElementById('upload-drop-zone').style.borderColor = '#c4b5fd';
+  const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    _pendingPatientImage = { src: ev.target.result, date: new Date().toLocaleDateString('pt-BR'), name: file.name };
+    document.getElementById('upload-preview-img').src = ev.target.result;
+    document.getElementById('upload-drop-preview').style.display = 'block';
+    document.getElementById('upload-drop-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function openPatientModal() {
+  _pendingPatientImage = null;
+  document.getElementById('upload-drop-preview').style.display = 'none';
+  document.getElementById('upload-drop-placeholder').style.display = 'block';
+  document.getElementById('p-rxfile').value = '';
+  document.getElementById('modal-patient').classList.add('open');
+}
+
+function closePatientModal() {
+  document.getElementById('modal-patient').classList.remove('open');
+  ['p-nome','p-nasc','p-tel','p-obs'].forEach(id => document.getElementById(id).value = '');
+  _pendingPatientImage = null;
+}
+
+function savePatient() {
+  const nome = document.getElementById('p-nome').value.trim();
+  if (!nome) { alert('Informe o nome do paciente.'); return; }
+  const patient = {
+    id: Date.now(), nome,
+    nascimento: document.getElementById('p-nasc').value,
+    telefone: document.getElementById('p-tel').value,
+    obs: document.getElementById('p-obs').value,
+    images: _pendingPatientImage ? [_pendingPatientImage] : [],
+    overlays: {}, drawings: {},
+  };
+  state.patients.unshift(patient);
+  savePatients();
+  closePatientModal();
+  renderPatientList();
+  selectPatient(patient.id);
+}
+
+function renderPatientList() {
+  const list = document.getElementById('patient-list');
+  const termo = (document.getElementById('patient-search')?.value || '').trim().toLowerCase();
+  const filtrados = termo
+    ? state.patients.filter(p =>
+        p.nome.toLowerCase().includes(termo) ||
+        (p.telefone || '').toLowerCase().includes(termo))
+    : state.patients;
+
+  if (!state.patients.length) {
+    list.innerHTML = '<div style="padding:16px;color:#9ca3af;font-size:12px;text-align:center;">Nenhum paciente cadastrado</div>';
+    return;
+  }
+  if (!filtrados.length) {
+    list.innerHTML = '<div style="padding:16px;color:#9ca3af;font-size:12px;text-align:center;">Nenhum resultado encontrado</div>';
+    return;
+  }
+  list.innerHTML = filtrados.map(p => `
+    <div class="patient-item ${state.currentPatient?.id === p.id ? 'active' : ''}" onclick="selectPatient(${p.id})">
+      <div class="p-name">${p.nome}</div>
+      <div class="p-meta">${p.nascimento ? formatDate(p.nascimento) : ''}${p.telefone ? ' · ' + p.telefone : ''}</div>
+    </div>`).join('');
+}
+
+// ===================== GERENCIAR PACIENTES =====================
+let _editandoPacienteId = null;
+
+function abrirGerenciar() {
+  document.getElementById('gerenciar-busca').value = '';
+  renderGerenciarLista();
+  document.getElementById('modal-gerenciar').classList.add('open');
+}
+
+function fecharGerenciar() {
+  document.getElementById('modal-gerenciar').classList.remove('open');
+}
+
+function renderGerenciarLista() {
+  const termo = document.getElementById('gerenciar-busca').value.trim().toLowerCase();
+  const lista = document.getElementById('gerenciar-lista');
+  const filtrados = termo
+    ? state.patients.filter(p =>
+        p.nome.toLowerCase().includes(termo) ||
+        (p.telefone || '').toLowerCase().includes(termo))
+    : state.patients;
+
+  if (!filtrados.length) {
+    lista.innerHTML = '<div style="padding:20px;text-align:center;color:#9ca3af;font-size:13px;">' +
+      (termo ? 'Nenhum paciente encontrado.' : 'Nenhum paciente cadastrado.') + '</div>';
+    return;
+  }
+
+  lista.innerHTML = filtrados.map(p => {
+    const meta = [
+      p.nascimento ? formatDate(p.nascimento) : '',
+      p.telefone || '',
+      p.obs ? '📝 ' + p.obs.slice(0, 40) + (p.obs.length > 40 ? '…' : '') : ''
+    ].filter(Boolean).join(' · ');
+    const imgs = (p.images || []).length;
+    return `
+    <div class="gerenciar-item">
+      <div>
+        <div class="g-nome">${p.nome}</div>
+        <div class="g-meta">${meta}${imgs ? ` · 🩻 ${imgs} imagem${imgs > 1 ? 'ns' : ''}` : ''}</div>
+      </div>
+      <div class="g-acoes">
+        <button class="btn btn-sm btn-outline" onclick="abrirEditarPaciente(${p.id})">✏️ Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="excluirPaciente(${p.id})">🗑️ Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirEditarPaciente(id) {
+  const p = state.patients.find(x => x.id === id);
+  if (!p) return;
+  _editandoPacienteId = id;
+  document.getElementById('edit-nome').value = p.nome || '';
+  document.getElementById('edit-nasc').value = p.nascimento || '';
+  document.getElementById('edit-tel').value = p.telefone || '';
+  document.getElementById('edit-obs').value = p.obs || '';
+  document.getElementById('modal-editar-paciente').classList.add('open');
+}
+
+function fecharEditarPaciente() {
+  _editandoPacienteId = null;
+  document.getElementById('modal-editar-paciente').classList.remove('open');
+}
+
+function salvarEdicaoPaciente() {
+  const nome = document.getElementById('edit-nome').value.trim();
+  if (!nome) { alert('Informe o nome do paciente.'); return; }
+  const p = state.patients.find(x => x.id === _editandoPacienteId);
+  if (!p) return;
+  p.nome = nome;
+  p.nascimento = document.getElementById('edit-nasc').value;
+  p.telefone = document.getElementById('edit-tel').value;
+  p.obs = document.getElementById('edit-obs').value;
+  savePatients();
+  renderPatientList();
+  updatePatientHeader();
+  fecharEditarPaciente();
+  renderGerenciarLista();
+}
+
+function excluirPaciente(id) {
+  const p = state.patients.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`Excluir "${p.nome}"?\n\nTodos os raio-x e anotações serão removidos permanentemente.`)) return;
+  state.patients = state.patients.filter(x => x.id !== id);
+  if (state.currentPatient?.id === id) {
+    state.currentPatient = null;
+    document.getElementById('patient-name').textContent = '— Nenhum paciente selecionado —';
+    document.getElementById('patient-date').textContent = '';
+    document.getElementById('no-patient-msg').style.display = 'flex';
+    document.getElementById('canvas-container').style.display = 'none';
+    document.getElementById('images-panel').style.display = 'none';
+  }
+  savePatients();
+  renderPatientList();
+  renderGerenciarLista();
+}
+
+// fecha modais clicando fora
+document.getElementById('modal-gerenciar').addEventListener('click', function(e) {
+  if (e.target === this) fecharGerenciar();
+});
+document.getElementById('modal-editar-paciente').addEventListener('click', function(e) {
+  if (e.target === this) fecharEditarPaciente();
+});
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${day}/${m}/${y}`;
+}
+
+function selectPatient(id) {
+  state.currentPatient = state.patients.find(p => p.id === id);
+  state.currentImageIndex = 0;
+  renderPatientList();
+  updatePatientHeader();
+  renderImagesPanel();
+  loadCurrentImage();
+}
+
+function updatePatientHeader() {
+  if (!state.currentPatient) return;
+  document.getElementById('patient-name').textContent = state.currentPatient.nome;
+  const now = new Date();
+  document.getElementById('patient-date').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ===================== IMAGES =====================
+function renderImagesPanel() {
+  const panel = document.getElementById('images-panel');
+  if (!state.currentPatient) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  const list = document.getElementById('images-list');
+  let html = `<div class="add-img-btn" onclick="document.getElementById('file-input').click()">+</div>`;
+  (state.currentPatient.images || []).forEach((img, i) => {
+    html += `<div class="img-thumb ${i === state.currentImageIndex ? 'active' : ''}" onclick="loadImageByIndex(${i})">
+      <img src="${img.src}">
+      <div class="img-date">${img.date}</div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function handleImageUpload(e) {
+  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    if (!state.currentPatient.images) state.currentPatient.images = [];
+    state.currentPatient.images.push({ src: ev.target.result, date: new Date().toLocaleDateString('pt-BR'), name: file.name });
+    state.currentImageIndex = state.currentPatient.images.length - 1;
+    savePatients(); renderImagesPanel(); loadCurrentImage();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function loadImageByIndex(i) {
+  state.currentImageIndex = i;
+  renderImagesPanel();
+  loadCurrentImage();
+}
+
+function loadCurrentImage() {
+  const noMsg = document.getElementById('no-patient-msg');
+  const container = document.getElementById('canvas-container');
+  if (!state.currentPatient) { noMsg.style.display = 'flex'; container.style.display = 'none'; return; }
+  noMsg.style.display = 'none';
+  container.style.display = 'inline-block';
+  const imgs = state.currentPatient.images || [];
+  if (!imgs.length) {
+    document.getElementById('bg-image').src = '';
+    document.getElementById('bg-image').style.display = 'none';
+    clearOverlayLayer(); return;
+  }
+  const bgImg = document.getElementById('bg-image');
+  bgImg.style.display = 'block';
+  bgImg.onload = () => { resizeCanvases(); loadOverlaysForCurrentImage(); loadDrawingsForCurrentImage(); };
+  bgImg.src = imgs[state.currentImageIndex].src;
+}
+
+function resizeCanvases() {
+  const bgImg = document.getElementById('bg-image');
+  const dc = document.getElementById('draw-canvas');
+  const w = bgImg.offsetWidth; const h = bgImg.offsetHeight;
+  dc.width = w; dc.height = h;
+  dc.style.width = w + 'px'; dc.style.height = h + 'px';
+  const ol = document.getElementById('overlay-layer');
+  ol.style.width = w + 'px'; ol.style.height = h + 'px';
+}
+
+function getImageKey() {
+  return state.currentPatient ? `img_${state.currentImageIndex}` : null;
+}
+
+// ===================== OVERLAY PLACEMENT =====================
+function clearOverlayLayer() {
+  document.getElementById('overlay-layer').innerHTML = '';
+  state.placedOverlays = [];
+}
+
+function loadOverlaysForCurrentImage() {
+  clearOverlayLayer();
+  const key = getImageKey();
+  if (!key || !state.currentPatient?.overlays) return;
+  (state.currentPatient.overlays[key] || []).forEach(o =>
+    placeOverlay(o.overlayId, o.x, o.y, o.w, o.h, o.rotation || 0, o.uid, false, o.flipH || false, o.flipV || false)
+  );
+}
+
+function saveOverlaysForCurrentImage() {
+  const key = getImageKey();
+  if (!key || !state.currentPatient) return;
+  if (!state.currentPatient.overlays) state.currentPatient.overlays = {};
+  state.currentPatient.overlays[key] = state.placedOverlays.map(o => ({
+    overlayId: o.overlayId, x: o.x, y: o.y, w: o.w, h: o.h, rotation: o.rotation, uid: o.uid,
+    flipH: o.flipH || false, flipV: o.flipV || false,
+  }));
+  savePatients();
+}
+
+function findOverlayItem(id) {
+  for (const cat of Object.values(overlays)) {
+    const found = cat.find(o => o.id === id);
+    if (found) return found;
+  }
+  return null;
+}
+function findOverlayDraw(id) {
+  const item = findOverlayItem(id);
+  return item ? item.draw : null;
+}
+function findOverlaySvg(id) {
+  const item = findOverlayItem(id);
+  if (!item) return null;
+  return item.png || item.svg;
+}
+
+// ---- CLICK no raio-x: só para remover overlay ----
+document.getElementById('canvas-container').addEventListener('click', e => {
+  if (state.drawMode) return;
+  if (state.selectedOverlay === 'remove') {
+    const target = e.target.closest('.placed-overlay');
+    if (target) removeOverlay(parseInt(target.dataset.uid));
+  }
+});
+
+// ---- DRAG & DROP: arrastar do painel para o raio-x ----
+let dragOverlayId = null;
+
+document.addEventListener('dragstart', e => {
+  const btn = e.target.closest('.overlay-btn');
+  if (!btn) return;
+  dragOverlayId = btn.dataset.overlayId;
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('text/plain', dragOverlayId);
+  // para formas geométricas (canvas preview): cria imagem fantasma para o drag
+  const previewCanvas = btn.querySelector('canvas');
+  if (previewCanvas) {
+    const ghost = new Image();
+    ghost.src = previewCanvas.toDataURL();
+    ghost.style.position = 'fixed'; ghost.style.top = '-9999px';
+    document.body.appendChild(ghost);
+    e.dataTransfer.setDragImage(ghost, 21, 22);
+    setTimeout(() => ghost.remove(), 0);
+  }
+});
+
+const canvasContainer = document.getElementById('canvas-container');
+canvasContainer.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+});
+
+canvasContainer.addEventListener('drop', e => {
+  e.preventDefault();
+  if (!dragOverlayId || !state.currentPatient) return;
+  if ((state.currentPatient.images || []).length === 0) return;
+  const rect = canvasContainer.getBoundingClientRect();
+  const x = e.clientX - rect.left - 128;
+  const y = e.clientY - rect.top - 128;
+  placeOverlay(dragOverlayId, x, y, 256, 256, 0, null, true);
+  dragOverlayId = null;
+});
+
+function applyOvTransform(wrapper, record) {
+  const scX = record.flipH ? -1 : 1;
+  const scY = record.flipV ? -1 : 1;
+  wrapper.style.transform = `rotate(${record.rotation}deg) scaleX(${scX}) scaleY(${scY})`;
+}
+
+function placeOverlay(overlayId, x, y, w, h, rotation, uid, save, flipH, flipV) {
+  if (!state.currentPatient || !(state.currentPatient.images || []).length) return;
+  w = w || 256; h = h || 256; rotation = rotation || 0;
+  uid = uid || (state.nextOverlayId++);
+  flipH = flipH || false; flipV = flipV || false;
+  const drawFn = findOverlayDraw(overlayId);
+  if (!drawFn) return;
+
+  const layer = document.getElementById('overlay-layer');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'placed-overlay';
+  wrapper.dataset.uid = uid;
+  wrapper.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rotation}deg);`;
+
+  const item = findOverlayItem(overlayId);
+  const imgFile = item ? (item.png || item.svg) : null;
+  // Use img (PNG preferred, SVG fallback), else canvas draw
+  let cvs;
+  if (imgFile) {
+    cvs = document.createElement('img');
+    cvs.src = imgFile;
+    if (item && item.png) { cvs.onerror = () => { cvs.src = item.svg; }; }
+    cvs.style.cssText = `width:${w}px;height:${h}px;display:block;object-fit:contain;pointer-events:none;`;
+    cvs.draggable = false;
+  } else {
+    cvs = document.createElement('canvas');
+    cvs.width = w; cvs.height = h;
+    cvs.style.cssText = `width:${w}px;height:${h}px;display:block;`;
+    drawFn(cvs.getContext('2d'), w, h);
+  }
+
+  const hDel = document.createElement('div');
+  hDel.className = 'handle handle-del'; hDel.textContent = '×';
+  hDel.title = 'Remover';
+  hDel.addEventListener('click', e => { e.stopPropagation(); removeOverlay(uid); });
+
+  const hResize = document.createElement('div');
+  hResize.className = 'handle handle-resize';
+  hResize.title = 'Redimensionar';
+
+  const hRotate = document.createElement('div');
+  hRotate.className = 'handle handle-rotate'; hRotate.textContent = '↻';
+  hRotate.title = 'Girar 360°';
+
+  const hFlipH = document.createElement('div');
+  hFlipH.className = 'handle handle-flip-h'; hFlipH.textContent = '⇔';
+  hFlipH.title = 'Espelhar horizontal';
+
+  const hFlipV = document.createElement('div');
+  hFlipV.className = 'handle handle-flip-v'; hFlipV.textContent = '⇕';
+  hFlipV.title = 'Espelhar vertical';
+
+  wrapper.appendChild(cvs);
+  wrapper.appendChild(hDel);
+  wrapper.appendChild(hResize);
+  wrapper.appendChild(hRotate);
+  wrapper.appendChild(hFlipH);
+  wrapper.appendChild(hFlipV);
+  layer.appendChild(wrapper);
+
+  const record = { overlayId, x, y, w, h, rotation, uid, element: wrapper, canvas: cvs, drawFn, flipH, flipV };
+  state.placedOverlays.push(record);
+
+  // apply initial transform (may have saved flip state)
+  applyOvTransform(wrapper, record);
+
+  // --- FLIP HORIZONTAL ---
+  hFlipH.addEventListener('click', e => {
+    e.stopPropagation();
+    record.flipH = !record.flipH;
+    applyOvTransform(wrapper, record);
+    saveOverlaysForCurrentImage();
+  });
+
+  // --- FLIP VERTICAL ---
+  hFlipV.addEventListener('click', e => {
+    e.stopPropagation();
+    record.flipV = !record.flipV;
+    applyOvTransform(wrapper, record);
+    saveOverlaysForCurrentImage();
+  });
+
+  // --- SELECT on click ---
+  wrapper.addEventListener('mousedown', e => {
+    if (e.target === hDel || e.target === hResize || e.target === hRotate || e.target === hFlipH || e.target === hFlipV) return;
+    document.querySelectorAll('.placed-overlay').forEach(el => el.classList.remove('sel'));
+    wrapper.classList.add('sel');
+  });
+
+  // --- DRAG ---
+  let dragging = false, dStartX, dStartY, dOrigX, dOrigY;
+  wrapper.addEventListener('mousedown', e => {
+    if (e.target === hDel || e.target === hResize || e.target === hRotate || e.target === hFlipH || e.target === hFlipV) return;
+    e.preventDefault();
+    dragging = true;
+    dStartX = e.clientX; dStartY = e.clientY;
+    dOrigX = record.x; dOrigY = record.y;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    record.x = dOrigX + (e.clientX - dStartX);
+    record.y = dOrigY + (e.clientY - dStartY);
+    wrapper.style.left = record.x + 'px';
+    wrapper.style.top = record.y + 'px';
+  });
+  document.addEventListener('mouseup', () => { if (dragging) { dragging = false; saveOverlaysForCurrentImage(); } });
+
+  // --- RESIZE ---
+  let resizing = false, rStartX, rStartY, rOrigW, rOrigH;
+  hResize.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    resizing = true;
+    rStartX = e.clientX; rStartY = e.clientY;
+    rOrigW = record.w; rOrigH = record.h;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!resizing) return;
+    const nw = Math.max(20, rOrigW + (e.clientX - rStartX));
+    const nh = Math.max(20, rOrigH + (e.clientY - rStartY));
+    record.w = nw; record.h = nh;
+    wrapper.style.width = nw + 'px'; wrapper.style.height = nh + 'px';
+    cvs.style.width = nw + 'px'; cvs.style.height = nh + 'px';
+    if (cvs.tagName === 'CANVAS') { cvs.width = nw; cvs.height = nh; drawFn(cvs.getContext('2d'), nw, nh); }
+  });
+  document.addEventListener('mouseup', () => { if (resizing) { resizing = false; saveOverlaysForCurrentImage(); } });
+
+  // --- ROTATE 360° ---
+  let rotating = false, rotStartAngle, rotOrigRot;
+  hRotate.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    rotating = true;
+    const wRect = wrapper.getBoundingClientRect();
+    const cx2 = wRect.left + wRect.width / 2;
+    const cy2 = wRect.top + wRect.height / 2;
+    rotStartAngle = Math.atan2(e.clientY - cy2, e.clientX - cx2) * 180 / Math.PI;
+    rotOrigRot = record.rotation;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!rotating) return;
+    const wRect = wrapper.getBoundingClientRect();
+    const cx2 = wRect.left + wRect.width / 2;
+    const cy2 = wRect.top + wRect.height / 2;
+    const angle = Math.atan2(e.clientY - cy2, e.clientX - cx2) * 180 / Math.PI;
+    record.rotation = rotOrigRot + (angle - rotStartAngle);
+    applyOvTransform(wrapper, record);
+  });
+  document.addEventListener('mouseup', () => { if (rotating) { rotating = false; saveOverlaysForCurrentImage(); } });
+
+  if (save) saveOverlaysForCurrentImage();
+}
+
+function removeOverlay(uid) {
+  const idx = state.placedOverlays.findIndex(o => o.uid === uid);
+  if (idx === -1) return;
+  state.placedOverlays[idx].element.remove();
+  state.placedOverlays.splice(idx, 1);
+  saveOverlaysForCurrentImage();
+}
+
+// ---- DELETE key removes selected overlay ----
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  const sel = document.querySelector('.placed-overlay.sel');
+  if (sel) {
+    e.preventDefault();
+    removeOverlay(parseInt(sel.dataset.uid));
+  }
+});
+
+// ===================== DRAWING =====================
+function toggleDrawMode() {
+  state.drawMode = !state.drawMode;
+  const toolbar = document.getElementById('canvas-toolbar');
+  const btn = document.getElementById('btn-draw-toggle');
+  const dc = document.getElementById('draw-canvas');
+  toolbar.style.display = state.drawMode ? 'flex' : 'none';
+  btn.classList.toggle('btn-draw-active', state.drawMode);
+  dc.style.pointerEvents = state.drawMode ? 'auto' : 'none';
+  if (state.drawMode) {
+    // desselecionar overlay
+    document.querySelectorAll('.overlay-btn').forEach(b => b.classList.remove('selected'));
+    state.selectedOverlay = null;
+  }
+}
+
+function setDrawTool(tool) {
+  // cancela régua se estava ativa
+  if (reguaAtiva) {
+    reguaAtiva = false;
+    reguaSnap = null;
+    drawCanvas.style.cursor = '';
+    const ctx = drawCanvas.getContext('2d');
+    ctx.setLineDash([]);
+  }
+  state.drawTool = tool;
+  document.querySelectorAll('.draw-tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + tool)?.classList.add('active');
+}
+
+document.getElementById('draw-size').addEventListener('input', function () {
+  state.drawSize = +this.value;
+  document.getElementById('size-label').textContent = this.value;
+});
+document.getElementById('draw-opacity').addEventListener('input', function () {
+  state.drawOpacity = +this.value / 100;
+  document.getElementById('opacity-label').textContent = (+this.value / 100).toFixed(1);
+});
+document.getElementById('draw-color').addEventListener('input', function () { state.drawColor = this.value; });
+
+function snapshot() {
+  state.drawHistory.push(drawCanvas.toDataURL());
+  if (state.drawHistory.length > 30) state.drawHistory.shift();
+}
+
+// ===== RÉGUA: clique-move-clique =====
+
+// mousemove da régua — integrado abaixo no listener unificado
+
+function drawReguaPreview(ctx, x2, y2) {
+  ctx.save();
+  ctx.globalAlpha = state.drawOpacity;
+  ctx.strokeStyle = state.drawColor;
+  ctx.lineWidth = state.drawSize;
+  ctx.lineCap = 'round';
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(state.startX, state.startY); ctx.lineTo(x2, y2); ctx.stroke();
+  ctx.setLineDash([]);
+  // ponto inicial
+  ctx.beginPath(); ctx.arc(state.startX, state.startY, state.drawSize * 1.5 + 2, 0, Math.PI * 2);
+  ctx.fillStyle = state.drawColor; ctx.fill();
+  ctx.restore();
+}
+
+drawCanvas.addEventListener('mousedown', e => {
+  // RÉGUA: funciona com ou sem modo desenhar
+  if (state.drawTool === 'regua') {
+    const r = drawCanvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    if (!reguaAtiva) {
+      // 1º clique — define início
+      snapshot();
+      reguaSnap = drawCanvas.toDataURL();
+      state.startX = x; state.startY = y;
+      reguaAtiva = true;
+      drawCanvas.style.cursor = 'crosshair';
+    } else {
+      // 2º clique — confirma a linha
+      reguaAtiva = false;
+      drawCanvas.style.cursor = '';
+      // desseleciona a régua no painel e desativa canvas
+      if (state.selectedOverlay === 'regua-ov') {
+        document.querySelectorAll('.overlay-btn').forEach(b => b.classList.remove('selected'));
+        state.selectedOverlay = null;
+        if (!state.drawMode) drawCanvas.style.pointerEvents = 'none';
+      }
+      const ctx = drawCanvas.getContext('2d');
+      ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      if (reguaSnap) { const i = new Image(); i.onload = () => { ctx.drawImage(i, 0, 0); finalizarRegua(ctx, x, y); }; i.src = reguaSnap; }
+      else finalizarRegua(ctx, x, y);
+      reguaSnap = null;
+    }
+    return;
+  }
+
+  if (!state.drawMode) return;
+  if (state.drawTool === 'text') { handleTextTool(e); return; }
+
+  snapshot();
+  state.isDrawing = true;
+  const r = drawCanvas.getBoundingClientRect();
+  state.startX = state.lastX = e.clientX - r.left;
+  state.startY = state.lastY = e.clientY - r.top;
+  if (state.drawTool === 'pen' || state.drawTool === 'eraser') {
+    const ctx = drawCanvas.getContext('2d');
+    ctx.beginPath(); ctx.moveTo(state.lastX, state.lastY);
+  }
+});
+
+function finalizarRegua(ctx, x2, y2) {
+  ctx.save();
+  ctx.globalAlpha = state.drawOpacity;
+  ctx.strokeStyle = state.drawColor;
+  ctx.lineWidth = state.drawSize;
+  ctx.lineCap = 'round';
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(state.startX, state.startY); ctx.lineTo(x2, y2); ctx.stroke();
+  // pontos nas extremidades
+  [{ x: state.startX, y: state.startY }, { x: x2, y: y2 }].forEach(p => {
+    ctx.beginPath(); ctx.arc(p.x, p.y, state.drawSize * 1.5 + 2, 0, Math.PI * 2);
+    ctx.fillStyle = state.drawColor; ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  ctx.restore();
+  saveDrawingForCurrentImage();
+}
+
+drawCanvas.addEventListener('mousemove', e => {
+  const r = drawCanvas.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const ctx = drawCanvas.getContext('2d');
+
+  // régua: preview tracejado
+  if (state.drawTool === 'regua' && reguaAtiva) {
+    ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    if (reguaSnap) { const i = new Image(); i.onload = () => { ctx.drawImage(i, 0, 0); drawReguaPreview(ctx, x, y); }; i.src = reguaSnap; }
+    else drawReguaPreview(ctx, x, y);
+    return;
+  }
+
+  if (!state.isDrawing) return;
+  if (state.drawTool === 'pen') {
+    ctx.globalAlpha = state.drawOpacity; ctx.strokeStyle = state.drawColor;
+    ctx.lineWidth = state.drawSize; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.lineTo(x, y); ctx.stroke();
+    state.lastX = x; state.lastY = y;
+  } else if (state.drawTool === 'eraser') {
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'destination-out';
+    ctx.lineWidth = state.drawSize * 3; ctx.lineCap = 'round';
+    ctx.lineTo(x, y); ctx.stroke();
+    ctx.globalCompositeOperation = 'source-over';
+    state.lastX = x; state.lastY = y;
+  } else {
+    const prev = state.drawHistory[state.drawHistory.length - 1];
+    ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    if (prev) { const i = new Image(); i.onload = () => ctx.drawImage(i, 0, 0); i.src = prev; }
+    ctx.globalAlpha = state.drawOpacity; ctx.strokeStyle = state.drawColor; ctx.lineWidth = state.drawSize; ctx.lineCap = 'round';
+    drawShape(ctx, state.startX, state.startY, x, y);
+  }
+});
+
+drawCanvas.addEventListener('mouseup', e => {
+  if (!state.isDrawing) return;
+  state.isDrawing = false;
+  const r = drawCanvas.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const ctx = drawCanvas.getContext('2d');
+  if (state.drawTool !== 'pen' && state.drawTool !== 'eraser') {
+    ctx.globalAlpha = state.drawOpacity; ctx.strokeStyle = state.drawColor; ctx.lineWidth = state.drawSize; ctx.lineCap = 'round';
+    drawShape(ctx, state.startX, state.startY, x, y);
+  }
+  ctx.globalAlpha = 1;
+  saveDrawingForCurrentImage();
+});
+
+drawCanvas.addEventListener('mouseleave', () => { if (state.isDrawing) { state.isDrawing = false; saveDrawingForCurrentImage(); } });
+
+function drawShape(ctx, x1, y1, x2, y2) {
+  ctx.beginPath();
+  if (state.drawTool === 'line') { ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+  else if (state.drawTool === 'arrow') {
+    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    const ang = Math.atan2(y2 - y1, x2 - x1), hw = Math.max(8, state.drawSize * 3);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hw * Math.cos(ang - 0.4), y2 - hw * Math.sin(ang - 0.4));
+    ctx.lineTo(x2 - hw * Math.cos(ang + 0.4), y2 - hw * Math.sin(ang + 0.4));
+    ctx.closePath(); ctx.fillStyle = state.drawColor; ctx.fill();
+  }
+  else if (state.drawTool === 'circle') {
+    ctx.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+  else if (state.drawTool === 'rect') { ctx.strokeRect(x1, y1, x2 - x1, y2 - y1); }
+}
+
+let pendingTextPos = null;
+function handleTextTool(e) {
+  const r = drawCanvas.getBoundingClientRect();
+  pendingTextPos = { x: e.clientX - r.left, y: e.clientY - r.top };
+  document.getElementById('modal-text').classList.add('open');
+  setTimeout(() => document.getElementById('text-input').focus(), 80);
+}
+function closeTextModal() {
+  document.getElementById('modal-text').classList.remove('open');
+  document.getElementById('text-input').value = '';
+  pendingTextPos = null;
+}
+function confirmText() {
+  const text = document.getElementById('text-input').value.trim();
+  if (!text || !pendingTextPos) { closeTextModal(); return; }
+  snapshot();
+  const ctx = drawCanvas.getContext('2d');
+  ctx.globalAlpha = state.drawOpacity;
+  ctx.fillStyle = state.drawColor;
+  ctx.font = `bold ${Math.max(13, state.drawSize * 4)}px Segoe UI`;
+  ctx.fillText(text, pendingTextPos.x, pendingTextPos.y);
+  ctx.globalAlpha = 1;
+  saveDrawingForCurrentImage();
+  closeTextModal();
+}
+document.getElementById('text-input').addEventListener('keydown', e => { if (e.key === 'Enter') confirmText(); });
+
+function clearOverlays() {
+  document.getElementById('overlay-layer').innerHTML = '';
+  if (state.currentPatient) {
+    const img = state.currentPatient.images[state.currentImageIndex];
+    if (img) img.overlays = [];
+    savePatients();
+  }
+}
+
+function clearDrawings() {
+  snapshot();
+  drawCanvas.getContext('2d').clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  saveDrawingForCurrentImage();
+}
+
+function undoDrawing() {
+  if (!state.drawHistory.length) return;
+  const prev = state.drawHistory.pop();
+  const ctx = drawCanvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => { ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); ctx.drawImage(img, 0, 0); };
+  img.src = prev;
+  saveDrawingForCurrentImage();
+}
+
+function saveDrawingForCurrentImage() {
+  const key = getImageKey();
+  if (!key || !state.currentPatient) return;
+  if (!state.currentPatient.drawings) state.currentPatient.drawings = {};
+  state.currentPatient.drawings[key] = drawCanvas.toDataURL();
+  savePatients();
+}
+
+function loadDrawingsForCurrentImage() {
+  const key = getImageKey();
+  const ctx = drawCanvas.getContext('2d');
+  ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+  if (!key || !state.currentPatient?.drawings?.[key]) return;
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0);
+  img.src = state.currentPatient.drawings[key];
+}
+
+// ===================== PDF EXPORT =====================
+async function exportPDF() {
+  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  if (!(state.currentPatient.images || []).length) { alert('Adicione uma imagem ao paciente.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { alert('Biblioteca PDF não carregou. Verifique sua conexão e recarregue a página.'); return; }
+
+  const btn = document.querySelector('[onclick="exportPDF()"]');
+  if (btn) { btn.textContent = '⏳ Gerando...'; btn.disabled = true; }
+
+  try {
+    const bgImg = document.getElementById('bg-image');
+    const W = bgImg.offsetWidth || 800;
+    const H = bgImg.offsetHeight || 600;
+
+    // Canvas de composição final
+    const merged = document.createElement('canvas');
+    merged.width = W; merged.height = H;
+    const mCtx = merged.getContext('2d', { willReadFrequently: true });
+
+    // 1. Desenha o raio-x de fundo (já é base64, sem CORS)
+    const imgSrc = state.currentPatient.images[state.currentImageIndex].src;
+    await new Promise(r => {
+      const bEl = new Image();
+      bEl.onload = () => { mCtx.drawImage(bEl, 0, 0, W, H); r(); };
+      bEl.onerror = r;
+      bEl.src = imgSrc;
+    });
+
+    // 2. Desenha cada overlay usando a função draw nativa (sem carregar arquivos externos)
+    for (const o of state.placedOverlays) {
+      const tmp = document.createElement('canvas');
+      tmp.width = o.w; tmp.height = o.h;
+      const tCtx = tmp.getContext('2d');
+      // usa drawFn nativa (sempre disponível — é a mesma usada no painel)
+      if (o.drawFn) {
+        o.drawFn(tCtx, o.w, o.h);
+      } else {
+        // fallback: tenta copiar do elemento visual já renderizado na tela
+        const el = o.canvas;
+        if (el && el.tagName === 'CANVAS') {
+          try { tCtx.drawImage(el, 0, 0, o.w, o.h); } catch(e) {}
+        }
+      }
+      mCtx.save();
+      mCtx.translate(o.x + o.w / 2, o.y + o.h / 2);
+      mCtx.rotate((o.rotation || 0) * Math.PI / 180);
+      mCtx.scale(o.flipH ? -1 : 1, o.flipV ? -1 : 1);
+      mCtx.globalAlpha = 0.92;
+      mCtx.drawImage(tmp, -o.w / 2, -o.h / 2);
+      mCtx.restore();
+    }
+    mCtx.globalAlpha = 1;
+
+    // 3. Desenha as anotações do canvas de desenho
+    try { mCtx.drawImage(drawCanvas, 0, 0, W, H); } catch(e) {}
+
+    const data = merged.toDataURL('image/jpeg', 0.92);
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const PW = 297, PH = 210;
+    doc.setFillColor(248, 247, 255); doc.rect(0, 0, PW, PH, 'F');
+    doc.setFontSize(18); doc.setTextColor(139, 45, 66); doc.text('Athena — Prontuário Digital', 10, 14);
+    doc.setFontSize(11); doc.setTextColor(45, 34, 80);
+    doc.text(`Paciente: ${state.currentPatient.nome}`, 10, 23);
+    if (state.currentPatient.nascimento) doc.text(`Nasc.: ${formatDate(state.currentPatient.nascimento)}`, 10, 29);
+    if (state.currentPatient.telefone) doc.text(`Tel: ${state.currentPatient.telefone}`, 80, 29);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, PW - 55, 23);
+    doc.setDrawColor(124, 58, 237); doc.setLineWidth(0.4); doc.line(10, 33, PW - 10, 33);
+    const maxW = PW - 20, maxH = PH - 44;
+    const asp = W / H;
+    let iW = maxW, iH = maxW / asp;
+    if (iH > maxH) { iH = maxH; iW = maxH * asp; }
+    doc.addImage(data, 'JPEG', (PW - iW) / 2, 36, iW, iH);
+    if (state.currentPatient.obs) { doc.setFontSize(9); doc.setTextColor(107, 114, 128); doc.text('Obs: ' + state.currentPatient.obs, 10, PH - 5); }
+    doc.setFontSize(8); doc.setTextColor(156, 163, 175); doc.text('Oral Unic Carlos Barbosa — Athena', PW / 2, PH - 5, { align: 'center' });
+    doc.save(`Athena_${state.currentPatient.nome.replace(/\s+/g, '_')}_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
+
+  } catch(err) {
+    alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = '⬇️ PDF'; btn.disabled = false; }
+  }
+}
+
+// ===================== INIT =====================
+initOverlayGrids();
+renderPatientList();
+window.addEventListener('resize', () => { if ((state.currentPatient?.images || []).length) resizeCanvases(); });
+
+// Clique fora de overlay desseleciona
+document.getElementById('overlay-layer').addEventListener('click', e => {
+  if (!e.target.closest('.placed-overlay')) {
+    document.querySelectorAll('.placed-overlay').forEach(el => el.classList.remove('sel'));
+  }
+});
+</script>
+</body>
+</html>
