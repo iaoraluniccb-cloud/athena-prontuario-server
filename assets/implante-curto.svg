@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 80" width="50" height="80">
+  <defs>
+    <linearGradient id="icu-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#546e7a"/>
+      <stop offset="30%" stop-color="#b0bec5"/>
+      <stop offset="55%" stop-color="#eceff1"/>
+      <stop offset="80%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <linearGradient id="icu-abut" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78909c"/>
+      <stop offset="40%" stop-color="#eceff1"/>
+      <stop offset="100%" stop-color="#78909c"/>
+    </linearGradient>
+    <filter id="shdcu"><feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#00000044"/></filter>
+  </defs>
+  <!-- pilar curto -->
+  <path d="M18,6 L32,6 L30,22 L20,22 Z" fill="url(#icu-abut)" filter="url(#shdcu)" stroke="#607d8b" stroke-width="0.7"/>
+  <rect x="19" y="7" width="3" height="14" rx="1.5" fill="white" fill-opacity="0.2"/>
+  <!-- corpo curto -->
+  <path d="M20,22 L20,60 Q20,66 25,68 Q30,66 30,60 L30,22 Z" fill="url(#icu-g)" stroke="#546e7a" stroke-width="0.5"/>
+  <g stroke="#546e7a44" stroke-width="0.8" fill="none">
+    <path d="M18,27 Q25,29 32,27"/><path d="M18,32 Q25,34 32,32"/>
+    <path d="M18,37 Q25,39 32,37"/><path d="M18,42 Q25,44 32,42"/>
+    <path d="M18,47 Q25,49 32,47"/><path d="M18,52 Q25,54 32,52"/>
+    <path d="M18,57 Q25,59 32,57"/>
+  </g>
+  <rect x="22" y="23" width="3" height="37" rx="1.5" fill="white" fill-opacity="0.18"/>
+</svg>

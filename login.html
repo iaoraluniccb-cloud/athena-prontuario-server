@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athena — Oral Unic | Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Josefin Sans', 'Segoe UI', sans-serif;
+  font-weight: 300;
+  background: linear-gradient(135deg, #6A1F30 0%, #8B2D42 50%, #3D2A20 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card {
+  background: #FDF9F4;
+  border-radius: 16px;
+  padding: 48px 40px 40px;
+  width: 380px;
+  box-shadow: 0 20px 60px #1A0F0A55;
+}
+.logo {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.logo h1 {
+  font-family: 'Cormorant SC', serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: #8B2D42;
+  letter-spacing: 0.15em;
+}
+.logo h1 span { color: #C4955A; }
+.logo p {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #3D2A20;
+  margin-top: 6px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: #3D2A20;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.form-group input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid #E0C9B8; border-radius: 8px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 13px; font-weight: 300;
+  color: #1A0F0A; background: #fff;
+  outline: none; transition: border .2s;
+  letter-spacing: 0.04em;
+}
+.form-group input:focus { border-color: #8B2D42; }
+.btn-login {
+  width: 100%; padding: 13px;
+  background: #8B2D42; color: #FDF9F4;
+  border: none; border-radius: 8px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px; font-weight: 300;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  cursor: pointer; transition: background .2s;
+  margin-top: 8px;
+}
+.btn-login:hover { background: #6A1F30; }
+.btn-login:disabled { background: #E0C9B8; cursor: not-allowed; }
+.error-msg {
+  background: #fee2e2; color: #dc2626;
+  border: 1px solid #fca5a5; border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px; font-weight: 300;
+  margin-bottom: 16px; display: none;
+}
+.footer-txt {
+  text-align: center;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px; font-weight: 300;
+  color: #3D2A20;
+  letter-spacing: 0.12em;
+  margin-top: 28px;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <h1>Athena</h1>
+    <p>Prontuário Digital</p>
+  </div>
+  <div class="error-msg" id="error-msg"></div>
+  <div class="form-group">
+    <label>Usuário</label>
+    <select id="username" style="width:100%;padding:11px 14px;border:1.5px solid #E0C9B8;border-radius:8px;font-family:'Josefin Sans',sans-serif;font-size:13px;font-weight:300;color:#1A0F0A;background:#fff;outline:none;transition:border .2s;letter-spacing:.04em;appearance:none;cursor:pointer;">
+      <option value="">— Selecione —</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Senha</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn-login" id="btn-login" onclick="doLogin()">Entrar</button>
+  <div class="footer-txt">Oral Unic Carlos Barbosa © 2026 — Acesso restrito</div>
+</div>
+
+<script>
+const API = 'http://localhost:3334';
+
+// Carrega usuários no select
+(async function() {
+  try {
+    const r = await fetch(`${API}/api/login-users`);
+    if (!r.ok) return;
+    const users = await r.json();
+    const sel = document.getElementById('username');
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.username;
+      opt.textContent = u.name || u.username;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+})();
+
+document.getElementById('password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('error-msg');
+  const btn = document.getElementById('btn-login');
+
+  err.style.display = 'none';
+  if (!username || !password) { showError('Informe usuário e senha.'); return; }
+
+  btn.textContent = 'Entrando...'; btn.disabled = true;
+
+  try {
+    const r = await fetch(`${API}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await r.json();
+    if (!r.ok) { showError(data.error || 'Erro ao entrar.'); return; }
+
+    localStorage.setItem('dio_token', data.token);
+    localStorage.setItem('dio_user', JSON.stringify(data.user));
+    window.location.href = 'index.html';
+  } catch(e) {
+    showError('Servidor indisponível. Verifique se o servidor está rodando.');
+  } finally {
+    btn.textContent = 'Entrar'; btn.disabled = false;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+const t = localStorage.getItem('dio_token');
+if (t) {
+  fetch(`${API}/api/me`, { headers: { Authorization: 'Bearer ' + t } })
+    .then(r => { if (r.ok) window.location.href = 'index.html'; })
+    .catch(() => {});
+}
+</script>
+</body>
+</html>

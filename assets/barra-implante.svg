@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 70" width="200" height="70">
+  <defs>
+    <linearGradient id="barra-g" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#eceff1"/>
+      <stop offset="40%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#78909c"/>
+    </linearGradient>
+    <linearGradient id="impl-g2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#546e7a"/>
+      <stop offset="40%" stop-color="#eceff1"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <filter id="shd-bar"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#00000055"/></filter>
+  </defs>
+  <!-- barra horizontal com curvatura suave -->
+  <path d="M15,32 Q100,26 185,32 Q185,38 100,38 Q15,38 15,32 Z" fill="url(#barra-g)" filter="url(#shd-bar)" stroke="#607d8b" stroke-width="0.8"/>
+  <!-- reflexo na barra -->
+  <path d="M20,30 Q100,25 180,30" fill="none" stroke="white" stroke-width="1.2" opacity="0.4"/>
+  <!-- implantes (4) -->
+  <g fill="url(#impl-g2)" stroke="#546e7a" stroke-width="0.6">
+    <!-- implante 1 -->
+    <path d="M38,38 L38,62 Q38,66 42,68 Q46,66 46,62 L46,38 Z"/>
+    <line x1="36" y1="43" x2="48" y2="43" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="36" y1="48" x2="48" y2="48" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="36" y1="53" x2="48" y2="53" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="36" y1="58" x2="48" y2="58" stroke="#546e7a33" stroke-width="0.7"/>
+    <!-- implante 2 -->
+    <path d="M80,38 L80,62 Q80,66 84,68 Q88,66 88,62 L88,38 Z"/>
+    <line x1="78" y1="43" x2="90" y2="43" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="78" y1="48" x2="90" y2="48" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="78" y1="53" x2="90" y2="53" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="78" y1="58" x2="90" y2="58" stroke="#546e7a33" stroke-width="0.7"/>
+    <!-- implante 3 -->
+    <path d="M112,38 L112,62 Q112,66 116,68 Q120,66 120,62 L120,38 Z"/>
+    <line x1="110" y1="43" x2="122" y2="43" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="110" y1="48" x2="122" y2="48" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="110" y1="53" x2="122" y2="53" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="110" y1="58" x2="122" y2="58" stroke="#546e7a33" stroke-width="0.7"/>
+    <!-- implante 4 -->
+    <path d="M154,38 L154,62 Q154,66 158,68 Q162,66 162,62 L162,38 Z"/>
+    <line x1="152" y1="43" x2="164" y2="43" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="152" y1="48" x2="164" y2="48" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="152" y1="53" x2="164" y2="53" stroke="#546e7a33" stroke-width="0.7"/>
+    <line x1="152" y1="58" x2="164" y2="58" stroke="#546e7a33" stroke-width="0.7"/>
+  </g>
+  <!-- parafusos de conexão barra -->
+  <circle cx="42" cy="32" r="4" fill="#eceff1" stroke="#78909c" stroke-width="0.8"/>
+  <circle cx="84" cy="30" r="4" fill="#eceff1" stroke="#78909c" stroke-width="0.8"/>
+  <circle cx="116" cy="30" r="4" fill="#eceff1" stroke="#78909c" stroke-width="0.8"/>
+  <circle cx="158" cy="32" r="4" fill="#eceff1" stroke="#78909c" stroke-width="0.8"/>
+</svg>

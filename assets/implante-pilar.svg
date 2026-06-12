@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110" width="50" height="110">
+  <defs>
+    <linearGradient id="ip-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78909c"/>
+      <stop offset="35%" stop-color="#eceff1"/>
+      <stop offset="65%" stop-color="#cfd8dc"/>
+      <stop offset="100%" stop-color="#78909c"/>
+    </linearGradient>
+    <filter id="shdp"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#00000044"/></filter>
+  </defs>
+  <!-- Pilar: trapezoidal, mais largo no topo -->
+  <path d="M13,6 L37,6 L34,50 L16,50 Z" fill="url(#ip-g)" filter="url(#shdp)" stroke="#607d8b" stroke-width="0.8"/>
+  <!-- linha de escaneamento -->
+  <path d="M15,20 L35,20" stroke="#90a4ae" stroke-width="0.6" stroke-dasharray="2,1"/>
+  <path d="M16,32 L34,32" stroke="#90a4ae" stroke-width="0.6" stroke-dasharray="2,1"/>
+  <!-- reflexo -->
+  <rect x="17" y="7" width="4" height="42" rx="2" fill="white" fill-opacity="0.25"/>
+  <!-- base -->
+  <path d="M16,50 L34,50 L32,58 L18,58 Z" fill="url(#ip-g)" stroke="#607d8b" stroke-width="0.7"/>
+  <!-- parafuso abaixo -->
+  <rect x="21" y="58" width="8" height="46" rx="4" fill="url(#ip-g)" stroke="#607d8b" stroke-width="0.5"/>
+  <g stroke="#546e7a33" stroke-width="0.7" fill="none">
+    <line x1="19" y1="64" x2="31" y2="64"/><line x1="19" y1="69" x2="31" y2="69"/>
+    <line x1="19" y1="74" x2="31" y2="74"/><line x1="19" y1="79" x2="31" y2="79"/>
+    <line x1="19" y1="84" x2="31" y2="84"/><line x1="19" y1="89" x2="31" y2="89"/>
+    <line x1="19" y1="94" x2="31" y2="94"/>
+  </g>
+</svg>

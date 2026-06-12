@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 110" width="30" height="110">
+  <defs>
+    <linearGradient id="pm-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e65100"/>
+      <stop offset="25%" stop-color="#ffa726"/>
+      <stop offset="45%" stop-color="#ffe082"/>
+      <stop offset="65%" stop-color="#ffc107"/>
+      <stop offset="85%" stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#e65100"/>
+    </linearGradient>
+    <filter id="shd-pm"><feDropShadow dx="0.5" dy="1" stdDeviation="1" flood-color="#00000033"/></filter>
+  </defs>
+  <path d="M10,5 L10,88 Q10,95 15,97 Q20,95 20,88 L20,5 Q17.5,3 15,3 Q12.5,3 10,5 Z"
+    fill="url(#pm-g)" filter="url(#shd-pm)" stroke="#e65100" stroke-width="0.6"/>
+  <!-- espiras mais visíveis no metálico -->
+  <g stroke="#e6510088" stroke-width="0.7" fill="none">
+    <path d="M8,10 Q15,13 22,10"/><path d="M8,16 Q15,19 22,16"/>
+    <path d="M8,22 Q15,25 22,22"/><path d="M8,28 Q15,31 22,28"/>
+    <path d="M8,34 Q15,37 22,34"/><path d="M8,40 Q15,43 22,40"/>
+    <path d="M8,46 Q15,49 22,46"/><path d="M8,52 Q15,55 22,52"/>
+    <path d="M8,58 Q15,61 22,58"/><path d="M8,64 Q15,67 22,64"/>
+    <path d="M8,70 Q15,73 22,70"/><path d="M8,76 Q15,79 22,76"/>
+    <path d="M8,82 Q15,85 22,82"/>
+  </g>
+  <rect x="13" y="5" width="2.5" height="82" rx="1.2" fill="white" fill-opacity="0.3"/>
+</svg>

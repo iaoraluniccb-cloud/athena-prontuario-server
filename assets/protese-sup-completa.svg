@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 70" width="200" height="70">
+  <defs>
+    <linearGradient id="gengiva" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e57373"/>
+      <stop offset="60%" stop-color="#ef9a9a"/>
+      <stop offset="100%" stop-color="#c62828"/>
+    </linearGradient>
+    <radialGradient id="dente-g" cx="40%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="50%" stop-color="#ede5d0"/>
+      <stop offset="100%" stop-color="#c8b898"/>
+    </radialGradient>
+    <filter id="shd-arc"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000044"/></filter>
+  </defs>
+  <!-- gengiva superior -->
+  <path d="M10,55 Q20,28 40,18 Q60,10 100,8 Q140,10 160,18 Q180,28 190,55 Q145,62 100,63 Q55,62 10,55 Z"
+    fill="url(#gengiva)" filter="url(#shd-arc)" stroke="#c62828" stroke-width="0.5"/>
+  <!-- dentes - arco superior 14 dentes aproximados -->
+  <!-- molares esquerdos -->
+  <path d="M22,46 C20,38 21,30 24,26 C26,23 30,22 32,25 C34,22 37,22 38,25 C40,22 42,22 43,26 C45,30 44,38 42,46 Q33,50 22,46 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- pre-molares esq -->
+  <path d="M44,44 C42,37 43,29 46,26 C48,23 51,23 53,26 C55,23 57,24 58,27 C59,31 58,38 56,44 Q50,48 44,44 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- canino esq -->
+  <path d="M59,42 C58,35 59,27 62,24 C64,22 67,22 68,25 C70,22 72,23 72,28 C73,33 71,40 69,42 Q64,45 59,42 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- incisivos laterais esq / centrais -->
+  <path d="M73,40 C72,34 73,27 76,24 C78,22 81,22 82,25 C84,22 86,23 87,27 C88,32 86,39 84,41 Q79,43 73,40 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <path d="M87,39 C86,33 87,26 90,23 C92,21 95,21 96,24 C98,21 100,22 101,26 C102,31 100,38 98,40 Q93,42 87,39 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- centrais -->
+  <path d="M101,39 C100,33 101,26 104,23 C106,21 109,21 110,24 C112,21 114,22 115,26 C116,31 114,38 112,40 Q107,42 101,39 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- incisivos / canino dir -->
+  <path d="M115,40 C114,34 115,27 118,24 C120,22 122,22 123,25 C125,22 127,23 127,28 C128,33 126,40 124,42 Q120,44 115,40 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <path d="M128,41 C127,35 128,28 131,25 C133,22 136,22 137,25 C139,22 141,23 141,28 C142,33 140,40 138,42 Q133,45 128,41 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- pre-molares dir -->
+  <path d="M142,44 C140,37 141,29 144,26 C146,23 149,23 151,26 C153,23 155,24 156,27 C157,31 156,38 154,44 Q148,48 142,44 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- molares dir -->
+  <path d="M157,46 C155,38 156,30 159,26 C161,23 165,22 167,25 C169,22 172,22 173,26 C175,30 174,38 172,46 Q165,50 157,46 Z" fill="url(#dente-g)" stroke="#c8b88888" stroke-width="0.6"/>
+  <!-- reflexo gengiva -->
+  <path d="M30,45 Q100,38 170,45" fill="none" stroke="white" stroke-width="0.8" opacity="0.2"/>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 110" width="60" height="110">
+  <defs>
+    <radialGradient id="ic-crown" cx="38%" cy="28%" r="65%">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="45%" stop-color="#ede5d0"/>
+      <stop offset="100%" stop-color="#c8b898"/>
+    </radialGradient>
+    <linearGradient id="ic-abut" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78909c"/>
+      <stop offset="35%" stop-color="#eceff1"/>
+      <stop offset="65%" stop-color="#cfd8dc"/>
+      <stop offset="100%" stop-color="#78909c"/>
+    </linearGradient>
+    <linearGradient id="ic-screw" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#546e7a"/>
+      <stop offset="30%" stop-color="#b0bec5"/>
+      <stop offset="55%" stop-color="#eceff1"/>
+      <stop offset="80%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <filter id="shd"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#00000044"/></filter>
+  </defs>
+  <!-- COROA -->
+  <path d="M16,30 C13,26 12,18 15,12 C18,7 22,5 30,5 C38,5 42,7 45,12 C48,18 47,26 44,30 C40,34 36,35 30,35 C24,35 20,34 16,30 Z"
+    fill="url(#ic-crown)" filter="url(#shd)" stroke="#b0a080" stroke-width="0.8"/>
+  <ellipse cx="25" cy="14" rx="6" ry="4" fill="white" fill-opacity="0.5"/>
+  <!-- PILAR -->
+  <path d="M24,35 L22,48 L38,48 L36,35 Z" fill="url(#ic-abut)" stroke="#90a4ae" stroke-width="0.6"/>
+  <!-- linha divisória pilar/implante -->
+  <rect x="22" y="47" width="16" height="2" rx="1" fill="#607d8b" opacity="0.5"/>
+  <!-- IMPLANTE (rosca) -->
+  <path d="M24,49 L24,95 Q24,100 30,102 Q36,100 36,95 L36,49 Z" fill="url(#ic-screw)" stroke="#546e7a" stroke-width="0.5"/>
+  <!-- espiras da rosca -->
+  <g stroke="#546e7a44" stroke-width="0.8" fill="none">
+    <path d="M22,53 Q30,55 38,53"/>
+    <path d="M22,57 Q30,59 38,57"/>
+    <path d="M22,61 Q30,63 38,61"/>
+    <path d="M22,65 Q30,67 38,65"/>
+    <path d="M22,69 Q30,71 38,69"/>
+    <path d="M22,73 Q30,75 38,73"/>
+    <path d="M22,77 Q30,79 38,77"/>
+    <path d="M22,81 Q30,83 38,81"/>
+    <path d="M22,85 Q30,87 38,85"/>
+    <path d="M22,89 Q30,91 38,89"/>
+    <path d="M22,93 Q30,95 38,93"/>
+  </g>
+  <!-- reflexo no implante -->
+  <rect x="27" y="50" width="3" height="44" rx="1.5" fill="white" fill-opacity="0.18"/>
+</svg>

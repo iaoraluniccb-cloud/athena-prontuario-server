@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 100" width="60" height="100">
+  <defs>
+    <radialGradient id="cc" cx="38%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="40%" stop-color="#ede5d0"/>
+      <stop offset="100%" stop-color="#c8b898"/>
+    </radialGradient>
+    <radialGradient id="cc2" cx="35%" cy="18%" r="40%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow-c"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000033"/></filter>
+  </defs>
+  <!-- Canino: cônico, ponta única -->
+  <path d="M10,70 C8,60 8,42 12,26 C16,12 22,4 30,2 C38,4 44,12 48,26 C52,42 52,60 50,70 C45,76 37,78 30,78 C23,78 15,76 10,70 Z"
+    fill="url(#cc)" filter="url(#shadow-c)" stroke="#b0a080" stroke-width="0.8"/>
+  <!-- ponta -->
+  <path d="M22,4 Q30,0 38,4" fill="none" stroke="#b0a08077" stroke-width="0.7"/>
+  <!-- cristas -->
+  <path d="M18,26 Q30,18 42,26" fill="none" stroke="#c8a87044" stroke-width="1"/>
+  <path d="M14,50 Q30,44 46,50" fill="none" stroke="#c8a87033" stroke-width="0.8"/>
+  <!-- reflexo -->
+  <ellipse cx="23" cy="22" rx="8" ry="10" fill="url(#cc2)"/>
+  <path d="M12,70 Q30,80 48,70" fill="none" stroke="#b0a08055" stroke-width="1"/>
+</svg>

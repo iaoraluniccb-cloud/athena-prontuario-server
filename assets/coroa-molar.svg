@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 90" width="80" height="90">
+  <defs>
+    <radialGradient id="cm" cx="38%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="40%" stop-color="#ede5d0"/>
+      <stop offset="100%" stop-color="#c8b898"/>
+    </radialGradient>
+    <radialGradient id="cm2" cx="60%" cy="25%" r="40%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow-m"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000033"/></filter>
+  </defs>
+  <!-- Corpo molar: largo, com cúspides no topo -->
+  <path d="M12,65 C10,60 8,45 10,32 C11,24 16,16 22,13 C26,11 30,14 34,12 C38,10 42,10 46,12 C50,14 54,11 58,13 C64,16 69,24 70,32 C72,45 70,60 68,65 C62,70 54,72 40,72 C26,72 18,70 12,65 Z"
+    fill="url(#cm)" filter="url(#shadow-m)" stroke="#b0a080" stroke-width="0.8"/>
+  <!-- cúspides -->
+  <path d="M22,13 C20,8 18,4 22,2 C26,0 28,6 30,10" fill="url(#cm)" stroke="#b0a080" stroke-width="0.7"/>
+  <path d="M34,12 C33,7 33,3 37,2 C41,1 42,6 42,10" fill="url(#cm)" stroke="#b0a080" stroke-width="0.7"/>
+  <path d="M54,13 C52,7 53,3 57,2 C61,1 62,6 60,10" fill="url(#cm)" stroke="#b0a080" stroke-width="0.7"/>
+  <!-- sulcos -->
+  <path d="M22,13 Q30,22 40,20 Q50,22 58,13" fill="none" stroke="#c8a87055" stroke-width="1.2"/>
+  <path d="M40,20 L40,65" fill="none" stroke="#c8a87033" stroke-width="0.8"/>
+  <!-- reflexo -->
+  <ellipse cx="30" cy="25" rx="10" ry="6" fill="url(#cm2)"/>
+  <!-- cervical -->
+  <path d="M14,65 Q40,75 66,65" fill="none" stroke="#b0a08055" stroke-width="1"/>
+</svg>

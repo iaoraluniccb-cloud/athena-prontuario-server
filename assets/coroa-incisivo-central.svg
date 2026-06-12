@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 62 100" width="62" height="100">
+  <defs>
+    <radialGradient id="cic" cx="38%" cy="25%" r="65%">
+      <stop offset="0%" stop-color="#f8f4ec"/>
+      <stop offset="40%" stop-color="#ede5d0"/>
+      <stop offset="100%" stop-color="#c8b898"/>
+    </radialGradient>
+    <radialGradient id="cic2" cx="35%" cy="18%" r="38%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow-ic"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000033"/></filter>
+  </defs>
+  <!-- incisivo central: mais largo que lateral, borda incisal quase reta -->
+  <path d="M10,74 C8,62 8,42 12,26 C16,12 22,4 31,2 C40,4 46,12 50,26 C54,42 54,62 52,74 C46,80 38,82 31,82 C24,82 16,80 10,74 Z"
+    fill="url(#cic)" filter="url(#shadow-ic)" stroke="#b0a080" stroke-width="0.8"/>
+  <!-- borda incisal reta-convexa -->
+  <path d="M14,26 Q31,14 48,26" fill="none" stroke="#c8a87055" stroke-width="1.2"/>
+  <!-- cristas de desenvolvimento verticais -->
+  <path d="M20,26 Q20,50 20,72" fill="none" stroke="#c8a87022" stroke-width="0.7"/>
+  <path d="M42,26 Q42,50 42,72" fill="none" stroke="#c8a87022" stroke-width="0.7"/>
+  <!-- reflexo -->
+  <ellipse cx="22" cy="24" rx="9" ry="11" fill="url(#cic2)"/>
+  <path d="M12,74 Q31,84 50,74" fill="none" stroke="#b0a08055" stroke-width="1"/>
+</svg>

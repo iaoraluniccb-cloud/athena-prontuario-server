@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 80" width="50" height="80">
+  <defs>
+    <radialGradient id="mpar-head" cx="35%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#eceff1"/>
+      <stop offset="60%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#607d8b"/>
+    </radialGradient>
+    <linearGradient id="mpar-body" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#546e7a"/>
+      <stop offset="35%" stop-color="#cfd8dc"/>
+      <stop offset="55%" stop-color="#eceff1"/>
+      <stop offset="80%" stop-color="#cfd8dc"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <filter id="shd-mpar"><feDropShadow dx="0.5" dy="1" stdDeviation="1" flood-color="#00000055"/></filter>
+  </defs>
+  <!-- cabeça menor -->
+  <circle cx="25" cy="14" r="10" fill="url(#mpar-head)" filter="url(#shd-mpar)" stroke="#546e7a" stroke-width="0.7"/>
+  <path d="M19,14 L31,14 M25,8 L25,20" stroke="#37474f" stroke-width="2" stroke-linecap="round"/>
+  <!-- corpo fino -->
+  <path d="M21,24 L21,62 Q21,68 25,70 Q29,68 29,62 L29,24 Z" fill="url(#mpar-body)" stroke="#546e7a" stroke-width="0.5"/>
+  <g stroke="#546e7a44" stroke-width="0.7" fill="none">
+    <path d="M19,28 Q25,30 31,28"/><path d="M19,33 Q25,35 31,33"/>
+    <path d="M19,38 Q25,40 31,38"/><path d="M19,43 Q25,45 31,43"/>
+    <path d="M19,48 Q25,50 31,48"/><path d="M19,53 Q25,55 31,53"/>
+    <path d="M19,58 Q25,60 31,58"/>
+  </g>
+  <rect x="22.5" y="25" width="2" height="37" rx="1" fill="white" fill-opacity="0.2"/>
+</svg>

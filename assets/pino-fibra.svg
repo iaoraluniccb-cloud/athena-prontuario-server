@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 110" width="30" height="110">
+  <defs>
+    <linearGradient id="pf-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d0c8b8"/>
+      <stop offset="30%" stop-color="#f5f0e8"/>
+      <stop offset="55%" stop-color="#ffffff"/>
+      <stop offset="80%" stop-color="#e8e0d0"/>
+      <stop offset="100%" stop-color="#c0b8a8"/>
+    </linearGradient>
+    <filter id="shd-pf"><feDropShadow dx="0.5" dy="1" stdDeviation="1" flood-color="#00000033"/></filter>
+  </defs>
+  <!-- pino de fibra: branco/marfim, cônico, com espiras sutis -->
+  <path d="M10,5 L10,88 Q10,95 15,97 Q20,95 20,88 L20,5 Q17.5,3 15,3 Q12.5,3 10,5 Z"
+    fill="url(#pf-g)" filter="url(#shd-pf)" stroke="#c0b0a0" stroke-width="0.6"/>
+  <!-- espiras sutis -->
+  <g stroke="#c0b0a088" stroke-width="0.6" fill="none">
+    <path d="M9,12 Q15,14 21,12"/><path d="M9,19 Q15,21 21,19"/>
+    <path d="M9,26 Q15,28 21,26"/><path d="M9,33 Q15,35 21,33"/>
+    <path d="M9,40 Q15,42 21,40"/><path d="M9,47 Q15,49 21,47"/>
+    <path d="M9,54 Q15,56 21,54"/><path d="M9,61 Q15,63 21,61"/>
+    <path d="M9,68 Q15,70 21,68"/><path d="M9,75 Q15,77 21,75"/>
+    <path d="M9,82 Q15,84 21,82"/>
+  </g>
+  <!-- reflexo central -->
+  <rect x="13" y="5" width="2.5" height="82" rx="1.2" fill="white" fill-opacity="0.4"/>
+</svg>

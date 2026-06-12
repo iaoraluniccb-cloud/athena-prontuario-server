@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <defs>
+    <radialGradient id="gran" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f0ece0"/>
+      <stop offset="100%" stop-color="#d8d0b8"/>
+    </radialGradient>
+    <filter id="shd-enx"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000033"/></filter>
+  </defs>
+  <!-- granulado: muitas esferas irregulares simulando partículas ósseas -->
+  <g filter="url(#shd-enx)">
+    <circle cx="40" cy="36" r="14" fill="#e8e0c8" opacity="0.3"/>
+    <!-- partículas -->
+    <ellipse cx="30" cy="32" rx="5" ry="4" fill="url(#gran)" stroke="#c8b898" stroke-width="0.5" transform="rotate(-15,30,32)"/>
+    <ellipse cx="40" cy="26" rx="4" ry="5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.5" transform="rotate(10,40,26)"/>
+    <ellipse cx="50" cy="32" rx="5" ry="3.5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.5" transform="rotate(20,50,32)"/>
+    <ellipse cx="45" cy="42" rx="4.5" ry="4" fill="url(#gran)" stroke="#c8b898" stroke-width="0.5" transform="rotate(-8,45,42)"/>
+    <ellipse cx="33" cy="44" rx="4" ry="4.5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.5" transform="rotate(25,33,44)"/>
+    <ellipse cx="38" cy="36" rx="3.5" ry="3" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(-5,38,36)"/>
+    <ellipse cx="26" cy="40" rx="3.5" ry="4" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(15,26,40)"/>
+    <ellipse cx="54" cy="40" rx="4" ry="3.5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(-20,54,40)"/>
+    <ellipse cx="36" cy="28" rx="3" ry="3.5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4"/>
+    <ellipse cx="48" cy="28" rx="3.5" ry="3" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(30,48,28)"/>
+    <ellipse cx="43" cy="48" rx="3" ry="3.5" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(-12,43,48)"/>
+    <ellipse cx="32" cy="50" rx="3.5" ry="3" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(18,32,50)"/>
+    <ellipse cx="52" cy="46" rx="3" ry="4" fill="url(#gran)" stroke="#c8b898" stroke-width="0.4" transform="rotate(-25,52,46)"/>
+    <!-- reflexos nas partículas -->
+    <ellipse cx="29" cy="30" rx="1.5" ry="1" fill="white" opacity="0.6" transform="rotate(-15,29,30)"/>
+    <ellipse cx="39" cy="24" rx="1.5" ry="1" fill="white" opacity="0.6" transform="rotate(10,39,24)"/>
+    <ellipse cx="49" cy="30" rx="1.5" ry="1" fill="white" opacity="0.6" transform="rotate(20,49,30)"/>
+  </g>
+</svg>

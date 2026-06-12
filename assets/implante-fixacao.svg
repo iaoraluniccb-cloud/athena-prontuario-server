@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 110" width="50" height="110">
+  <defs>
+    <linearGradient id="if-screw" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#546e7a"/>
+      <stop offset="30%" stop-color="#b0bec5"/>
+      <stop offset="55%" stop-color="#eceff1"/>
+      <stop offset="80%" stop-color="#b0bec5"/>
+      <stop offset="100%" stop-color="#546e7a"/>
+    </linearGradient>
+    <filter id="shdf"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#00000044"/></filter>
+  </defs>
+  <!-- cabeça do implante (hexágono) -->
+  <path d="M18,8 L32,8 L36,14 L32,20 L18,20 L14,14 Z" fill="url(#if-screw)" filter="url(#shdf)" stroke="#546e7a" stroke-width="0.8"/>
+  <!-- fenda hex -->
+  <path d="M22,14 L28,14 M25,11 L25,17" stroke="#37474f" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- corpo do parafuso -->
+  <path d="M19,20 L19,88 Q19,96 25,98 Q31,96 31,88 L31,20 Z" fill="url(#if-screw)" stroke="#546e7a" stroke-width="0.5"/>
+  <!-- espiras -->
+  <g stroke="#546e7a44" stroke-width="0.8" fill="none">
+    <path d="M17,25 Q25,27 33,25"/><path d="M17,30 Q25,32 33,30"/>
+    <path d="M17,35 Q25,37 33,35"/><path d="M17,40 Q25,42 33,40"/>
+    <path d="M17,45 Q25,47 33,45"/><path d="M17,50 Q25,52 33,50"/>
+    <path d="M17,55 Q25,57 33,55"/><path d="M17,60 Q25,62 33,60"/>
+    <path d="M17,65 Q25,67 33,65"/><path d="M17,70 Q25,72 33,70"/>
+    <path d="M17,75 Q25,77 33,75"/><path d="M17,80 Q25,82 33,80"/>
+    <path d="M17,85 Q25,87 33,85"/>
+  </g>
+  <rect x="22" y="21" width="3" height="67" rx="1.5" fill="white" fill-opacity="0.18"/>
+</svg>
