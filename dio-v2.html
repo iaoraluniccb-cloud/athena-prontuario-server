@@ -541,13 +541,15 @@ async function salvarOdontograma() {
     const thumb = thumbC.toDataURL('image/jpeg', 0.7);
 
     // 5. Gravar no histórico local com TTL
+    const ts = Date.now();
+    const safePath = (state.currentPatient.nome || 'paciente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30) + '/' + ts + '.jpg';
     const entry = {
       id: String(ts),
       savedAt: new Date().toISOString(),
       expiresAt: ts + TTL_DIAS * 86400000,
       patientName: state.currentPatient.nome,
       url: publicUrl || dataUrl,
-      path: publicUrl ? path : null,
+      path: publicUrl ? safePath : null,
       thumb
     };
     const arr = _histGetAll();
