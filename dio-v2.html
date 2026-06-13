@@ -476,7 +476,7 @@ function _histDelete(id) {
 }
 
 async function salvarOdontograma() {
-  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  if (!_garantirPaciente()) return;
   if (!(state.currentPatient.images || []).length) { alert('Adicione uma imagem ao paciente.'); return; }
 
   const btn = document.getElementById('btn-salvar-odonto');
@@ -1442,8 +1442,21 @@ function renderImagesPanel() {
   list.innerHTML = html;
 }
 
+function _garantirPaciente() {
+  if (state.currentPatient) return true;
+  const nome = prompt('Digite o nome do paciente para continuar:');
+  if (!nome || !nome.trim()) return false;
+  const novo = { id: Date.now(), nome: nome.trim(), nascimento: '', telefone: '', obs: '', images: [], drawings: {}, overlays: {} };
+  state.patients.unshift(novo);
+  state.currentPatient = novo;
+  savePatients();
+  renderPatientList();
+  document.getElementById('patient-name').textContent = novo.nome;
+  return true;
+}
+
 function handleImageUpload(e) {
-  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  if (!_garantirPaciente()) return;
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
