@@ -787,68 +787,50 @@ app.post('/api/odontogramas/save', auth, async (req, res) => {
   }
 });
 
-// ── Home Config — CRUD para home_config (Athena) ─────────────
-// Garante que a tabela existe na primeira chamada bem-sucedida
-let _homeConfigReady = false;
-async function _ensureHomeConfig() {
-  if (_homeConfigReady) return;
-  const { error } = await supa.from('home_config').select('id').limit(1);
-  if (!error) { _homeConfigReady = true; return; }
-  // Tabela não existe — cria via Management API
-  const supaUrl = (process.env.SUPABASE_URL || 'https://ugsolisojqawbjaeencq.supabase.co');
-  const ref = supaUrl.match(/https:\/\/([^.]+)\./)?.[1];
-  if (!ref) throw new Error('Não foi possível extrair ref do projeto Supabase');
-  const mgmtToken = process.env.SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_KEY;
-  const resp = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: `CREATE TABLE IF NOT EXISTS public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT '{}', updated_at timestamptz NOT NULL DEFAULT now()); ALTER TABLE public.home_config ENABLE ROW LEVEL SECURITY; DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='home_config') THEN CREATE POLICY home_config_all ON public.home_config FOR ALL USING (true) WITH CHECK (true); END IF; END $$;` })
-  });
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error('Falha ao criar home_config: ' + txt);
-  }
-  _homeConfigReady = true;
-  console.log('Tabela home_config criada com sucesso.');
+// ── Home Config — salva/lê JSON no Supabase Storage (bucket "config") ──
+// O projeto Athena usa Supabase diferente do DIO; service key via env var
+const ATHENA_SUPA_URL = process.env.ATHENA_SUPABASE_URL || 'https://eeqpvuaigqzclpompxao.supabase.co';
+const ATHENA_SERVICE_KEY = process.env.ATHENA_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
+const HOME_CONFIG_PATH = 'config/home.json';
+
+async function _getHomeConfig() {
+  const url = `${ATHENA_SUPA_URL}/storage/v1/object/public/${HOME_CONFIG_PATH}?t=${Date.now()}`;
+  const r = await fetch(url);
+  if (!r.ok) return null;
+  return r.json();
 }
 
-// Setup endpoint — cria a tabela home_config via service key
-app.post('/api/home-config/setup', async (req, res) => {
-  try {
-    // Tenta criar tabela via Supabase Management API
-    const supaUrl = process.env.SUPABASE_URL || 'https://ugsolisojqawbjaeencq.supabase.co';
-    const ref = supaUrl.replace('https://', '').split('.')[0];
-    const mgmtToken = process.env.SUPABASE_ACCESS_TOKEN;
-    if (mgmtToken) {
-      const resp = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: `CREATE TABLE IF NOT EXISTS public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT '{}', updated_at timestamptz NOT NULL DEFAULT now()); ALTER TABLE public.home_config ENABLE ROW LEVEL SECURITY; DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='home_config' AND policyname='home_config_all') THEN CREATE POLICY home_config_all ON public.home_config FOR ALL USING (true) WITH CHECK (true); END IF; END $$;` })
-      });
-      if (resp.ok) { _homeConfigReady = true; return res.json({ ok: true, method: 'management-api' }); }
-    }
-    // Fallback: service key direto (pode não ter permissão DDL)
-    const chk = await supa.from('home_config').select('id').limit(1);
-    if (!chk.error) { _homeConfigReady = true; return res.json({ ok: true, method: 'exists' }); }
-    res.status(500).json({ error: 'Tabela não existe e não foi possível criar. Crie manualmente no Supabase Dashboard.', sql: 'CREATE TABLE public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT \'{}\', updated_at timestamptz NOT NULL DEFAULT now());' });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
+async function _saveHomeConfig(config) {
+  const body = JSON.stringify(config);
+  const r = await fetch(`${ATHENA_SUPA_URL}/storage/v1/object/${HOME_CONFIG_PATH}`, {
+    method: 'POST',
+    headers: {
+      apikey: ATHENA_SERVICE_KEY,
+      Authorization: `Bearer ${ATHENA_SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      'x-upsert': 'true',
+    },
+    body,
+  });
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`Storage upload falhou: ${txt}`);
+  }
+  return r.json();
+}
 
 app.get('/api/home-config', async (req, res) => {
   try {
-    const { data, error } = await supa.from('home_config').select('id,valor');
-    if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    const data = await _getHomeConfig();
+    res.json(data || {});
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/api/home-config/:id', async (req, res) => {
-  const { id } = req.params;
-  const { valor } = req.body;
-  if (!id || valor === undefined) return res.status(400).json({ error: 'id e valor obrigatórios' });
+app.put('/api/home-config', async (req, res) => {
+  const { config } = req.body;
+  if (!config) return res.status(400).json({ error: 'config obrigatória' });
   try {
-    const { error } = await supa.from('home_config').upsert({ id, valor, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (error) throw new Error(error.message);
+    await _saveHomeConfig(config);
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
