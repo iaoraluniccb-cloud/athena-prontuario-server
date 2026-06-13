@@ -15,10 +15,17 @@ const app  = express();
 const PORT = process.env.PORT || 3334;
 const JWT_SECRET = process.env.JWT_SECRET || 'oral-unic-dio-secret-2026';
 
-// ── Supabase ─────────────────────────────────────────────────
+// ── Supabase DIO (prontuários, pacientes) ─────────────────────
 const supa = createClient(
   process.env.SUPABASE_URL || 'https://ugsolisojqawbjaeencq.supabase.co',
   process.env.SUPABASE_SERVICE_KEY,
+  { auth: { persistSession: false } }
+);
+
+// ── Supabase Athena (autenticação — fonte única de verdade) ───
+const supaAuth = createClient(
+  process.env.ATHENA_SUPABASE_URL || 'https://eeqpvuaigqzclpompxao.supabase.co',
+  process.env.ATHENA_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY,
   { auth: { persistSession: false } }
 );
 
@@ -96,7 +103,7 @@ function dbErr(res, error, msg = 'Erro no banco') {
 //  AUTH
 // ══════════════════════════════════════════════════════════════
 app.get('/api/login-users', async (req, res) => {
-  const { data, error } = await supa.from('users').select('username,name').eq('active', true);
+  const { data, error } = await supaAuth.from('users').select('username,name').eq('active', true);
   if (error) return dbErr(res, error);
   res.json((data || []).map(u => ({ username: u.username, name: u.name || u.username })));
 });
@@ -105,7 +112,7 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Informe usuário e senha' });
 
-  const { data: users } = await supa.from('users').select('*').eq('username', username).limit(1);
+  const { data: users } = await supaAuth.from('users').select('*').eq('username', username).limit(1);
   const user = users?.[0];
   if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
 
@@ -122,7 +129,7 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/me', auth, (req, res) => res.json(req.user));
 
 app.get('/api/auto-token', async (req, res) => {
-  const { data: users } = await supa.from('users').select('*').eq('role', 'admin').limit(1);
+  const { data: users } = await supaAuth.from('users').select('*').eq('role', 'admin').limit(1);
   const user = users?.[0];
   if (!user) return res.status(500).json({ error: 'Admin não encontrado' });
   const token = jwt.sign(
@@ -136,7 +143,7 @@ app.get('/api/auto-token', async (req, res) => {
 //  USUÁRIOS (admin)
 // ══════════════════════════════════════════════════════════════
 app.get('/api/users', auth, adminOnly, async (req, res) => {
-  const { data, error } = await supa.from('users').select('id,username,name,role,active,created_at');
+  const { data, error } = await supaAuth.from('users').select('id,username,name,role,active,created_at');
   if (error) return dbErr(res, error);
   res.json(data || []);
 });
@@ -147,7 +154,7 @@ app.post('/api/users', auth, adminOnly, async (req, res) => {
   if (!['admin', 'dentist', 'patient'].includes(role)) return res.status(400).json({ error: 'Perfil inválido' });
 
   const hash = await bcrypt.hash(password, 10);
-  const { data, error } = await supa.from('users').insert({ username, password_hash: hash, name, role }).select('id,username,name,role').single();
+  const { data, error } = await supaAuth.from('users').insert({ username, password_hash: hash, name, role }).select('id,username,name,role').single();
   if (error) return dbErr(res, error, 'Usuário já existe ou erro ao criar');
   res.json(data);
 });
@@ -156,13 +163,13 @@ app.put('/api/users/:id', auth, adminOnly, async (req, res) => {
   const { name, role, password } = req.body;
   const update = { name, role };
   if (password) update.password_hash = await bcrypt.hash(password, 10);
-  const { error } = await supa.from('users').update(update).eq('id', req.params.id);
+  const { error } = await supaAuth.from('users').update(update).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
 
 app.delete('/api/users/:id', auth, adminOnly, async (req, res) => {
-  const { error } = await supa.from('users').update({ active: false, deleted_at: new Date().toISOString() }).eq('id', req.params.id);
+  const { error } = await supaAuth.from('users').update({ active: false, deleted_at: new Date().toISOString() }).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
