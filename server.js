@@ -790,7 +790,10 @@ app.post('/api/odontogramas/save', auth, async (req, res) => {
 // ── Home Config — salva/lê JSON no Supabase Storage (bucket "config") ──
 // O projeto Athena usa Supabase diferente do DIO; service key via env var
 const ATHENA_SUPA_URL = process.env.ATHENA_SUPABASE_URL || 'https://eeqpvuaigqzclpompxao.supabase.co';
-const ATHENA_SERVICE_KEY = process.env.ATHENA_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY;
+// Aceita ATHENA_SUPABASE_SERVICE_KEY explícita; fallback para o token do projeto Athena
+const ATHENA_SERVICE_KEY = process.env.ATHENA_SUPABASE_SERVICE_KEY
+  || (process.env.SUPABASE_SERVICE_KEY && process.env.SUPABASE_URL && process.env.SUPABASE_URL.includes('eeqpvuaigqzclpompxao') ? process.env.SUPABASE_SERVICE_KEY : null)
+  || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlcXB2dWFpZ3F6Y2xwb21weGFvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODU3MTU3NywiZXhwIjoyMDk0MTQ3NTc3fQ.p4_ydgGau6mgPLGNGDvbkgWLuZpJchBsaPKjRC95Z4M';
 const HOME_CONFIG_PATH = 'config/home.json';
 
 async function _getHomeConfig() {
