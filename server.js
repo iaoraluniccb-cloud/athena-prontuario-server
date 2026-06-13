@@ -26,14 +26,18 @@ const supa = createClient(
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Cria bucket prontuario-fotos se não existir
+// Cria buckets necessários se não existirem
 (async () => {
   try {
     const { data: buckets } = await supa.storage.listBuckets();
-    const exists = buckets && buckets.find(b => b.name === 'prontuario-fotos');
-    if (!exists) {
+    const names = (buckets || []).map(b => b.name);
+    if (!names.includes('prontuario-fotos')) {
       await supa.storage.createBucket('prontuario-fotos', { public: true, fileSizeLimit: 10485760 });
       console.log('Bucket prontuario-fotos criado.');
+    }
+    if (!names.includes('odontogramas')) {
+      await supa.storage.createBucket('odontogramas', { public: true, fileSizeLimit: 10485760 });
+      console.log('Bucket odontogramas criado.');
     }
   } catch(e) { console.warn('Bucket check:', e.message); }
 })();
@@ -748,6 +752,31 @@ Retorne APENAS o JSON, omita campos null.`;
 
 // ── Proxy Kanban ─────────────────────────────────────────────
 const https = require('https');
+// ── Odontograma: salvar imagem composta ──────────────────────
+app.post('/api/odontogramas/save', auth, async (req, res) => {
+  const { imageData, patientName } = req.body;
+  if (!imageData || !imageData.startsWith('data:image/')) return res.status(400).json({ error: 'imageData inválido' });
+
+  try {
+    const base64 = imageData.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64, 'base64');
+    const ts = Date.now();
+    const safe = (patientName || 'paciente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+    const filePath = `${safe}/${ts}.jpg`;
+
+    const { error: upErr } = await supa.storage
+      .from('odontogramas')
+      .upload(filePath, buffer, { contentType: 'image/jpeg', upsert: false });
+
+    if (upErr) throw new Error(upErr.message);
+
+    const { data: pub } = supa.storage.from('odontogramas').getPublicUrl(filePath);
+    res.json({ ok: true, url: pub.publicUrl, path: filePath });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/kanban-proxy', auth, (req, res) => {
   const target = 'https://iaoraluniccb.github.io/kanban-oral-unic/';
   https.get(target, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (upstream) => {

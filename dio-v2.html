@@ -186,6 +186,21 @@
 
   #no-patient-msg { display: flex; align-items: center; justify-content: center; height: 100%; color: #E0C9B8; font-size: 13px; flex-direction: column; gap: 12px; letter-spacing: 0.04em; }
 
+  /* HISTÓRICO DE SALVAMENTOS */
+  #historico-panel { padding: 8px; border-top: 2px solid #E0C9B8; flex-shrink: 0; }
+  #historico-panel h4 { font-family: 'Josefin Sans', sans-serif; font-size: 9px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; font-weight: 300; margin-bottom: 6px; padding: 4px 0 2px; }
+  #historico-list { display: flex; flex-direction: column; gap: 5px; max-height: 240px; overflow-y: auto; }
+  .hist-save-item { background: #fff; border: 1.5px solid #E0C9B8; border-radius: 7px; overflow: hidden; cursor: pointer; transition: border 0.15s; display: flex; gap: 8px; align-items: center; padding: 6px 8px; }
+  .hist-save-item:hover { border-color: #8B2D42; }
+  .hist-save-thumb { width: 52px; height: 36px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: #1a1a1a; }
+  .hist-save-info { flex: 1; min-width: 0; }
+  .hist-save-name { font-family: 'Josefin Sans', sans-serif; font-size: 11px; font-weight: 300; color: #1A0F0A; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-save-meta { font-size: 9px; color: #3D2A20; margin-top: 2px; }
+  .hist-save-ttl { font-size: 9px; color: #a87828; margin-top: 1px; }
+  .hist-save-actions { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+  .hist-save-actions button { font-size: 9px; padding: 3px 6px; letter-spacing: 0.1em; }
+  #hist-empty { padding: 10px; text-align: center; font-size: 11px; color: #9ca3af; }
+
   /* GERENCIAR PACIENTES */
   #modal-gerenciar .modal { min-width: 600px; max-width: 96vw; max-height: 85vh; display: flex; flex-direction: column; }
   #gerenciar-lista { flex: 1; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -213,6 +228,7 @@
   <div id="header-actions">
     <button class="btn btn-outline btn-sm" onclick="openPatientModal()">+ Paciente</button>
     <button class="btn btn-danger btn-sm" onclick="clearOverlays()" title="Remover todas as imagens do raio-x">🖼️ Limpar</button>
+    <button class="btn btn-primary btn-sm" onclick="salvarOdontograma()" id="btn-salvar-odonto">💾 SALVAR</button>
     <button class="btn btn-success btn-sm" onclick="exportPDF()">⬇️ PDF</button>
     <button class="btn btn-sm" style="background:#f3f0ff;color:#7c3aed;border:2px solid #c4b5fd;" onclick="abrirGerenciar()">👥 Gerenciar Pacientes</button>
   </div>
@@ -227,6 +243,10 @@
     <input type="text" id="patient-search" placeholder="🔍 Buscar paciente..." oninput="renderPatientList()">
     <div id="patient-list">
       <div style="padding:16px;color:#9ca3af;font-size:12px;text-align:center;">Nenhum paciente cadastrado</div>
+    </div>
+    <div id="historico-panel">
+      <h4>📋 Histórico</h4>
+      <div id="historico-list"><div id="hist-empty">Nenhum odontograma salvo ainda</div></div>
     </div>
   </div>
 
@@ -409,6 +429,143 @@
 </div>
 
 <script>
+// ===================== HISTÓRICO =====================
+const HIST_KEY = 'dio_historico_v1';
+const TTL_DIAS = 7;
+
+function _histGetAll() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) { return []; }
+}
+function _histSaveAll(arr) {
+  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+}
+function _histPurgeExpired() {
+  const now = Date.now();
+  const arr = _histGetAll().filter(h => h.expiresAt > now);
+  _histSaveAll(arr);
+  return arr;
+}
+
+function renderHistoricoSalvamentos() {
+  const arr = _histPurgeExpired();
+  const el = document.getElementById('historico-list');
+  if (!el) return;
+  if (!arr.length) { el.innerHTML = '<div id="hist-empty">Nenhum odontograma salvo ainda</div>'; return; }
+  el.innerHTML = arr.map(h => {
+    const dias = Math.ceil((h.expiresAt - Date.now()) / 86400000);
+    const dt = new Date(h.savedAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    return `<div class="hist-save-item">
+      <img class="hist-save-thumb" src="${h.thumb}" alt="">
+      <div class="hist-save-info">
+        <div class="hist-save-name">${h.patientName}</div>
+        <div class="hist-save-meta">${dt}</div>
+        <div class="hist-save-ttl">Expira em ${dias} dia${dias !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="hist-save-actions">
+        <button class="btn btn-outline btn-sm" onclick="window.open('${h.url}','_blank')">↗</button>
+        <button class="btn btn-danger btn-sm" onclick="_histDelete('${h.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _histDelete(id) {
+  const arr = _histGetAll().filter(h => h.id !== id);
+  _histSaveAll(arr);
+  renderHistoricoSalvamentos();
+}
+
+async function salvarOdontograma() {
+  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  if (!(state.currentPatient.images || []).length) { alert('Adicione uma imagem ao paciente.'); return; }
+
+  const btn = document.getElementById('btn-salvar-odonto');
+  if (btn) { btn.textContent = '⏳ Salvando...'; btn.disabled = true; }
+
+  try {
+    // 1. Compor canvas (raio-x + overlays + desenhos)
+    const bgImg = document.getElementById('bg-image');
+    const W = bgImg.offsetWidth || 800;
+    const H = bgImg.offsetHeight || 600;
+    const merged = document.createElement('canvas');
+    merged.width = W; merged.height = H;
+    const mCtx = merged.getContext('2d');
+
+    const imgSrc = state.currentPatient.images[state.currentImageIndex].src;
+    await new Promise(r => {
+      const bEl = new Image();
+      bEl.onload = () => { mCtx.drawImage(bEl, 0, 0, W, H); r(); };
+      bEl.onerror = r; bEl.src = imgSrc;
+    });
+    for (const o of state.placedOverlays) {
+      const tmp = document.createElement('canvas');
+      tmp.width = o.w; tmp.height = o.h;
+      const tCtx = tmp.getContext('2d');
+      if (o.drawFn) o.drawFn(tCtx, o.w, o.h);
+      else if (o.canvas && o.canvas.tagName === 'CANVAS') { try { tCtx.drawImage(o.canvas, 0, 0, o.w, o.h); } catch(e) {} }
+      mCtx.save();
+      mCtx.translate(o.x + o.w / 2, o.y + o.h / 2);
+      mCtx.rotate((o.rotation || 0) * Math.PI / 180);
+      mCtx.scale(o.flipH ? -1 : 1, o.flipV ? -1 : 1);
+      mCtx.globalAlpha = 0.92;
+      mCtx.drawImage(tmp, -o.w / 2, -o.h / 2);
+      mCtx.restore();
+    }
+    mCtx.globalAlpha = 1;
+    try { mCtx.drawImage(drawCanvas, 0, 0, W, H); } catch(e) {}
+
+    const dataUrl = merged.toDataURL('image/jpeg', 0.88);
+
+    // 2. Enviar para o servidor (que faz upload no Supabase com a service key)
+    let publicUrl = null;
+    try {
+      const serverRes = await fetch('/api/odontogramas/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('dio_token') || '') },
+        body: JSON.stringify({ imageData: dataUrl, patientName: state.currentPatient.nome })
+      });
+      if (serverRes.ok) {
+        const serverData = await serverRes.json();
+        if (serverData.url) publicUrl = serverData.url;
+      } else {
+        console.warn('Servidor retornou erro:', serverRes.status);
+      }
+    } catch(e) {
+      console.warn('Upload servidor falhou, salvando local:', e.message);
+    }
+
+    // 4. Miniatura (thumbnail 80x56 para o histórico)
+    const thumbC = document.createElement('canvas');
+    thumbC.width = 80; thumbC.height = 56;
+    thumbC.getContext('2d').drawImage(merged, 0, 0, 80, 56);
+    const thumb = thumbC.toDataURL('image/jpeg', 0.7);
+
+    // 5. Gravar no histórico local com TTL
+    const entry = {
+      id: String(ts),
+      savedAt: new Date().toISOString(),
+      expiresAt: ts + TTL_DIAS * 86400000,
+      patientName: state.currentPatient.nome,
+      url: publicUrl || dataUrl,
+      path: publicUrl ? path : null,
+      thumb
+    };
+    const arr = _histGetAll();
+    arr.unshift(entry);
+    if (arr.length > 30) arr.length = 30;
+    _histSaveAll(arr);
+    renderHistoricoSalvamentos();
+
+    // 6. Feedback visual
+    if (btn) { btn.textContent = '✅ Salvo!'; }
+    setTimeout(() => { if (btn) { btn.textContent = '💾 SALVAR'; btn.disabled = false; } }, 2000);
+
+  } catch(err) {
+    alert('Erro ao salvar: ' + err.message);
+    if (btn) { btn.textContent = '💾 SALVAR'; btn.disabled = false; }
+  }
+}
+
 // ===================== RÉGUA STATE (declarado antes de tudo) =====================
 let reguaAtiva = false;
 let reguaSnap = null;
@@ -1958,6 +2115,7 @@ async function exportPDF() {
 // ===================== INIT =====================
 initOverlayGrids();
 renderPatientList();
+renderHistoricoSalvamentos();
 window.addEventListener('resize', () => { if ((state.currentPatient?.images || []).length) resizeCanvases(); });
 
 // Clique fora de overlay desseleciona
