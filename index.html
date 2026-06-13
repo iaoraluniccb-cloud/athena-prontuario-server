@@ -7209,7 +7209,8 @@ async function handleImageUpload(e){
     if(!state.currentPatient.images)state.currentPatient.images=[];
     state.currentPatient.images.push({src:ev.target.result,date:new Date().toLocaleDateString('pt-BR'),name:file.name});
     state.currentImageIndex=state.currentPatient.images.length-1;
-    await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',body:JSON.stringify({images:state.currentPatient.images})});
+    const _r = await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({images:state.currentPatient.images})});
+    if (_r && _r.ok) { const _d = await _r.json(); if (_d.images) { state.currentPatient.images = _d.images; state.currentImageIndex = state.currentPatient.images.length-1; } }
     renderImagesPanel();loadCurrentImage();
   };
   reader.readAsDataURL(file);e.target.value='';

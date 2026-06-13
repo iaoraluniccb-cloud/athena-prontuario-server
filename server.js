@@ -25,6 +25,18 @@ const supa = createClient(
 // ── Middleware ───────────────────────────────────────────────
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+
+// Cria bucket prontuario-fotos se não existir
+(async () => {
+  try {
+    const { data: buckets } = await supa.storage.listBuckets();
+    const exists = buckets && buckets.find(b => b.name === 'prontuario-fotos');
+    if (!exists) {
+      await supa.storage.createBucket('prontuario-fotos', { public: true, fileSizeLimit: 10485760 });
+      console.log('Bucket prontuario-fotos criado.');
+    }
+  } catch(e) { console.warn('Bucket check:', e.message); }
+})();
 // Permite ser carregado em iframe de qualquer origem
 app.use((req, res, next) => {
   res.removeHeader('X-Frame-Options');
@@ -297,9 +309,31 @@ app.post('/api/patients/:id/planning/:stepId/sign', auth, async (req, res) => {
 //  IMAGENS DO PACIENTE
 // ══════════════════════════════════════════════════════════════
 app.put('/api/patients/:id/images', auth, dentistOrAdmin, async (req, res) => {
-  const { error } = await supa.from('patients').update({ images: req.body.images }).eq('id', req.params.id);
+  const patientId = req.params.id;
+  const images = req.body.images || [];
+
+  // Faz upload das imagens base64 para o Supabase Storage e substitui por URL pública
+  const processed = await Promise.all(images.map(async (img, idx) => {
+    if (!img.src || !img.src.startsWith('data:')) return img; // já é URL, mantém
+    try {
+      const matches = img.src.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) return img;
+      const mimeType = matches[1];
+      const ext = mimeType.split('/')[1] || 'jpg';
+      const buffer = Buffer.from(matches[2], 'base64');
+      const filePath = `pacientes/${patientId}/${idx}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supa.storage.from('prontuario-fotos').upload(filePath, buffer, {
+        contentType: mimeType, upsert: true
+      });
+      if (upErr) return img; // fallback: mantém base64
+      const { data: pub } = supa.storage.from('prontuario-fotos').getPublicUrl(filePath);
+      return { ...img, src: pub.publicUrl };
+    } catch(e) { return img; }
+  }));
+
+  const { error } = await supa.from('patients').update({ images: processed }).eq('id', patientId);
   if (error) return dbErr(res, error);
-  res.json({ ok: true });
+  res.json({ ok: true, images: processed });
 });
 
 app.put('/api/patients/:id/overlays', auth, dentistOrAdmin, async (req, res) => {
