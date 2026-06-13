@@ -26,7 +26,7 @@ const supa = createClient(
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Cria buckets necessários se não existirem
+// Cria buckets e tabelas necessários se não existirem
 (async () => {
   try {
     const { data: buckets } = await supa.storage.listBuckets();
@@ -40,6 +40,16 @@ app.use(express.json({ limit: '50mb' }));
       console.log('Bucket odontogramas criado.');
     }
   } catch(e) { console.warn('Bucket check:', e.message); }
+
+  // Garante tabela home_config — tenta insert de teste; se falhar cria
+  try {
+    const chk = await supa.from('home_config').select('id').limit(1);
+    if (chk.error) {
+      console.warn('home_config não existe ainda — crie via Supabase Dashboard SQL:', chk.error.message);
+    } else {
+      console.log('Tabela home_config OK.');
+    }
+  } catch(e) { console.warn('home_config check:', e.message); }
 })();
 // Permite ser carregado em iframe de qualquer origem
 app.use((req, res, next) => {
@@ -775,6 +785,72 @@ app.post('/api/odontogramas/save', auth, async (req, res) => {
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ── Home Config — CRUD para home_config (Athena) ─────────────
+// Garante que a tabela existe na primeira chamada bem-sucedida
+let _homeConfigReady = false;
+async function _ensureHomeConfig() {
+  if (_homeConfigReady) return;
+  const { error } = await supa.from('home_config').select('id').limit(1);
+  if (!error) { _homeConfigReady = true; return; }
+  // Tabela não existe — cria via Management API
+  const supaUrl = (process.env.SUPABASE_URL || 'https://ugsolisojqawbjaeencq.supabase.co');
+  const ref = supaUrl.match(/https:\/\/([^.]+)\./)?.[1];
+  if (!ref) throw new Error('Não foi possível extrair ref do projeto Supabase');
+  const mgmtToken = process.env.SUPABASE_ACCESS_TOKEN || process.env.SUPABASE_SERVICE_KEY;
+  const resp = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: `CREATE TABLE IF NOT EXISTS public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT '{}', updated_at timestamptz NOT NULL DEFAULT now()); ALTER TABLE public.home_config ENABLE ROW LEVEL SECURITY; DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='home_config') THEN CREATE POLICY home_config_all ON public.home_config FOR ALL USING (true) WITH CHECK (true); END IF; END $$;` })
+  });
+  if (!resp.ok) {
+    const txt = await resp.text();
+    throw new Error('Falha ao criar home_config: ' + txt);
+  }
+  _homeConfigReady = true;
+  console.log('Tabela home_config criada com sucesso.');
+}
+
+// Setup endpoint — cria a tabela home_config via service key
+app.post('/api/home-config/setup', async (req, res) => {
+  try {
+    // Tenta criar tabela via Supabase Management API
+    const supaUrl = process.env.SUPABASE_URL || 'https://ugsolisojqawbjaeencq.supabase.co';
+    const ref = supaUrl.replace('https://', '').split('.')[0];
+    const mgmtToken = process.env.SUPABASE_ACCESS_TOKEN;
+    if (mgmtToken) {
+      const resp = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: `CREATE TABLE IF NOT EXISTS public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT '{}', updated_at timestamptz NOT NULL DEFAULT now()); ALTER TABLE public.home_config ENABLE ROW LEVEL SECURITY; DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='home_config' AND policyname='home_config_all') THEN CREATE POLICY home_config_all ON public.home_config FOR ALL USING (true) WITH CHECK (true); END IF; END $$;` })
+      });
+      if (resp.ok) { _homeConfigReady = true; return res.json({ ok: true, method: 'management-api' }); }
+    }
+    // Fallback: service key direto (pode não ter permissão DDL)
+    const chk = await supa.from('home_config').select('id').limit(1);
+    if (!chk.error) { _homeConfigReady = true; return res.json({ ok: true, method: 'exists' }); }
+    res.status(500).json({ error: 'Tabela não existe e não foi possível criar. Crie manualmente no Supabase Dashboard.', sql: 'CREATE TABLE public.home_config (id text PRIMARY KEY, valor jsonb NOT NULL DEFAULT \'{}\', updated_at timestamptz NOT NULL DEFAULT now());' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/home-config', async (req, res) => {
+  try {
+    const { data, error } = await supa.from('home_config').select('id,valor');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/home-config/:id', async (req, res) => {
+  const { id } = req.params;
+  const { valor } = req.body;
+  if (!id || valor === undefined) return res.status(400).json({ error: 'id e valor obrigatórios' });
+  try {
+    const { error } = await supa.from('home_config').upsert({ id, valor, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) throw new Error(error.message);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/kanban-proxy', auth, (req, res) => {
