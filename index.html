@@ -1820,7 +1820,22 @@ function authHeaders() {
 async function apiFetch(url, opts = {}) {
   opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
   const r = await fetch(API + url, opts);
-  if (r.status === 401) { logout(); return null; }
+  if (r.status === 401) {
+    // Tenta renovar token antes de deslogar
+    try {
+      const ar = await fetch(API + '/api/auto-token');
+      if (ar.ok) {
+        const ad = await ar.json();
+        localStorage.setItem('athena_token', ad.token);
+        localStorage.setItem('dio_token', ad.token);
+        opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
+        const r2 = await fetch(API + url, opts);
+        if (!r2.ok && r2.status === 401) { logout(); return null; }
+        return r2;
+      }
+    } catch {}
+    logout(); return null;
+  }
   return r;
 }
 
@@ -1838,16 +1853,20 @@ function logout() {
 
 async function initAuth() {
   let token = getToken();
-  // Sempre renova o token via auto-token para garantir validade
-  try {
-    const ar = await fetch(API + '/api/auto-token');
-    if (ar.ok) {
-      const ad = await ar.json();
-      token = ad.token;
-      localStorage.setItem('athena_token', token);
-      localStorage.setItem('dio_token', token);
-    }
-  } catch {}
+  // Renova o token via auto-token — com retry para cold start do Render
+  for (let _attempt = 0; _attempt < 4; _attempt++) {
+    try {
+      const ar = await fetch(API + '/api/auto-token');
+      if (ar.ok) {
+        const ad = await ar.json();
+        token = ad.token;
+        localStorage.setItem('athena_token', token);
+        localStorage.setItem('dio_token', token);
+        break;
+      }
+    } catch {}
+    if (_attempt < 3) await new Promise(r => setTimeout(r, 8000)); // aguarda cold start
+  }
   if (!token) {
     // fallback: tenta localStorage
     token = getToken();
