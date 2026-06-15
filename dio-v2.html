@@ -231,6 +231,7 @@
     <button class="btn btn-primary btn-sm" onclick="salvarOdontograma()" id="btn-salvar-odonto">💾 SALVAR</button>
     <button class="btn btn-success btn-sm" onclick="exportPDF()">⬇️ PDF</button>
     <button class="btn btn-sm" style="background:#f3f0ff;color:#7c3aed;border:2px solid #c4b5fd;" onclick="abrirGerenciar()">👥 Gerenciar Pacientes</button>
+    <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:2px solid #fcd34d;" onclick="migrarParaServidor()" id="btn-migrar">☁️ Migrar para Servidor</button>
   </div>
 </div>
 
@@ -2125,6 +2126,50 @@ async function exportPDF() {
   } finally {
     if (btn) { btn.textContent = '⬇️ PDF'; btn.disabled = false; }
   }
+}
+
+// ===================== MIGRAÇÃO PARA SERVIDOR =====================
+async function migrarParaServidor() {
+  const patients = JSON.parse(localStorage.getItem('dio_patients') || '[]');
+  if (patients.length === 0) { alert('Nenhum paciente local encontrado para migrar.'); return; }
+
+  const API = 'https://athena-prontuario-server.onrender.com';
+  const btn = document.getElementById('btn-migrar');
+
+  // Obtém token
+  let token = '';
+  try {
+    const ar = await fetch(API + '/api/auto-token');
+    if (ar.ok) { const ad = await ar.json(); token = ad.token; }
+  } catch {}
+  if (!token) { alert('Não foi possível conectar ao servidor. Tente novamente.'); return; }
+
+  if (!confirm(`Migrar ${patients.length} paciente(s) do armazenamento local para o servidor?\n\nEsta ação não apaga os dados locais.`)) return;
+
+  if (btn) { btn.textContent = '⏳ Migrando...'; btn.disabled = true; }
+
+  let ok = 0, erros = 0;
+  for (const p of patients) {
+    try {
+      const body = {
+        nome: p.nome || '',
+        nascimento: p.nascimento || null,
+        telefone: p.telefone || null,
+        obs: p.obs || null,
+        ficha: p.ficha ? String(p.ficha) : null,
+      };
+      const r = await fetch(API + '/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify(body)
+      });
+      if (r.ok || r.status === 409) ok++; // 409 = já existe, conta como ok
+      else erros++;
+    } catch { erros++; }
+  }
+
+  if (btn) { btn.textContent = '☁️ Migrar para Servidor'; btn.disabled = false; }
+  alert(`Migração concluída!\n✅ ${ok} paciente(s) enviado(s)\n${erros > 0 ? '⚠️ ' + erros + ' erro(s)' : ''}\n\nAbra o Prontuário novo para confirmar.`);
 }
 
 // ===================== INIT =====================
