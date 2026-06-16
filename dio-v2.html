@@ -1250,7 +1250,21 @@ function openPatientModal() {
   document.getElementById('upload-drop-placeholder').style.display = 'block';
   document.getElementById('p-rxfile').value = '';
   document.getElementById('modal-patient').classList.add('open');
+  // Pede o nome do último tour ao Athena (pai) via postMessage
+  try { window.parent.postMessage({ type: 'get_ultimo_nome_tour' }, '*'); } catch(_) {}
 }
+
+// Recebe resposta do Athena com o nome do último tour
+window.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'ultimo_nome_tour' && e.data.nome) {
+    const campoNome = document.getElementById('p-nome');
+    const modal = document.getElementById('modal-patient');
+    if (campoNome && modal && modal.classList.contains('open') && !campoNome.value) {
+      campoNome.value = e.data.nome;
+      setTimeout(() => campoNome.select(), 80);
+    }
+  }
+});
 
 function closePatientModal() {
   document.getElementById('modal-patient').classList.remove('open');
