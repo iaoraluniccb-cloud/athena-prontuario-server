@@ -7,6 +7,59 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, onSnapshot, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const fbCfg = {apiKey:"AIzaSyBi19VA29AjnAWC1Dm1aIGtwp9uTtshAZw",authDomain:"athena-calculadora.firebaseapp.com",projectId:"athena-calculadora",storageBucket:"athena-calculadora.firebasestorage.app",messagingSenderId:"1011963451590",appId:"1:1011963451590:web:f9bdd7a7eaa1dec0335fc7"};
+const app = initializeApp(fbCfg);
+const db  = getFirestore(app);
+const REF = doc(db, 'ou_dio', 'pacientes');
+
+// Carrega inicial do Firebase
+async function _fbLoad() {
+  try {
+    const snap = await getDoc(REF);
+    if (snap.exists()) {
+      const dados = JSON.parse(snap.data().data || '[]');
+      if (dados.length) {
+        window._dioState.patients = dados;
+        if (typeof renderPatientList === 'function') renderPatientList();
+      }
+    }
+  } catch(e) { console.warn('DIO Firebase load:', e); }
+  window._dioFbReady = true;
+}
+
+// Salva no Firebase (sem imagens base64 grandes — ficam só no state local)
+window._dioFbSave = async function(patients) {
+  try {
+    // Remove src de imagens para não estourar 1MB — guarda apenas metadados
+    const limpo = patients.map(p => ({
+      ...p,
+      images: (p.images || []).map(img => ({ date: img.date, name: img.name })),
+    }));
+    await setDoc(REF, { data: JSON.stringify(limpo) });
+  } catch(e) { console.warn('DIO Firebase save:', e); }
+};
+
+// Sync em tempo real — quando outro dispositivo salva, atualiza a lista
+onSnapshot(REF, snap => {
+  if (!snap.exists() || !window._dioFbReady) return;
+  const novos = JSON.parse(snap.data().data || '[]');
+  // Merge: preserva imagens já em memória (que o Firestore não armazena)
+  novos.forEach(pac => {
+    const antigo = (window._dioState?.patients || []).find(p => p.id === pac.id);
+    if (antigo?.images?.length) pac.images = antigo.images;
+    if (antigo?.overlays) pac.overlays = antigo.overlays;
+    if (antigo?.drawings) pac.drawings = antigo.drawings;
+  });
+  if (window._dioState) window._dioState.patients = novos;
+  if (typeof renderPatientList === 'function') renderPatientList();
+});
+
+_fbLoad();
+</script>
 <style>
   /* ── Paleta Oral Unic ───────────────────────────────────────────
      #8B2D42 Vinho Rosado  — cor principal / âncora exclusiva
@@ -594,6 +647,7 @@ const state = {
   placedOverlays: [],
   nextOverlayId: 1,
 };
+window._dioState = state;
 
 // ===================== REALISTIC OVERLAY DRAWERS =====================
 
@@ -1216,7 +1270,10 @@ function selectOverlay(id, btn, drawFn, svgFile) {
 // ===================== PATIENTS =====================
 let _pendingPatientImage = null;
 
-function savePatients() { localStorage.setItem('dio_patients', JSON.stringify(state.patients)); }
+function savePatients() {
+  localStorage.setItem('dio_patients', JSON.stringify(state.patients));
+  if (window._dioFbSave) window._dioFbSave(state.patients);
+}
 
 function handlePatientImagePick(e) {
   const file = e.target.files[0]; if (!file) return;
