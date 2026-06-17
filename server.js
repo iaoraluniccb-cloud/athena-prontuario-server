@@ -57,6 +57,21 @@ app.use(express.json({ limit: '50mb' }));
       console.log('Tabela home_config OK.');
     }
   } catch(e) { console.warn('home_config check:', e.message); }
+
+  // Cria tabelas athena_plans e athena_templates se não existirem
+  try {
+    const _athenaUrl = ATHENA_SUPA_URL || 'https://eeqpvuaigqzclpompxao.supabase.co';
+    const _athenaKey = ATHENA_SERVICE_KEY;
+    const _hdr = { 'Content-Type': 'application/json', 'apikey': _athenaKey, 'Authorization': `Bearer ${_athenaKey}` };
+
+    const chkPlans = await fetch(`${_athenaUrl}/rest/v1/athena_plans?limit=1`, { headers: _hdr });
+    if (!chkPlans.ok) {
+      // Table doesn't exist — create via migration endpoint
+      console.log('athena_plans não existe — será criada quando SQL for executado no dashboard.');
+    } else {
+      console.log('athena_plans OK.');
+    }
+  } catch(e) { console.warn('athena_plans check:', e.message); }
 })();
 // Permite ser carregado em iframe de qualquer origem
 app.use((req, res, next) => {
@@ -853,6 +868,34 @@ app.get('/kanban-proxy', auth, (req, res) => {
     res.removeHeader('Content-Security-Policy');
     upstream.pipe(res);
   }).on('error', () => res.status(502).send('Erro ao carregar Kanban'));
+});
+
+// ── Athena: Criar tabelas (migration) ────────────────────────
+// Endpoint temporário: cria athena_plans e athena_templates via supabase-js
+// Protegido por service key no header
+app.post('/api/athena-migrate', async (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.includes('Bearer ') || !authHeader.includes(ATHENA_SERVICE_KEY.slice(0, 20))) {
+    return res.status(403).json({ error: 'Não autorizado' });
+  }
+  const _athenaUrl = 'https://eeqpvuaigqzclpompxao.supabase.co';
+  const _key = ATHENA_SERVICE_KEY;
+  const _hdr = { 'Content-Type': 'application/json', 'apikey': _key, 'Authorization': `Bearer ${_key}` };
+
+  // Test if tables exist by trying to SELECT
+  const r1 = await fetch(`${_athenaUrl}/rest/v1/athena_plans?limit=1`, { headers: _hdr });
+  const r2 = await fetch(`${_athenaUrl}/rest/v1/athena_templates?limit=1`, { headers: _hdr });
+
+  const plans_exists = r1.ok;
+  const tmpls_exists = r2.ok;
+
+  res.json({
+    plans_table: plans_exists ? 'EXISTS' : 'NOT_FOUND',
+    templates_table: tmpls_exists ? 'EXISTS' : 'NOT_FOUND',
+    message: (!plans_exists || !tmpls_exists)
+      ? 'Execute o SQL em /criar_tabelas_athena.sql no Supabase Dashboard'
+      : 'Tabelas OK'
+  });
 });
 
 // ── Start ────────────────────────────────────────────────────
