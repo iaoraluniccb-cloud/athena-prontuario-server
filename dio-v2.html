@@ -7,59 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, onSnapshot, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-const fbCfg = {apiKey:"AIzaSyBi19VA29AjnAWC1Dm1aIGtwp9uTtshAZw",authDomain:"athena-calculadora.firebaseapp.com",projectId:"athena-calculadora",storageBucket:"athena-calculadora.firebasestorage.app",messagingSenderId:"1011963451590",appId:"1:1011963451590:web:f9bdd7a7eaa1dec0335fc7"};
-const app = initializeApp(fbCfg);
-const db  = getFirestore(app);
-const REF = doc(db, 'ou_dio', 'pacientes');
-
-// Carrega inicial do Firebase
-async function _fbLoad() {
-  try {
-    const snap = await getDoc(REF);
-    if (snap.exists()) {
-      const dados = JSON.parse(snap.data().data || '[]');
-      if (dados.length) {
-        window._dioState.patients = dados;
-        if (typeof renderPatientList === 'function') renderPatientList();
-      }
-    }
-  } catch(e) { console.warn('DIO Firebase load:', e); }
-  window._dioFbReady = true;
-}
-
-// Salva no Firebase (sem imagens base64 grandes — ficam só no state local)
-window._dioFbSave = async function(patients) {
-  try {
-    // Remove src de imagens para não estourar 1MB — guarda apenas metadados
-    const limpo = patients.map(p => ({
-      ...p,
-      images: (p.images || []).map(img => ({ date: img.date, name: img.name })),
-    }));
-    await setDoc(REF, { data: JSON.stringify(limpo) });
-  } catch(e) { console.warn('DIO Firebase save:', e); }
-};
-
-// Sync em tempo real — quando outro dispositivo salva, atualiza a lista
-onSnapshot(REF, snap => {
-  if (!snap.exists() || !window._dioFbReady) return;
-  const novos = JSON.parse(snap.data().data || '[]');
-  // Merge: preserva imagens já em memória (que o Firestore não armazena)
-  novos.forEach(pac => {
-    const antigo = (window._dioState?.patients || []).find(p => p.id === pac.id);
-    if (antigo?.images?.length) pac.images = antigo.images;
-    if (antigo?.overlays) pac.overlays = antigo.overlays;
-    if (antigo?.drawings) pac.drawings = antigo.drawings;
-  });
-  if (window._dioState) window._dioState.patients = novos;
-  if (typeof renderPatientList === 'function') renderPatientList();
-});
-
-_fbLoad();
-</script>
 <style>
   /* ── Paleta Oral Unic ───────────────────────────────────────────
      #8B2D42 Vinho Rosado  — cor principal / âncora exclusiva
@@ -239,21 +186,6 @@ _fbLoad();
 
   #no-patient-msg { display: flex; align-items: center; justify-content: center; height: 100%; color: #E0C9B8; font-size: 13px; flex-direction: column; gap: 12px; letter-spacing: 0.04em; }
 
-  /* HISTÓRICO DE SALVAMENTOS */
-  #historico-panel { padding: 8px; border-top: 2px solid #E0C9B8; flex-shrink: 0; }
-  #historico-panel h4 { font-family: 'Josefin Sans', sans-serif; font-size: 9px; color: #8B2D42; text-transform: uppercase; letter-spacing: 0.28em; font-weight: 300; margin-bottom: 6px; padding: 4px 0 2px; }
-  #historico-list { display: flex; flex-direction: column; gap: 5px; max-height: 240px; overflow-y: auto; }
-  .hist-save-item { background: #fff; border: 1.5px solid #E0C9B8; border-radius: 7px; overflow: hidden; cursor: pointer; transition: border 0.15s; display: flex; gap: 8px; align-items: center; padding: 6px 8px; }
-  .hist-save-item:hover { border-color: #8B2D42; }
-  .hist-save-thumb { width: 52px; height: 36px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: #1a1a1a; }
-  .hist-save-info { flex: 1; min-width: 0; }
-  .hist-save-name { font-family: 'Josefin Sans', sans-serif; font-size: 11px; font-weight: 300; color: #1A0F0A; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hist-save-meta { font-size: 9px; color: #3D2A20; margin-top: 2px; }
-  .hist-save-ttl { font-size: 9px; color: #a87828; margin-top: 1px; }
-  .hist-save-actions { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
-  .hist-save-actions button { font-size: 9px; padding: 3px 6px; letter-spacing: 0.1em; }
-  #hist-empty { padding: 10px; text-align: center; font-size: 11px; color: #9ca3af; }
-
   /* GERENCIAR PACIENTES */
   #modal-gerenciar .modal { min-width: 600px; max-width: 96vw; max-height: 85vh; display: flex; flex-direction: column; }
   #gerenciar-lista { flex: 1; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -281,10 +213,8 @@ _fbLoad();
   <div id="header-actions">
     <button class="btn btn-outline btn-sm" onclick="openPatientModal()">+ Paciente</button>
     <button class="btn btn-danger btn-sm" onclick="clearOverlays()" title="Remover todas as imagens do raio-x">🖼️ Limpar</button>
-    <button class="btn btn-primary btn-sm" onclick="salvarOdontograma()" id="btn-salvar-odonto">💾 SALVAR</button>
     <button class="btn btn-success btn-sm" onclick="exportPDF()">⬇️ PDF</button>
     <button class="btn btn-sm" style="background:#f3f0ff;color:#7c3aed;border:2px solid #c4b5fd;" onclick="abrirGerenciar()">👥 Gerenciar Pacientes</button>
-    <button class="btn btn-sm" style="background:#fef3c7;color:#92400e;border:2px solid #fcd34d;" onclick="migrarParaServidor()" id="btn-migrar">☁️ Migrar para Servidor</button>
   </div>
 </div>
 
@@ -297,10 +227,6 @@ _fbLoad();
     <input type="text" id="patient-search" placeholder="🔍 Buscar paciente..." oninput="renderPatientList()">
     <div id="patient-list">
       <div style="padding:16px;color:#9ca3af;font-size:12px;text-align:center;">Nenhum paciente cadastrado</div>
-    </div>
-    <div id="historico-panel">
-      <h4>📋 Histórico</h4>
-      <div id="historico-list"><div id="hist-empty">Nenhum odontograma salvo ainda</div></div>
     </div>
   </div>
 
@@ -483,145 +409,6 @@ _fbLoad();
 </div>
 
 <script>
-// ===================== HISTÓRICO =====================
-const HIST_KEY = 'dio_historico_v1';
-const TTL_DIAS = 7;
-
-function _histGetAll() {
-  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch(e) { return []; }
-}
-function _histSaveAll(arr) {
-  localStorage.setItem(HIST_KEY, JSON.stringify(arr));
-}
-function _histPurgeExpired() {
-  const now = Date.now();
-  const arr = _histGetAll().filter(h => h.expiresAt > now);
-  _histSaveAll(arr);
-  return arr;
-}
-
-function renderHistoricoSalvamentos() {
-  const arr = _histPurgeExpired();
-  const el = document.getElementById('historico-list');
-  if (!el) return;
-  if (!arr.length) { el.innerHTML = '<div id="hist-empty">Nenhum odontograma salvo ainda</div>'; return; }
-  el.innerHTML = arr.map(h => {
-    const dias = Math.ceil((h.expiresAt - Date.now()) / 86400000);
-    const dt = new Date(h.savedAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    return `<div class="hist-save-item">
-      <img class="hist-save-thumb" src="${h.thumb}" alt="">
-      <div class="hist-save-info">
-        <div class="hist-save-name">${h.patientName}</div>
-        <div class="hist-save-meta">${dt}</div>
-        <div class="hist-save-ttl">Expira em ${dias} dia${dias !== 1 ? 's' : ''}</div>
-      </div>
-      <div class="hist-save-actions">
-        <button class="btn btn-outline btn-sm" onclick="window.open('${h.url}','_blank')">↗</button>
-        <button class="btn btn-danger btn-sm" onclick="_histDelete('${h.id}')">✕</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function _histDelete(id) {
-  const arr = _histGetAll().filter(h => h.id !== id);
-  _histSaveAll(arr);
-  renderHistoricoSalvamentos();
-}
-
-async function salvarOdontograma() {
-  if (!_garantirPaciente()) return;
-  if (!(state.currentPatient.images || []).length) { alert('Adicione uma imagem ao paciente.'); return; }
-
-  const btn = document.getElementById('btn-salvar-odonto');
-  if (btn) { btn.textContent = '⏳ Salvando...'; btn.disabled = true; }
-
-  try {
-    // 1. Compor canvas (raio-x + overlays + desenhos)
-    const bgImg = document.getElementById('bg-image');
-    const W = bgImg.offsetWidth || 800;
-    const H = bgImg.offsetHeight || 600;
-    const merged = document.createElement('canvas');
-    merged.width = W; merged.height = H;
-    const mCtx = merged.getContext('2d');
-
-    const imgSrc = state.currentPatient.images[state.currentImageIndex].src;
-    await new Promise(r => {
-      const bEl = new Image();
-      bEl.onload = () => { mCtx.drawImage(bEl, 0, 0, W, H); r(); };
-      bEl.onerror = r; bEl.src = imgSrc;
-    });
-    for (const o of state.placedOverlays) {
-      const tmp = document.createElement('canvas');
-      tmp.width = o.w; tmp.height = o.h;
-      const tCtx = tmp.getContext('2d');
-      if (o.drawFn) o.drawFn(tCtx, o.w, o.h);
-      else if (o.canvas && o.canvas.tagName === 'CANVAS') { try { tCtx.drawImage(o.canvas, 0, 0, o.w, o.h); } catch(e) {} }
-      mCtx.save();
-      mCtx.translate(o.x + o.w / 2, o.y + o.h / 2);
-      mCtx.rotate((o.rotation || 0) * Math.PI / 180);
-      mCtx.scale(o.flipH ? -1 : 1, o.flipV ? -1 : 1);
-      mCtx.globalAlpha = 0.92;
-      mCtx.drawImage(tmp, -o.w / 2, -o.h / 2);
-      mCtx.restore();
-    }
-    mCtx.globalAlpha = 1;
-    try { mCtx.drawImage(drawCanvas, 0, 0, W, H); } catch(e) {}
-
-    const dataUrl = merged.toDataURL('image/jpeg', 0.88);
-
-    // 2. Enviar para o servidor (que faz upload no Supabase com a service key)
-    let publicUrl = null;
-    try {
-      const serverRes = await fetch('/api/odontogramas/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('dio_token') || '') },
-        body: JSON.stringify({ imageData: dataUrl, patientName: state.currentPatient.nome })
-      });
-      if (serverRes.ok) {
-        const serverData = await serverRes.json();
-        if (serverData.url) publicUrl = serverData.url;
-      } else {
-        console.warn('Servidor retornou erro:', serverRes.status);
-      }
-    } catch(e) {
-      console.warn('Upload servidor falhou, salvando local:', e.message);
-    }
-
-    // 4. Miniatura (thumbnail 80x56 para o histórico)
-    const thumbC = document.createElement('canvas');
-    thumbC.width = 80; thumbC.height = 56;
-    thumbC.getContext('2d').drawImage(merged, 0, 0, 80, 56);
-    const thumb = thumbC.toDataURL('image/jpeg', 0.7);
-
-    // 5. Gravar no histórico local com TTL
-    const ts = Date.now();
-    const safePath = (state.currentPatient.nome || 'paciente').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30) + '/' + ts + '.jpg';
-    const entry = {
-      id: String(ts),
-      savedAt: new Date().toISOString(),
-      expiresAt: ts + TTL_DIAS * 86400000,
-      patientName: state.currentPatient.nome,
-      url: publicUrl || dataUrl,
-      path: publicUrl ? safePath : null,
-      thumb
-    };
-    const arr = _histGetAll();
-    arr.unshift(entry);
-    if (arr.length > 30) arr.length = 30;
-    _histSaveAll(arr);
-    renderHistoricoSalvamentos();
-
-    // 6. Feedback visual
-    if (btn) { btn.textContent = '✅ Salvo!'; }
-    setTimeout(() => { if (btn) { btn.textContent = '💾 SALVAR'; btn.disabled = false; } }, 2000);
-
-  } catch(err) {
-    alert('Erro ao salvar: ' + err.message);
-    if (btn) { btn.textContent = '💾 SALVAR'; btn.disabled = false; }
-  }
-}
-
 // ===================== RÉGUA STATE (declarado antes de tudo) =====================
 let reguaAtiva = false;
 let reguaSnap = null;
@@ -647,7 +434,6 @@ const state = {
   placedOverlays: [],
   nextOverlayId: 1,
 };
-window._dioState = state;
 
 // ===================== REALISTIC OVERLAY DRAWERS =====================
 
@@ -1270,9 +1056,23 @@ function selectOverlay(id, btn, drawFn, svgFile) {
 // ===================== PATIENTS =====================
 let _pendingPatientImage = null;
 
-function savePatients() {
-  localStorage.setItem('dio_patients', JSON.stringify(state.patients));
-  if (window._dioFbSave) window._dioFbSave(state.patients);
+function savePatients() { localStorage.setItem('dio_patients', JSON.stringify(state.patients)); }
+
+async function _ocrRaioxNome(file) {
+  const token = localStorage.getItem('athena_token') || localStorage.getItem('dio_token');
+  if (!token) return null;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const resp = await fetch('https://athena-prontuario-server.onrender.com/api/ocr-raiox', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData,
+    });
+    if (!resp.ok) return null;
+    const dados = await resp.json();
+    return dados.nome || null;
+  } catch(e) { return null; }
 }
 
 function handlePatientImagePick(e) {
@@ -1285,6 +1085,21 @@ function handlePatientImagePick(e) {
     document.getElementById('upload-drop-placeholder').style.display = 'none';
   };
   reader.readAsDataURL(file);
+  // OCR: lê o nome do raio-x e preenche o campo automaticamente
+  const nomeCampo = document.getElementById('p-nome');
+  const statusEl = document.getElementById('upload-drop-placeholder');
+  if (nomeCampo && !nomeCampo.value) {
+    nomeCampo.placeholder = '⏳ Lendo nome do raio-x...';
+    _ocrRaioxNome(file).then(nome => {
+      nomeCampo.placeholder = 'Ex: Maria Silva';
+      if (nome) {
+        nomeCampo.value = nome;
+        nomeCampo.style.background = '#f0fdf4';
+        nomeCampo.style.borderColor = '#86efac';
+        setTimeout(() => { nomeCampo.style.background = ''; nomeCampo.style.borderColor = ''; }, 2000);
+      }
+    });
+  }
 }
 
 function handleDropZone(e) {
@@ -1299,6 +1114,20 @@ function handleDropZone(e) {
     document.getElementById('upload-drop-placeholder').style.display = 'none';
   };
   reader.readAsDataURL(file);
+  // OCR também no drag-and-drop
+  const nomeCampo = document.getElementById('p-nome');
+  if (nomeCampo && !nomeCampo.value) {
+    nomeCampo.placeholder = '⏳ Lendo nome do raio-x...';
+    _ocrRaioxNome(file).then(nome => {
+      nomeCampo.placeholder = 'Ex: Maria Silva';
+      if (nome) {
+        nomeCampo.value = nome;
+        nomeCampo.style.background = '#f0fdf4';
+        nomeCampo.style.borderColor = '#86efac';
+        setTimeout(() => { nomeCampo.style.background = ''; nomeCampo.style.borderColor = ''; }, 2000);
+      }
+    });
+  }
 }
 
 function openPatientModal() {
@@ -1307,8 +1136,11 @@ function openPatientModal() {
   document.getElementById('upload-drop-placeholder').style.display = 'block';
   document.getElementById('p-rxfile').value = '';
   document.getElementById('modal-patient').classList.add('open');
+
   // Pede o nome do último tour ao Athena (pai) via postMessage
-  try { window.parent.postMessage({ type: 'get_ultimo_nome_tour' }, '*'); } catch(_) {}
+  try {
+    window.parent.postMessage({ type: 'get_ultimo_nome_tour' }, '*');
+  } catch(_) {}
 }
 
 // Recebe resposta do Athena com o nome do último tour
@@ -1516,21 +1348,8 @@ function renderImagesPanel() {
   list.innerHTML = html;
 }
 
-function _garantirPaciente() {
-  if (state.currentPatient) return true;
-  const nome = prompt('Digite o nome do paciente para continuar:');
-  if (!nome || !nome.trim()) return false;
-  const novo = { id: Date.now(), nome: nome.trim(), nascimento: '', telefone: '', obs: '', images: [], drawings: {}, overlays: {} };
-  state.patients.unshift(novo);
-  state.currentPatient = novo;
-  savePatients();
-  renderPatientList();
-  document.getElementById('patient-name').textContent = novo.nome;
-  return true;
-}
-
 function handleImageUpload(e) {
-  if (!_garantirPaciente()) return;
+  if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
@@ -2199,54 +2018,9 @@ async function exportPDF() {
   }
 }
 
-// ===================== MIGRAÇÃO PARA SERVIDOR =====================
-async function migrarParaServidor() {
-  const patients = JSON.parse(localStorage.getItem('dio_patients') || '[]');
-  if (patients.length === 0) { alert('Nenhum paciente local encontrado para migrar.'); return; }
-
-  const API = 'https://athena-prontuario-server.onrender.com';
-  const btn = document.getElementById('btn-migrar');
-
-  // Obtém token
-  let token = '';
-  try {
-    const ar = await fetch(API + '/api/auto-token');
-    if (ar.ok) { const ad = await ar.json(); token = ad.token; }
-  } catch {}
-  if (!token) { alert('Não foi possível conectar ao servidor. Tente novamente.'); return; }
-
-  if (!confirm(`Migrar ${patients.length} paciente(s) do armazenamento local para o servidor?\n\nEsta ação não apaga os dados locais.`)) return;
-
-  if (btn) { btn.textContent = '⏳ Migrando...'; btn.disabled = true; }
-
-  let ok = 0, erros = 0;
-  for (const p of patients) {
-    try {
-      const body = {
-        nome: p.nome || '',
-        nascimento: p.nascimento || null,
-        telefone: p.telefone || null,
-        obs: p.obs || null,
-        ficha: p.ficha ? String(p.ficha) : null,
-      };
-      const r = await fetch(API + '/api/patients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify(body)
-      });
-      if (r.ok || r.status === 409) ok++; // 409 = já existe, conta como ok
-      else erros++;
-    } catch { erros++; }
-  }
-
-  if (btn) { btn.textContent = '☁️ Migrar para Servidor'; btn.disabled = false; }
-  alert(`Migração concluída!\n✅ ${ok} paciente(s) enviado(s)\n${erros > 0 ? '⚠️ ' + erros + ' erro(s)' : ''}\n\nAbra o Prontuário novo para confirmar.`);
-}
-
 // ===================== INIT =====================
 initOverlayGrids();
 renderPatientList();
-renderHistoricoSalvamentos();
 window.addEventListener('resize', () => { if ((state.currentPatient?.images || []).length) resizeCanvases(); });
 
 // Clique fora de overlay desseleciona
