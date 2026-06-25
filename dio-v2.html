@@ -1136,21 +1136,38 @@ function savePatients() {
 }
 
 async function _loadPatientsFromServer() {
+  // Envia ao servidor pacientes locais com ID numérico (salvos sem token)
+  const localOrphans = state.patients.filter(p => /^\d+$/.test(String(p.id)));
+  for (const p of localOrphans) {
+    const saved = await _apiFetch('/api/dio-pacientes', { method: 'POST', body: JSON.stringify({
+      nome: p.nome, nascimento: p.nascimento, telefone: p.telefone, obs: p.obs,
+      images: p.images || [], overlays: p.overlays || {}, drawings: p.drawings || {},
+    })});
+    if (saved) {
+      p._serverIdOld = p.id;
+      p.id = saved.id;
+      // Faz upload das imagens base64 se houver
+      if (p.images && p.images.some(i => i.src && i.src.startsWith('data:'))) {
+        const upd = await _apiFetch('/api/dio-pacientes/' + saved.id, { method: 'PUT', body: JSON.stringify({ images: p.images }) });
+        if (upd) p.images = typeof upd.images === 'string' ? JSON.parse(upd.images || '[]') : (upd.images || []);
+      }
+    }
+  }
+
   const data = await _apiFetch('/api/dio-pacientes');
-  if (!data || !Array.isArray(data) || !data.length) return;
+  if (!data || !Array.isArray(data)) return;
   const parsed = data.map(r => ({
-    id: r.id,
-    nome: r.nome,
-    nascimento: r.nascimento || '',
-    telefone: r.telefone || '',
-    obs: r.obs || '',
+    id: r.id, nome: r.nome,
+    nascimento: r.nascimento || '', telefone: r.telefone || '', obs: r.obs || '',
     images: typeof r.images === 'string' ? JSON.parse(r.images || '[]') : (r.images || []),
     overlays: typeof r.overlays === 'string' ? JSON.parse(r.overlays || '{}') : (r.overlays || {}),
     drawings: typeof r.drawings === 'string' ? JSON.parse(r.drawings || '{}') : (r.drawings || {}),
   }));
-  state.patients = parsed;
-  localStorage.setItem('dio_patients', JSON.stringify(parsed));
-  renderPatientList();
+  if (parsed.length) {
+    state.patients = parsed;
+    localStorage.setItem('dio_patients', JSON.stringify(parsed));
+    renderPatientList();
+  }
 }
 
 async function _ocrRaioxNome(file) {
@@ -1232,8 +1249,8 @@ window.addEventListener('message', function(e) {
   if (e.data && e.data.type === 'athena_token' && e.data.token) {
     _dioToken = e.data.token;
     try { localStorage.setItem('athena_token', e.data.token); } catch(ex) {}
-    // Se há pacientes pendentes de carregar do servidor, tenta agora
-    if (!state.patients.length) _loadPatientsFromServer();
+    // Sempre recarrega do servidor ao receber token (garante sync entre dispositivos)
+    _loadPatientsFromServer();
     return;
   }
   if (e.data && e.data.type === 'ultimo_nome_tour' && e.data.nome) {
