@@ -2038,10 +2038,10 @@ function showTab(tab) {
 }
 
 function _extUrl(relPath) {
-  // Local: usa rota /ext/ do servidor Express
-  // Produção (render.com): usa URL do Vercel (sistemaathena.app.br/projects/...)
+  // Local: usa rota /ext/ do servidor Express (raiz = projects/)
+  // Produção (render.com): usa Vercel — arquivos em sistemaathena.app.br/projects/
   const isRender = window.location.hostname.includes('onrender.com');
-  if (isRender) return 'https://sistemaathena.app.br/' + relPath;
+  if (isRender) return 'https://sistemaathena.app.br/projects/' + relPath;
   return window.location.origin + '/ext/' + relPath;
 }
 
