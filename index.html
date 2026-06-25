@@ -7,27 +7,27 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Athena — Prontuário Digital | Oral Unic</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter-spacing:0.04em; background:#F5EDE2; color:#1A0F0A; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+body { font-family:'Inter','Segoe UI',sans-serif; font-weight:400; letter-spacing:0.04em; background:#F5EDE2; color:#1A0F0A; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
 
 /* HEADER */
 #header { background:#fff; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #E0C9B8; min-height:56px; flex-shrink:0; box-shadow:0 2px 8px #8B2D4211; }
-#header .logo { font-family:'Cormorant SC',serif; font-size:20px; font-weight:400; color:#8B2D42; letter-spacing:0.15em; }
+#header .logo { font-family:'Inter',sans-serif; font-size:20px; font-weight:600; color:#8B2D42; letter-spacing:0.01em; }
 #header .logo span { color:#3D2A20; }
 #header-center { display:flex; flex-direction:column; align-items:center; }
-#patient-name { font-family:'Cormorant SC',serif; font-size:15px; font-weight:400; color:#1A0F0A; letter-spacing:0.12em; }
+#patient-name { font-family:'Inter',sans-serif; font-size:15px; font-weight:500; color:#1A0F0A; letter-spacing:0.01em; }
 #patient-date { font-size:11px; color:#3D2A20; }
 #header-actions { display:flex; gap:8px; align-items:center; }
-#header-user { font-size:11px; color:#8B2D42; font-weight:300; padding:5px 10px; background:#F5EDE2; border-radius:6px; letter-spacing:0.04em; }
+#header-user { font-size:11px; color:#8B2D42; font-weight:400; padding:5px 10px; background:#F5EDE2; border-radius:6px; letter-spacing:0.04em; }
 
 /* BUTTONS */
-.btn { padding:7px 16px; border:none; border-radius:6px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:10px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; transition:all .18s; }
+.btn { padding:7px 16px; border:none; border-radius:6px; cursor:pointer; font-family:'Inter',sans-serif; font-size:10px; font-weight:400; letter-spacing:0.02em; text-transform:uppercase; transition:all .18s; }
 .btn-primary { background:#8B2D42; color:#FDF9F4; } .btn-primary:hover { background:#6A1F30; }
 .btn-success { background:#059669; color:#fff; } .btn-success:hover { background:#047857; }
 .btn-danger { background:#dc2626; color:#fff; }
@@ -41,32 +41,32 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* SIDEBAR LEFT */
 #sidebar-left { width:250px; background:#FDF9F4; border-right:2px solid #E0C9B8; display:flex; flex-direction:column; flex-shrink:0; }
-#sidebar-left h3 { padding:12px 14px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; }
+#sidebar-left h3 { padding:12px 14px 8px; font-family:'Inter',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1px solid #E0C9B8; font-weight:400; }
 #btn-new-patient { margin:8px 10px 6px; }
 #sidebar-search { padding:0 10px 6px; }
-#sidebar-search input { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:6px 10px 6px 28px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; }
+#sidebar-search input { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:6px 10px 6px 28px; font-family:'Inter',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; }
 #sidebar-search input:focus { border-color:#8B2D42; }
 #sidebar-search .search-wrap { position:relative; }
 #sidebar-search .search-icon { position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:12px; color:#3D2A20; pointer-events:none; }
 #sidebar-filters { display:flex; gap:4px; padding:0 10px 8px; }
-.filter-btn { flex:1; padding:4px 0; font-family:'Josefin Sans',sans-serif; font-size:9px; font-weight:300; letter-spacing:0.12em; border:1.5px solid #E0C9B8; border-radius:6px; background:#fff; color:#3D2A20; cursor:pointer; transition:all .15s; text-align:center; }
+.filter-btn { flex:1; padding:4px 0; font-family:'Inter',sans-serif; font-size:9px; font-weight:400; letter-spacing:0.01em; border:1.5px solid #E0C9B8; border-radius:6px; background:#fff; color:#3D2A20; cursor:pointer; transition:all .15s; text-align:center; }
 .filter-btn.active { border-color:#8B2D42; background:#8B2D42; color:#FDF9F4; }
 .filter-btn.f-eval.active { border-color:#d97706; background:#d97706; color:#fff; }
 .filter-btn.f-efet.active { border-color:#059669; background:#059669; color:#fff; }
-#patient-list-count { font-size:10px; color:#3D2A20; padding:0 14px 4px; font-weight:300; }
+#patient-list-count { font-size:10px; color:#3D2A20; padding:0 14px 4px; font-weight:400; }
 #patient-list { flex:1; overflow-y:auto; }
 .patient-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid #EDDDD4; transition:background .15s; }
 .patient-item:hover { background:#F5EDE2; }
 .patient-item.active { background:#EDDDD4; border-left:3px solid #8B2D42; }
-.patient-item .p-name { font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
+.patient-item .p-name { font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:#1A0F0A; letter-spacing:0.04em; }
 .patient-item .p-meta { font-size:10px; color:#3D2A20; margin-top:2px; }
-.patient-item .p-ficha { font-size:10px; font-weight:300; color:#8B2D42; background:#F5EDE2; border-radius:4px; padding:1px 6px; margin-left:4px; letter-spacing:0.04em; }
+.patient-item .p-ficha { font-size:10px; font-weight:400; color:#8B2D42; background:#F5EDE2; border-radius:4px; padding:1px 6px; margin-left:4px; letter-spacing:0.04em; }
 .patient-item.efetivado .p-name::before { content:''; display:inline-block; width:7px; height:7px; border-radius:50%; background:#059669; margin-right:5px; }
 
 /* CENTER TABS */
 #canvas-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 #tab-bar { background:#fff; border-bottom:2px solid #E0C9B8; display:flex; flex-shrink:0; }
-.tab-btn { padding:10px 20px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:#3D2A20; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
+.tab-btn { padding:10px 20px; font-family:'Inter',sans-serif; font-size:11px; font-weight:400; letter-spacing:0.01em; text-transform:uppercase; color:#3D2A20; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
 .tab-btn.active { color:#8B2D42; border-bottom-color:#8B2D42; }
 .tab-btn:hover { color:#8B2D42; background:#F5EDE2; }
 #tab-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
@@ -75,14 +75,14 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #tab-dados { flex:1; overflow-y:auto; padding:20px; display:none; background:#FDF9F4; }
 #tab-dados.visible { display:block; }
 .dados-form { max-width:700px; }
-.dados-form h3 { font-family:'Cormorant SC',serif; font-size:16px; color:#8B2D42; font-weight:400; letter-spacing:0.12em; margin-bottom:16px; }
+.dados-form h3 { font-family:'Inter',sans-serif; font-size:16px; color:#8B2D42; font-weight:600; letter-spacing:0.01em; margin-bottom:16px; }
 .form-row { display:flex; gap:12px; margin-bottom:13px; }
 .form-row .form-group { flex:1; }
 .form-group { margin-bottom:13px; }
-.form-group label { display:block; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#3D2A20; margin-bottom:4px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; }
+.form-group label { display:block; font-family:'Inter',sans-serif; font-size:10px; color:#3D2A20; margin-bottom:4px; font-weight:400; letter-spacing:0.02em; text-transform:uppercase; }
 .form-group input, .form-group select, .form-group textarea {
   width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px;
-  padding:8px 12px; color:#1A0F0A; font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; outline:none; transition:border .2s;
+  padding:8px 12px; color:#1A0F0A; font-family:'Inter',sans-serif; font-size:12px; font-weight:400; outline:none; transition:border .2s;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#8B2D42; }
 .save-bar { position:sticky; bottom:0; background:#FDF9F4; border-top:1.5px solid #E0C9B8; padding:12px 0; margin-top:8px; }
@@ -93,11 +93,11 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #tab-imagens.visible { display:flex; }
 #tab-raiox.visible { display:flex; }
 #canvas-toolbar { background:#FDF9F4; padding:7px 14px; display:flex; align-items:center; gap:8px; border-bottom:2px solid #E0C9B8; flex-wrap:wrap; flex-shrink:0; display:none; }
-#canvas-toolbar label { font-family:'Josefin Sans',sans-serif; font-size:11px; color:#8B2D42; font-weight:300; letter-spacing:0.04em; }
+#canvas-toolbar label { font-family:'Inter',sans-serif; font-size:11px; color:#8B2D42; font-weight:400; letter-spacing:0.04em; }
 #canvas-toolbar input[type=range] { width:75px; accent-color:#8B2D42; }
 #canvas-toolbar input[type=color] { width:32px; height:28px; border:none; border-radius:4px; cursor:pointer; }
 .toolbar-sep { width:1px; height:24px; background:#E0C9B8; margin:0 4px; }
-.draw-tool-btn { background:#F5EDE2; border:1.5px solid transparent; border-radius:6px; padding:5px 9px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; transition:all .15s; }
+.draw-tool-btn { background:#F5EDE2; border:1.5px solid transparent; border-radius:6px; padding:5px 9px; cursor:pointer; font-family:'Inter',sans-serif; font-size:10px; color:#8B2D42; font-weight:400; transition:all .15s; }
 .draw-tool-btn:hover { border-color:#8B2D42; }
 .draw-tool-btn.active { border-color:#8B2D42; background:#EDDDD4; }
 #canvas-wrapper { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; background:#1a1a1a; }
@@ -112,7 +112,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #tab-planejamento { flex:1; overflow-y:auto; padding:20px; display:none; background:#FDF9F4; }
 #tab-planejamento.visible { display:block; }
 .plan-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.plan-header h3 { font-family:'Cormorant SC',serif; font-size:16px; color:#8B2D42; font-weight:400; letter-spacing:0.12em; }
+.plan-header h3 { font-family:'Inter',sans-serif; font-size:16px; color:#8B2D42; font-weight:600; letter-spacing:0.01em; }
 /* ── Step Card redesign ── */
 .step-card { background:#fff; border:1.5px solid #e5ddd6; border-radius:12px; margin-bottom:8px; transition:box-shadow .2s,border-color .2s; overflow:hidden; box-shadow:0 1px 3px #8B2D4208; }
 .step-card:hover { border-color:#c9a89a; box-shadow:0 2px 8px #8B2D4212; }
@@ -123,8 +123,8 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .step-card.open .step-card-header { background:#F5EDE2; }
 .step-chevron { font-size:11px; color:#9ca3af; transition:transform .2s; margin-left:2px; flex-shrink:0; }
 .step-card.open .step-chevron { transform:rotate(180deg); }
-.step-num { width:26px; height:26px; border-radius:50%; background:#8B2D42; color:#FDF9F4; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.step-title { flex:1; font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.03em; line-height:1.3; }
+.step-num { width:26px; height:26px; border-radius:50%; background:#8B2D42; color:#FDF9F4; font-family:'Inter',sans-serif; font-size:11px; font-weight:400; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.step-title { flex:1; font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:#1A0F0A; letter-spacing:0.03em; line-height:1.3; }
 .step-title-main { display:block; }
 .step-dentista-hint { font-size:10px; color:#9ca3af; margin-top:1px; display:block; }
 .step-badge { padding:2px 9px; border-radius:20px; font-size:10px; font-weight:400; letter-spacing:0.02em; flex-shrink:0; }
@@ -136,21 +136,21 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .badge-dentist_signed { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
 .badge-patient_signed { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
 .badge-signed { background:#faf5ff; color:#7c3aed; border:1px solid #e9d5ff; }
-.badge-tipo { padding:1px 7px; border-radius:10px; font-size:10px; font-weight:300; background:#F5EDE2; color:#8B2D42; border:1px solid #E0C9B8; margin-left:5px; }
+.badge-tipo { padding:1px 7px; border-radius:10px; font-size:10px; font-weight:400; background:#F5EDE2; color:#8B2D42; border:1px solid #E0C9B8; margin-left:5px; }
 /* Seção de campos internos */
 .step-section { margin-bottom:14px; }
-.step-section-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.24em; font-weight:300; padding-bottom:5px; border-bottom:1px solid #EFE5DA; margin-bottom:10px; }
+.step-section-title { font-family:'Inter',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.02em; font-weight:400; padding-bottom:5px; border-bottom:1px solid #EFE5DA; margin-bottom:10px; }
 .step-fields { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:0; }
-.step-field select { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; cursor:pointer; }
+.step-field select { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Inter',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; cursor:pointer; }
 .step-field select:focus { border-color:#8B2D42; }
-.step-field label { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#9ca3af; font-weight:300; display:block; margin-bottom:3px; letter-spacing:0.14em; text-transform:uppercase; }
-.step-field input, .step-field textarea { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; resize:vertical; transition:border .2s; }
+.step-field label { font-family:'Inter',sans-serif; font-size:9px; color:#9ca3af; font-weight:400; display:block; margin-bottom:3px; letter-spacing:0.14em; text-transform:uppercase; }
+.step-field input, .step-field textarea { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Inter',sans-serif; font-size:11px; color:#1A0F0A; outline:none; resize:vertical; transition:border .2s; }
 .step-field input:focus, .step-field textarea:focus { border-color:#8B2D42; }
 .step-field.full { grid-column:1/-1; }
 /* Assinaturas */
 .sig-area { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
 .sig-box { flex:1; min-width:200px; border:1.5px solid #E0C9B8; border-radius:10px; padding:10px; background:#fff; }
-.sig-box h5 { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.24em; margin-bottom:6px; }
+.sig-box h5 { font-family:'Inter',sans-serif; font-size:9px; color:#8B2D42; font-weight:400; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:6px; }
 .sig-canvas-wrap { position:relative; background:#fafafa; border:1px solid #E0C9B8; border-radius:6px; overflow:hidden; }
 .sig-canvas { display:block; cursor:crosshair; touch-action:none; }
 .sig-info { font-size:10px; color:#3D2A20; margin-top:4px; min-height:16px; }
@@ -158,14 +158,14 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .step-actions { display:flex; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #EFE5DA; justify-content:flex-end; }
 /* Bloco de Retrabalho / Termo */
 .step-check-row { display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:10px 12px; background:#fafafa; border:1px solid #EFE5DA; border-radius:8px; margin-bottom:0; }
-.step-check-row label { display:flex; align-items:center; gap:7px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; }
+.step-check-row label { display:flex; align-items:center; gap:7px; cursor:pointer; font-family:'Inter',sans-serif; font-size:11px; font-weight:400; }
 /* Botões de ação da etapa */
 .step-action-bar { display:flex; gap:6px; flex-wrap:wrap; padding-top:10px; border-top:1px solid #EFE5DA; margin-top:2px; align-items:center; }
 /* Indicadores de assinatura no header */
 .sig-pill { font-size:9px; padding:1px 6px; border-radius:10px; letter-spacing:0.04em; flex-shrink:0; }
 /* Histórico de alterações da etapa */
 .step-historico { margin-top:10px; border-top:1px dashed #EFE5DA; padding-top:8px; }
-.step-historico-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.2em; margin-bottom:6px; }
+.step-historico-title { font-family:'Inter',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.2em; margin-bottom:6px; }
 .step-historico-item { display:flex; align-items:flex-start; gap:8px; padding:4px 0; border-bottom:1px solid #f5ede2; }
 .step-historico-item:last-child { border-bottom:none; }
 .step-historico-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:3px; }
@@ -178,22 +178,22 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #alertas-btn .alertas-count { position:absolute; top:-4px; right:-4px; background:#fff; color:#dc2626; border-radius:50%; width:20px; height:20px; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid #dc2626; }
 #alertas-panel { position:fixed; bottom:88px; right:24px; z-index:9001; width:380px; max-height:560px; background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,.18); display:none; flex-direction:column; overflow:hidden; border:2px solid #fee2e2; }
 #alertas-panel.open { display:flex; }
-#alertas-panel-header { padding:14px 16px; background:#dc2626; color:#fff; font-family:'Josefin Sans',sans-serif; font-size:13px; font-weight:700; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; }
+#alertas-panel-header { padding:14px 16px; background:#dc2626; color:#fff; font-family:'Inter',sans-serif; font-size:13px; font-weight:700; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; }
 #alertas-panel-body { flex:1; overflow-y:auto; padding:8px; }
 .alerta-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:6px; cursor:pointer; transition:background .15s; border:1.5px solid #f3f4f6; background:#fafafa; }
 .alerta-item:hover { background:#f5ede2; border-color:#E0C9B8; }
 .alerta-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
 .alerta-body { flex:1; min-width:0; }
-.alerta-titulo { font-size:11px; font-weight:700; color:#1A0F0A; font-family:'Josefin Sans',sans-serif; }
+.alerta-titulo { font-size:11px; font-weight:700; color:#1A0F0A; font-family:'Inter',sans-serif; }
 .alerta-desc { font-size:10px; color:#6b7280; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .alerta-paciente { font-size:10px; color:#8B2D42; font-weight:600; margin-top:1px; }
 .alerta-tempo { font-size:9px; color:#9ca3af; margin-top:2px; }
 
 /* SIDEBAR RIGHT */
 #sidebar-right { width:256px; background:#FDF9F4; border-left:2px solid #E0C9B8; display:none; flex-direction:column; overflow-y:auto; flex-shrink:0; }
-#sidebar-right h3 { padding:12px 14px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; position:sticky; top:0; background:#FDF9F4; z-index:1; }
+#sidebar-right h3 { padding:12px 14px 8px; font-family:'Inter',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1px solid #E0C9B8; font-weight:400; position:sticky; top:0; background:#FDF9F4; z-index:1; }
 .overlay-section { padding:8px 8px 0; }
-.overlay-section-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:5px; padding:0 4px; font-weight:300; }
+.overlay-section-title { font-family:'Inter',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:5px; padding:0 4px; font-weight:400; }
 .overlay-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:8px; }
 .overlay-btn { background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:4px 2px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:all .15s; min-height:58px; justify-content:center; }
 .overlay-btn:hover { border-color:#8B2D42; background:#F5EDE2; }
@@ -217,7 +217,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* IMAGES PANEL */
 #images-panel { padding:8px; border-top:1px solid #E0C9B8; }
-#images-panel h4 { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; font-weight:300; margin-bottom:6px; }
+#images-panel h4 { font-family:'Inter',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.02em; font-weight:400; margin-bottom:6px; }
 #images-list { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
 .img-thumb { background:#F5EDE2; border:1.5px solid #E0C9B8; border-radius:6px; overflow:hidden; cursor:pointer; transition:border .15s; }
 .img-thumb:hover { border-color:#8B2D42; }
@@ -231,16 +231,16 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .modal-overlay { display:none; position:fixed; inset:0; background:#1A0F0A99; z-index:1000; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
 .modal { background:#FDF9F4; border:1.5px solid #E0C9B8; border-radius:12px; padding:24px; min-width:420px; max-width:90vw; box-shadow:0 8px 32px #8B2D4222; }
-.modal h2 { font-family:'Cormorant SC',serif; font-size:18px; margin-bottom:18px; color:#8B2D42; font-weight:400; letter-spacing:0.12em; }
+.modal h2 { font-family:'Inter',sans-serif; font-size:18px; margin-bottom:18px; color:#8B2D42; font-weight:400; letter-spacing:0.01em; }
 .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
 .modal-lg { min-width:600px; max-height:85vh; display:flex; flex-direction:column; }
 .modal-body { flex:1; overflow-y:auto; margin-top:12px; }
 
 /* Gerenciar usuários */
 .user-item { display:flex; align-items:center; justify-content:space-between; background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:10px 14px; margin-bottom:8px; }
-.user-item .u-name { font-family:'Josefin Sans',sans-serif; font-size:13px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
+.user-item .u-name { font-family:'Inter',sans-serif; font-size:13px; font-weight:400; color:#1A0F0A; letter-spacing:0.04em; }
 .user-item .u-meta { font-size:11px; color:#3D2A20; }
-.role-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:300; margin-left:6px; }
+.role-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:400; margin-left:6px; }
 .role-admin { background:#fde68a; color:#92400e; }
 .role-dentist { background:#dbeafe; color:#1d4ed8; }
 .role-patient { background:#d1fae5; color:#065f46; }
@@ -252,7 +252,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* STATUS BUTTONS on step card */
 .status-btn-group { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
-.status-btn { padding:6px 14px; border-radius:20px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; border:1.5px solid transparent; cursor:pointer; transition:all .15s; opacity:.5; }
+.status-btn { padding:6px 14px; border-radius:20px; font-family:'Inter',sans-serif; font-size:11px; font-weight:400; border:1.5px solid transparent; cursor:pointer; transition:all .15s; opacity:.5; }
 .status-btn.active { opacity:1; box-shadow:0 2px 8px #0002; transform:scale(1.05); }
 .status-btn.s-pending { background:#fef3c7; color:#d97706; border-color:#fde68a; }
 .status-btn.s-pending.active { background:#f59e0b; color:#fff; border-color:#d97706; }
@@ -282,15 +282,15 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* FALTA / CONSULTA EXTRA */
 .falta-row { display:flex; align-items:center; gap:10px; background:#fff8f8; border:1.5px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
-.falta-row label { font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:8px; }
+.falta-row label { font-family:'Inter',sans-serif; font-size:12px; font-weight:400; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:8px; }
 .falta-row input[type=checkbox] { width:18px; height:18px; accent-color:#dc2626; cursor:pointer; flex-shrink:0; }
 .consulta-extra-row { background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
-.consulta-extra-row label { font-family:'Josefin Sans',sans-serif; font-size:11px; color:#059669; font-weight:300; display:flex; align-items:center; gap:8px; }
+.consulta-extra-row label { font-family:'Inter',sans-serif; font-size:11px; color:#059669; font-weight:400; display:flex; align-items:center; gap:8px; }
 .consulta-extra-row input[type=checkbox] { width:16px; height:16px; accent-color:#059669; cursor:pointer; }
 
 /* HISTÓRICO DE CONSULTAS */
-.consulta-item { background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:8px 12px; margin-bottom:6px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; }
-.consulta-item .c-date { font-weight:300; color:#8B2D42; letter-spacing:0.04em; }
+.consulta-item { background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:8px 12px; margin-bottom:6px; font-family:'Inter',sans-serif; font-size:11px; font-weight:400; }
+.consulta-item .c-date { font-weight:400; color:#8B2D42; letter-spacing:0.04em; }
 .consulta-item .c-falta { color:#dc2626; }
 .consulta-item .c-extra { color:#059669; }
 
@@ -306,16 +306,16 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* TABS ODONTOGRAMA + SIMULADOR */
 .dash-section { margin-bottom:24px; }
-.dash-section h4 { font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:12px; border-bottom:1.5px solid #E0C9B8; padding-bottom:6px; }
+.dash-section h4 { font-family:'Inter',sans-serif; font-size:10px; color:#8B2D42; font-weight:400; text-transform:uppercase; letter-spacing:0.02em; margin-bottom:12px; border-bottom:1.5px solid #E0C9B8; padding-bottom:6px; }
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
 .kpi-card { background:#fff; border:1.5px solid #E0C9B8; border-radius:10px; padding:16px; text-align:center; }
-.kpi-card .kpi-val { font-family:'Cormorant SC',serif; font-size:28px; font-weight:400; color:#8B2D42; }
-.kpi-card .kpi-label { font-family:'Josefin Sans',sans-serif; font-size:10px; color:#3D2A20; font-weight:300; margin-top:4px; text-transform:uppercase; letter-spacing:0.12em; }
+.kpi-card .kpi-val { font-family:'Inter',sans-serif; font-size:28px; font-weight:400; color:#8B2D42; }
+.kpi-card .kpi-label { font-family:'Inter',sans-serif; font-size:10px; color:#3D2A20; font-weight:400; margin-top:4px; text-transform:uppercase; letter-spacing:0.01em; }
 .kpi-card.danger .kpi-val { color:#dc2626; }
 .kpi-card.success .kpi-val { color:#059669; }
 .kpi-card.warning .kpi-val { color:#d97706; }
-.dash-table { width:100%; border-collapse:collapse; font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; }
-.dash-table th { background:#F5EDE2; color:#8B2D42; font-weight:300; padding:8px 12px; text-align:left; border-bottom:1.5px solid #E0C9B8; letter-spacing:0.12em; text-transform:uppercase; font-size:10px; }
+.dash-table { width:100%; border-collapse:collapse; font-size:11px; font-family:'Inter',sans-serif; font-weight:400; }
+.dash-table th { background:#F5EDE2; color:#8B2D42; font-weight:400; padding:8px 12px; text-align:left; border-bottom:1.5px solid #E0C9B8; letter-spacing:0.01em; text-transform:uppercase; font-size:10px; }
 .dash-table td { padding:8px 12px; border-bottom:1px solid #EDDDD4; color:#1A0F0A; }
 .dash-table tr:hover td { background:#F5EDE2; }
 .dash-bar-wrap { background:#EDDDD4; border-radius:4px; height:8px; min-width:60px; }
@@ -323,15 +323,15 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .dash-bar.green { background:#059669; }
 .dash-bar.yellow { background:#eab308; }
 .dash-bar.red { background:#dc2626; }
-.retrabalho-badge { background:#fee2e2; color:#dc2626; border-radius:10px; padding:2px 8px; font-size:10px; font-weight:300; }
+.retrabalho-badge { background:#fee2e2; color:#dc2626; border-radius:10px; padding:2px 8px; font-size:10px; font-weight:400; }
 
 /* TEMPLATES */
 .template-card { background:#fff; border:1.5px solid #E0C9B8; border-radius:10px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:all .15s; }
 .template-card:hover { border-color:#8B2D42; background:#F5EDE2; box-shadow:0 2px 12px #8B2D4222; }
-.template-card h4 { font-family:'Cormorant SC',serif; font-size:14px; font-weight:400; color:#8B2D42; letter-spacing:0.12em; margin-bottom:4px; }
-.template-card .t-desc { font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; color:#3D2A20; margin-bottom:8px; }
+.template-card h4 { font-family:'Inter',sans-serif; font-size:14px; font-weight:400; color:#8B2D42; letter-spacing:0.01em; margin-bottom:4px; }
+.template-card .t-desc { font-family:'Inter',sans-serif; font-size:11px; font-weight:400; color:#3D2A20; margin-bottom:8px; }
 .template-card .t-steps { display:flex; flex-wrap:wrap; gap:4px; }
-.template-card .t-step-pill { background:#EDDDD4; color:#8B2D42; border-radius:6px; padding:2px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; font-weight:300; }
+.template-card .t-step-pill { background:#EDDDD4; color:#8B2D42; border-radius:6px; padding:2px 8px; font-family:'Inter',sans-serif; font-size:10px; font-weight:400; }
 .template-card .t-meta { font-size:11px; color:#3D2A20; margin-top:6px; }
 .template-card .t-obs { font-size:11px; color:#92400e; background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:4px 8px; margin:6px 0 4px; }
 </style>
@@ -406,7 +406,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
             </div>
             <input type="file" id="d-foto-input" accept="image/*" style="display:none" onchange="dadosFotoCarregar(event)">
             <div style="flex:1;min-width:0;">
-              <div id="d-foto-nome-display" style="font-family:'Cormorant SC',serif;font-size:20px;color:#1A0F0A;letter-spacing:.08em;line-height:1.2;margin-bottom:4px;">—</div>
+              <div id="d-foto-nome-display" style="font-family:'Inter',sans-serif;font-size:20px;color:#1A0F0A;letter-spacing:.08em;line-height:1.2;margin-bottom:4px;">—</div>
               <div id="d-foto-ficha-display" style="font-size:12px;color:#8B2D42;font-weight:700;letter-spacing:.1em;margin-bottom:10px;"></div>
               <button type="button" onclick="document.getElementById('d-foto-input').click()" style="background:none;border:1.5px solid #E0C9B8;border-radius:6px;color:#8B2D42;font-size:10px;cursor:pointer;padding:4px 12px;letter-spacing:.06em;font-family:inherit;">📷 Alterar foto</button>
               <button type="button" onclick="abrirModalCameraFoto()" style="background:none;border:1.5px solid #8B2D42;border-radius:6px;color:#8B2D42;font-size:10px;cursor:pointer;padding:4px 12px;letter-spacing:.06em;font-family:inherit;margin-left:6px;">📸 Tirar foto</button>
@@ -422,7 +422,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
             <div class="form-group" style="flex:1">
               <label style="display:flex;align-items:center;gap:8px;">
                 CPF
-                <label style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:300;color:#6b7280;cursor:pointer;letter-spacing:.04em;">
+                <label style="display:flex;align-items:center;gap:4px;font-size:10px;font-weight:400;color:#6b7280;cursor:pointer;letter-spacing:.04em;">
                   <input type="checkbox" id="d-estrangeiro" onchange="toggleEstrangeiro()" style="accent-color:#8B2D42;width:12px;height:12px;"> Estrangeiro
                 </label>
               </label>
@@ -587,7 +587,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
         <div id="imagens-content" style="display:none;flex-direction:column;gap:20px;">
           <!-- Header -->
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-            <div style="font-family:'Cormorant SC',serif;font-size:18px;color:#8B2D42;letter-spacing:.1em;">🩻 Raio-X e Fotografias</div>
+            <div style="font-family:'Inter',sans-serif;font-size:18px;color:#8B2D42;letter-spacing:.1em;">🩻 Raio-X e Fotografias</div>
             <label style="cursor:pointer;background:#8B2D42;color:#fff;border-radius:8px;padding:8px 18px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">
               + Adicionar Imagem
               <input type="file" id="imagens-upload-input" accept="image/*" multiple style="display:none;" onchange="imagensAdicionarArquivos(this.files)">
@@ -1520,7 +1520,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
       <!-- Assinatura manuscrita do paciente -->
       <div style="margin-bottom:20px;">
-        <div style="font-size:10px;color:#3D2A20;letter-spacing:.28em;text-transform:uppercase;margin-bottom:6px;font-weight:300;">Assinatura do paciente</div>
+        <div style="font-size:10px;color:#3D2A20;letter-spacing:.28em;text-transform:uppercase;margin-bottom:6px;font-weight:400;">Assinatura do paciente</div>
         <canvas id="tp-sig-canvas" width="620" height="110" style="display:none;"></canvas>
         <div id="tp-sig-preview" style="border:2px solid #e9d5ff;border-radius:8px;background:#faf5ff;min-height:70px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
           <span id="tp-sig-placeholder" style="font-size:12px;color:#9ca3af;">Nenhuma assinatura</span>
@@ -2134,7 +2134,7 @@ function renderPatientList() {
     const avatarBg = isActive ? '#8B2D42' : p.efetivado ? '#059669' : '#d97706';
     const avatarHtml = p.foto
       ? `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;overflow:hidden;border:2px solid ${isActive?'#8B2D42':'#E0C9B8'};"><img src="${p.foto}" style="width:100%;height:100%;object-fit:cover;display:block;"></div>`
-      : `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:${avatarBg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;">${initials}</div>`;
+      : `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:${avatarBg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;">${initials}</div>`;
     return `
     <div class="patient-item ${p.efetivado?'efetivado':''} ${isActive?'active':''}" onclick="selectPatient('${p._id}')"
       style="display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;position:relative;border-bottom:1px solid #f0e8e0;cursor:pointer;background:${isActive?'#f5ede2':'#fff'};transition:background .15s;">
@@ -2142,7 +2142,7 @@ function renderPatientList() {
       ${avatarHtml}
       <!-- Info -->
       <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;color:#1A0F0A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;" title="${p.nome}">${p.nome}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;color:#1A0F0A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;" title="${p.nome}">${p.nome}</div>
         <div style="display:flex;align-items:center;gap:4px;margin-top:2px;flex-wrap:nowrap;overflow:hidden;">
           ${p.ficha ? `<span style="font-size:10px;color:#8B2D42;font-weight:700;letter-spacing:.06em;flex-shrink:0;">#${p.ficha}</span>` : ''}
           <span style="font-size:9px;color:${statusColor};font-weight:600;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;">${statusLabel}</span>
@@ -5166,7 +5166,7 @@ function renderStepCard(step, i, _numMap) {
         ${(canEdit && step.status !== 'concluido') ? `
         <textarea id="sf-descricao-proc-${step._id}" rows="2"
           placeholder="Descreva o procedimento realizado nesta etapa... (ou use o microfone)"
-          style="width:100%;background:#fff;border:1.5px solid #c4b5fd;border-radius:6px;padding:6px 10px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#1A0F0A;resize:vertical;outline:none;transition:border .2s;"
+          style="width:100%;background:#fff;border:1.5px solid #c4b5fd;border-radius:6px;padding:6px 10px;font-family:'Inter',sans-serif;font-size:11px;color:#1A0F0A;resize:vertical;outline:none;transition:border .2s;"
           onfocus="this.style.borderColor='#7c3aed'"
           onblur="this.style.borderColor='#c4b5fd'; salvarDescricaoProc('${step._id}', this.value)"
         >${step.descricaoProc||''}</textarea>` :
@@ -8098,7 +8098,7 @@ setInterval(carregarAlertas, 60000);
   <div style="background:#fff;border-radius:20px;padding:28px 32px;width:90vw;max-width:900px;box-shadow:0 24px 80px rgba(0,0,0,.5);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div>
-        <div id="maf-titulo" style="font-family:'Josefin Sans',sans-serif;font-size:18px;font-weight:800;color:#7c3aed;letter-spacing:.06em;">✍️ ASSINAR</div>
+        <div id="maf-titulo" style="font-family:'Inter',sans-serif;font-size:18px;font-weight:800;color:#7c3aed;letter-spacing:.06em;">✍️ ASSINAR</div>
         <div id="maf-subtitulo" style="font-size:12px;color:#6b7280;margin-top:2px;">Assine com a caneta na área abaixo</div>
       </div>
       <button onclick="fecharModalAssinatura()" style="background:#fee2e2;border:none;color:#dc2626;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:700;">✕ Cancelar</button>
@@ -8106,7 +8106,7 @@ setInterval(carregarAlertas, 60000);
     <canvas id="maf-canvas" width="1600" height="400"
       style="display:block;width:100%;height:300px;border:3px solid #7c3aed;border-radius:12px;cursor:crosshair;touch-action:none;background:#faf5ff;"></canvas>
     <div id="maf-dentistas-rapidos" style="display:none;margin-top:12px;padding:10px 14px;background:#f5f3ff;border-radius:10px;border:1px solid #e9d5ff;">
-      <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:8px;font-family:'Josefin Sans',sans-serif;letter-spacing:.05em;">⚡ USAR ASSINATURA CADASTRADA</div>
+      <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:8px;font-family:'Inter',sans-serif;letter-spacing:.05em;">⚡ USAR ASSINATURA CADASTRADA</div>
       <div id="maf-dentistas-lista" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
@@ -8114,7 +8114,7 @@ setInterval(carregarAlertas, 60000);
         <button onclick="limparModalAssinatura()" style="background:#f3f4f6;border:1.5px solid #d1d5db;color:#374151;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;font-weight:600;">🗑️ Limpar</button>
         <button id="maf-btn-minha-assinatura" onclick="colarMinhaAssinatura()" style="display:none;background:#ede9fe;border:1.5px solid #c4b5fd;color:#7c3aed;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:700;">✍️ Minha Assinatura</button>
       </div>
-      <button onclick="confirmarModalAssinatura()" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:10px 32px;cursor:pointer;font-size:14px;font-weight:800;font-family:'Josefin Sans',sans-serif;letter-spacing:.08em;">✅ CONFIRMAR ASSINATURA</button>
+      <button onclick="confirmarModalAssinatura()" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:10px 32px;cursor:pointer;font-size:14px;font-weight:800;font-family:'Inter',sans-serif;letter-spacing:.08em;">✅ CONFIRMAR ASSINATURA</button>
     </div>
   </div>
 </div>
@@ -8261,13 +8261,13 @@ setInterval(carregarAlertas, 60000);
       lista.innerHTML = dentistasFixos.map(d =>
         `<button id="maf-btn-dentista-${d.id}"
           onclick="colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')"
-          style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Josefin Sans',sans-serif;transition:all .15s;">
+          style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Inter',sans-serif;transition:all .15s;">
           ✍️ ${d.nome}
         </button>`
       ).join('') +
       `<div style="display:flex;gap:6px;align-items:center;margin-top:4px;width:100%;">
         <input id="maf-nome-livre" type="text" placeholder="Outro nome..."
-          style="border:1.5px solid #c4b5fd;border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Josefin Sans',sans-serif;outline:none;flex:1;"
+          style="border:1.5px solid #c4b5fd;border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Inter',sans-serif;outline:none;flex:1;"
           onkeydown="if(event.key==='Enter'){colarAssinaturaNomelivre();}" />
         <button onclick="colarAssinaturaNomelivre()"
           style="background:#ede9fe;border:1.5px solid #c4b5fd;color:#7c3aed;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">
@@ -8397,12 +8397,12 @@ setInterval(carregarAlertas, 60000);
   position:fixed;inset:0;z-index:9000;
   background:#f5f0ea;
   display:none;flex-direction:column;
-  font-family:'Josefin Sans','Segoe UI',sans-serif;
+  font-family:'Inter','Segoe UI',sans-serif;
 ">
   <!-- Header da agenda -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px 12px;border-bottom:1px solid #d6cec4;flex-shrink:0;background:#ede8e1;">
     <div>
-      <div style="font-family:'Cormorant SC',serif;font-size:24px;color:#3a2e24;letter-spacing:.15em;">Athena <span style="color:#9b7340;">· Agenda</span></div>
+      <div style="font-family:'Inter',sans-serif;font-size:24px;color:#3a2e24;letter-spacing:.15em;">Athena <span style="color:#9b7340;">· Agenda</span></div>
       <div id="agenda-data-label" style="font-size:11px;color:#7c6a56;letter-spacing:.18em;text-transform:uppercase;margin-top:2px;"></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -8412,15 +8412,15 @@ setInterval(carregarAlertas, 60000);
         <input type="file" id="agenda-import-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="agendaImportarPlanilha(this)">
       </label>
       <!-- Reconhecimento facial -->
-      <button onclick="abrirModalFacialAgenda()" style="background:#3a1f3a;border:1.5px solid #8B2D42;border-radius:8px;padding:7px 14px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:700;color:#e0b0c0;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#5a2d4a'" onmouseout="this.style.background='#3a1f3a'" title="Check-in por reconhecimento facial">
+      <button onclick="abrirModalFacialAgenda()" style="background:#3a1f3a;border:1.5px solid #8B2D42;border-radius:8px;padding:7px 14px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;color:#e0b0c0;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#5a2d4a'" onmouseout="this.style.background='#3a1f3a'" title="Check-in por reconhecimento facial">
         🎭 Facial
       </button>
       <!-- Limpar chegadas -->
-      <button onclick="agendaLimparChegadas()" style="background:transparent;border:1.5px solid #c8b99e;border-radius:8px;padding:7px 12px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:400;color:#9b8878;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;" title="Apagar todas as marcações de chegada de hoje">
+      <button onclick="agendaLimparChegadas()" style="background:transparent;border:1.5px solid #c8b99e;border-radius:8px;padding:7px 12px;font-size:11px;font-family:'Inter',sans-serif;font-weight:400;color:#9b8878;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;" title="Apagar todas as marcações de chegada de hoje">
         🗑 Limpar
       </button>
       <!-- Botão entrar no sistema -->
-      <button onclick="fecharAgendaDia()" style="background:#9b7340;border:none;border-radius:8px;padding:7px 18px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:700;color:#fff;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#7c5c30'" onmouseout="this.style.background='#9b7340'">
+      <button onclick="fecharAgendaDia()" style="background:#9b7340;border:none;border-radius:8px;padding:7px 18px;font-size:11px;font-family:'Inter',sans-serif;font-weight:700;color:#fff;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#7c5c30'" onmouseout="this.style.background='#9b7340'">
         Entrar no Sistema →
       </button>
     </div>
@@ -9157,7 +9157,7 @@ async function agendaAtualizarDentistasAtivos() {
 ══════════════════════════════════════════════════════════════ -->
 <div id="modal-camera-foto" style="display:none;position:fixed;inset:0;z-index:11000;background:rgba(26,15,10,.82);align-items:center;justify-content:center;">
   <div style="background:#FDF9F4;border-radius:16px;padding:28px 28px 24px;width:480px;max-width:95vw;box-shadow:0 8px 40px #8B2D4244;display:flex;flex-direction:column;align-items:center;gap:16px;">
-    <div style="font-family:'Cormorant SC',serif;font-size:18px;color:#8B2D42;letter-spacing:.12em;width:100%;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:'Inter',sans-serif;font-size:18px;color:#8B2D42;letter-spacing:.12em;width:100%;display:flex;justify-content:space-between;align-items:center;">
       <span>Tirar Foto</span>
       <button onclick="fecharModalCameraFoto()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
     </div>
@@ -9171,13 +9171,13 @@ async function agendaAtualizarDentistasAtivos() {
     <div id="camera-foto-status" style="font-size:11px;color:#3D2A20;letter-spacing:.06em;min-height:16px;"></div>
     <!-- Botões -->
     <div id="camera-foto-btns-vivo" style="display:flex;gap:12px;">
-      <button onclick="cameraFotoCapturar()" style="background:#8B2D42;color:#FDF9F4;border:none;border-radius:8px;padding:9px 28px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">📸 Capturar</button>
-      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
+      <button onclick="cameraFotoCapturar()" style="background:#8B2D42;color:#FDF9F4;border:none;border-radius:8px;padding:9px 28px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">📸 Capturar</button>
+      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Inter',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
     </div>
     <div id="camera-foto-btns-preview" style="display:none;gap:12px;">
-      <button onclick="cameraFotoUsar()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Usar esta foto</button>
-      <button onclick="cameraFotoRepetir()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">🔄 Repetir</button>
-      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 16px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
+      <button onclick="cameraFotoUsar()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Usar esta foto</button>
+      <button onclick="cameraFotoRepetir()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Inter',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">🔄 Repetir</button>
+      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 16px;font-family:'Inter',sans-serif;font-size:11px;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
     </div>
   </div>
 </div>
@@ -9187,12 +9187,12 @@ async function agendaAtualizarDentistasAtivos() {
 ══════════════════════════════════════════════════════════════ -->
 <div id="modal-facial-agenda" style="display:none;position:fixed;inset:0;z-index:11000;background:rgba(26,15,10,.85);align-items:center;justify-content:center;">
   <div style="background:#FDF9F4;border-radius:16px;padding:28px 28px 24px;width:520px;max-width:95vw;box-shadow:0 8px 40px #8B2D4244;display:flex;flex-direction:column;align-items:center;gap:14px;">
-    <div style="font-family:'Cormorant SC',serif;font-size:18px;color:#8B2D42;letter-spacing:.12em;width:100%;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-family:'Inter',sans-serif;font-size:18px;color:#8B2D42;letter-spacing:.12em;width:100%;display:flex;justify-content:space-between;align-items:center;">
       <span>🎭 Check-in Facial</span>
       <button onclick="fecharModalFacialAgenda()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
     </div>
     <!-- Status de carregamento / detecção -->
-    <div id="facial-status" style="font-size:12px;color:#8B2D42;letter-spacing:.08em;background:#F5EDE2;border-radius:8px;padding:7px 18px;min-width:260px;text-align:center;font-family:'Josefin Sans',sans-serif;">⏳ Inicializando câmera...</div>
+    <div id="facial-status" style="font-size:12px;color:#8B2D42;letter-spacing:.08em;background:#F5EDE2;border-radius:8px;padding:7px 18px;min-width:260px;text-align:center;font-family:'Inter',sans-serif;">⏳ Inicializando câmera...</div>
     <!-- Vídeo -->
     <div style="position:relative;display:inline-block;">
       <video id="facial-video" autoplay playsinline style="width:380px;height:285px;object-fit:cover;border-radius:10px;border:2px solid #E0C9B8;background:#1a1a1a;display:block;"></video>
@@ -9200,9 +9200,9 @@ async function agendaAtualizarDentistasAtivos() {
     </div>
     <!-- Card do paciente detectado -->
     <div id="facial-match-card" style="display:none;background:#fff;border:2px solid #059669;border-radius:12px;padding:14px 20px;width:100%;text-align:center;">
-      <div id="facial-match-nome" style="font-family:'Cormorant SC',serif;font-size:18px;color:#1A0F0A;letter-spacing:.1em;margin-bottom:4px;"></div>
+      <div id="facial-match-nome" style="font-family:'Inter',sans-serif;font-size:18px;color:#1A0F0A;letter-spacing:.1em;margin-bottom:4px;"></div>
       <div id="facial-match-conf" style="font-size:11px;color:#059669;letter-spacing:.08em;margin-bottom:12px;"></div>
-      <button id="facial-match-btn" onclick="facialConfirmarCheckin()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 28px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Confirmar Check-in</button>
+      <button id="facial-match-btn" onclick="facialConfirmarCheckin()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 28px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Confirmar Check-in</button>
     </div>
   </div>
 </div>
