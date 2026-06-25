@@ -881,6 +881,74 @@ Se não conseguir ler, retorne {"nome": null, "data": null}.`;
   }
 });
 
+// ══════════════════════════════════════════════════════════════
+//  DIO-V2: Pacientes (sincroniza entre dispositivos via Supabase)
+// ══════════════════════════════════════════════════════════════
+app.get('/api/dio-pacientes', auth, async (req, res) => {
+  const { data, error } = await supa.from('dio_pacientes').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+  if (error) return dbErr(res, error);
+  res.json(data || []);
+});
+
+app.post('/api/dio-pacientes', auth, async (req, res) => {
+  const { id, nome, nascimento, telefone, obs, images, overlays, drawings } = req.body;
+  if (!nome) return res.status(400).json({ error: 'Nome obrigatório' });
+  const row = {
+    id: id ? String(id) : undefined,
+    nome, nascimento: nascimento || null, telefone: telefone || null, obs: obs || null,
+    images: typeof images === 'string' ? images : JSON.stringify(images || []),
+    overlays: typeof overlays === 'string' ? overlays : JSON.stringify(overlays || {}),
+    drawings: typeof drawings === 'string' ? drawings : JSON.stringify(drawings || {}),
+  };
+  if (!row.id) delete row.id;
+  const { data, error } = await supa.from('dio_pacientes').insert(row).select().single();
+  if (error) return dbErr(res, error);
+  res.json(data);
+});
+
+app.put('/api/dio-pacientes/:id', auth, async (req, res) => {
+  const { nome, nascimento, telefone, obs, images, overlays, drawings } = req.body;
+  const update = {};
+  if (nome !== undefined) update.nome = nome;
+  if (nascimento !== undefined) update.nascimento = nascimento || null;
+  if (telefone !== undefined) update.telefone = telefone || null;
+  if (obs !== undefined) update.obs = obs || null;
+  if (images !== undefined) update.images = typeof images === 'string' ? images : JSON.stringify(images);
+  if (overlays !== undefined) update.overlays = typeof overlays === 'string' ? overlays : JSON.stringify(overlays);
+  if (drawings !== undefined) update.drawings = typeof drawings === 'string' ? drawings : JSON.stringify(drawings);
+
+  // Faz upload de imagens base64 para o Storage
+  if (images) {
+    const imgs = typeof images === 'string' ? JSON.parse(images) : images;
+    const processed = await Promise.all(imgs.map(async (img, idx) => {
+      if (!img.src || !img.src.startsWith('data:')) return img;
+      try {
+        const matches = img.src.match(/^data:([^;]+);base64,(.+)$/);
+        if (!matches) return img;
+        const mimeType = matches[1];
+        const ext = mimeType.split('/')[1] || 'jpg';
+        const buffer = Buffer.from(matches[2], 'base64');
+        const filePath = `dio/${req.params.id}/${idx}_${Date.now()}.${ext}`;
+        const { error: upErr } = await supa.storage.from('prontuario-fotos').upload(filePath, buffer, { contentType: mimeType, upsert: true });
+        if (upErr) return img;
+        const { data: pub } = supa.storage.from('prontuario-fotos').getPublicUrl(filePath);
+        return { ...img, src: pub.publicUrl };
+      } catch(e) { return img; }
+    }));
+    update.images = JSON.stringify(processed);
+  }
+
+  const { data, error } = await supa.from('dio_pacientes').update(update).eq('id', req.params.id).select().single();
+  if (error) return dbErr(res, error);
+  res.json(data);
+});
+
+app.delete('/api/dio-pacientes/:id', auth, async (req, res) => {
+  const { error } = await supa.from('dio_pacientes').update({ deleted_at: new Date().toISOString() }).eq('id', req.params.id);
+  if (error) return dbErr(res, error);
+  res.json({ ok: true });
+});
+
 // ── Proxy Kanban ─────────────────────────────────────────────
 const https = require('https');
 // ── Odontograma: salvar imagem composta ──────────────────────

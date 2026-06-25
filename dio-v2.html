@@ -7,6 +7,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// Supabase DIO — prontuários/imagens (mesmo projeto do servidor)
+const _dioDB = supabase.createClient(
+  'https://ugsolisojqawbjaeencq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnc29saXNvanFhd2JqYWVlbmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyMTE5NDUsImV4cCI6MjA2MTc4Nzk0NX0.DQimRHFLlh66dRoWMlxZ0fHRsGlp38nTIAqHv7jwq4w'
+);
+
+// Sobe imagem base64 para o Supabase Storage e retorna URL pública
+async function _uploadImagemStorage(base64DataUrl, patientId, idx) {
+  try {
+    const match = base64DataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) return base64DataUrl;
+    const mimeType = match[1];
+    const ext = mimeType.split('/')[1] || 'jpg';
+    const buffer = Uint8Array.from(atob(match[2]), c => c.charCodeAt(0));
+    const filePath = `pacientes/${patientId}/${idx}_${Date.now()}.${ext}`;
+    const { error } = await _dioDB.storage.from('prontuario-fotos').upload(filePath, buffer, { contentType: mimeType, upsert: true });
+    if (error) return base64DataUrl; // fallback: mantém base64
+    const { data } = _dioDB.storage.from('prontuario-fotos').getPublicUrl(filePath);
+    return data.publicUrl;
+  } catch(e) { return base64DataUrl; }
+}
+
+// Salva pacientes no Supabase (tabela dio_pacientes)
+async function _syncPacientes(patients) {
+  try {
+    for (const p of patients) {
+      const row = {
+        id: String(p.id),
+        nome: p.nome,
+        nascimento: p.nascimento || null,
+        telefone: p.telefone || null,
+        obs: p.obs || null,
+        images: JSON.stringify(p.images || []),
+        overlays: JSON.stringify(p.overlays || {}),
+        drawings: JSON.stringify(p.drawings || {}),
+      };
+      await _dioDB.from('dio_pacientes').upsert(row, { onConflict: 'id' });
+    }
+  } catch(e) {}
+}
+
+// Carrega pacientes do Supabase (mescla com localStorage)
+async function _loadPacientesSupabase() {
+  try {
+    const { data } = await _dioDB.from('dio_pacientes').select('*').order('created_at', { ascending: false });
+    if (!data || !data.length) return null;
+    return data.map(r => ({
+      id: r.id,
+      nome: r.nome,
+      nascimento: r.nascimento || '',
+      telefone: r.telefone || '',
+      obs: r.obs || '',
+      images: typeof r.images === 'string' ? JSON.parse(r.images || '[]') : (r.images || []),
+      overlays: typeof r.overlays === 'string' ? JSON.parse(r.overlays || '{}') : (r.overlays || {}),
+      drawings: typeof r.drawings === 'string' ? JSON.parse(r.drawings || '{}') : (r.drawings || {}),
+    }));
+  } catch(e) { return null; }
+}
+</script>
 <style>
   /* ── Paleta Oral Unic ───────────────────────────────────────────
      #8B2D42 Vinho Rosado  — cor principal / âncora exclusiva
@@ -414,6 +475,18 @@ let reguaAtiva = false;
 let reguaSnap = null;
 // drawCanvas declarado aqui para estar disponível em todas as funções
 const drawCanvas = document.getElementById('draw-canvas');
+
+// ===================== API HELPERS =====================
+const _API = 'https://athena-prontuario-server.onrender.com';
+function _getToken() { return localStorage.getItem('athena_token') || localStorage.getItem('dio_token') || ''; }
+async function _apiFetch(url, opts = {}) {
+  opts.headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _getToken(), ...(opts.headers || {}) };
+  try {
+    const r = await fetch(_API + url, opts);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
 
 // ===================== STATE =====================
 const state = {
@@ -1056,7 +1129,27 @@ function selectOverlay(id, btn, drawFn, svgFile) {
 // ===================== PATIENTS =====================
 let _pendingPatientImage = null;
 
-function savePatients() { localStorage.setItem('dio_patients', JSON.stringify(state.patients)); }
+function savePatients() {
+  localStorage.setItem('dio_patients', JSON.stringify(state.patients));
+}
+
+async function _loadPatientsFromServer() {
+  const data = await _apiFetch('/api/dio-pacientes');
+  if (!data || !Array.isArray(data) || !data.length) return;
+  const parsed = data.map(r => ({
+    id: r.id,
+    nome: r.nome,
+    nascimento: r.nascimento || '',
+    telefone: r.telefone || '',
+    obs: r.obs || '',
+    images: typeof r.images === 'string' ? JSON.parse(r.images || '[]') : (r.images || []),
+    overlays: typeof r.overlays === 'string' ? JSON.parse(r.overlays || '{}') : (r.overlays || {}),
+    drawings: typeof r.drawings === 'string' ? JSON.parse(r.drawings || '{}') : (r.drawings || {}),
+  }));
+  state.patients = parsed;
+  localStorage.setItem('dio_patients', JSON.stringify(parsed));
+  renderPatientList();
+}
 
 async function _ocrRaioxNome(file) {
   const token = localStorage.getItem('athena_token') || localStorage.getItem('dio_token');
@@ -1166,22 +1259,45 @@ function closePatientModal() {
   _pendingPatientImage = null;
 }
 
-function savePatient() {
+async function savePatient() {
   const nome = document.getElementById('p-nome').value.trim();
   if (!nome) { alert('Informe o nome do paciente.'); return; }
-  const patient = {
-    id: Date.now(), nome,
-    nascimento: document.getElementById('p-nasc').value,
-    telefone: document.getElementById('p-tel').value,
-    obs: document.getElementById('p-obs').value,
-    images: _pendingPatientImage ? [_pendingPatientImage] : [],
-    overlays: {}, drawings: {},
-  };
-  state.patients.unshift(patient);
-  savePatients();
-  closePatientModal();
-  renderPatientList();
-  selectPatient(patient.id);
+  const btn = document.querySelector('#modal-patient .btn-primary');
+  if (btn) { btn.textContent = '⏳ Salvando...'; btn.disabled = true; }
+  try {
+    const payload = {
+      nome,
+      nascimento: document.getElementById('p-nasc').value,
+      telefone: document.getElementById('p-tel').value,
+      obs: document.getElementById('p-obs').value,
+      images: _pendingPatientImage ? [_pendingPatientImage] : [],
+      overlays: {}, drawings: {},
+    };
+    // Tenta salvar no servidor (converte base64 → URL pública)
+    const saved = await _apiFetch('/api/dio-pacientes', { method: 'POST', body: JSON.stringify(payload) });
+    const patient = saved ? {
+      id: saved.id, nome: saved.nome,
+      nascimento: saved.nascimento || '',
+      telefone: saved.telefone || '',
+      obs: saved.obs || '',
+      images: typeof saved.images === 'string' ? JSON.parse(saved.images || '[]') : (saved.images || []),
+      overlays: {}, drawings: {},
+    } : { id: Date.now(), ...payload };
+    // Se tiver imagem e o servidor retornou, faz upload das imagens
+    if (saved && _pendingPatientImage) {
+      const upd = await _apiFetch('/api/dio-pacientes/' + saved.id, { method: 'PUT', body: JSON.stringify({ images: [_pendingPatientImage] }) });
+      if (upd) {
+        patient.images = typeof upd.images === 'string' ? JSON.parse(upd.images || '[]') : (upd.images || []);
+      }
+    }
+    state.patients.unshift(patient);
+    savePatients();
+    closePatientModal();
+    renderPatientList();
+    selectPatient(patient.id);
+  } finally {
+    if (btn) { btn.textContent = 'Salvar e Abrir'; btn.disabled = false; }
+  }
 }
 
 function renderPatientList() {
@@ -1357,11 +1473,21 @@ function handleImageUpload(e) {
   if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = async ev => {
     if (!state.currentPatient.images) state.currentPatient.images = [];
-    state.currentPatient.images.push({ src: ev.target.result, date: new Date().toLocaleDateString('pt-BR'), name: file.name });
+    const newImg = { src: ev.target.result, date: new Date().toLocaleDateString('pt-BR'), name: file.name };
+    state.currentPatient.images.push(newImg);
     state.currentImageIndex = state.currentPatient.images.length - 1;
     savePatients(); renderImagesPanel(); loadCurrentImage();
+    // Sincroniza com servidor (converte base64 → URL pública)
+    const upd = await _apiFetch('/api/dio-pacientes/' + state.currentPatient.id, {
+      method: 'PUT', body: JSON.stringify({ images: state.currentPatient.images })
+    });
+    if (upd) {
+      const imgs = typeof upd.images === 'string' ? JSON.parse(upd.images || '[]') : (upd.images || []);
+      state.currentPatient.images = imgs;
+      savePatients(); renderImagesPanel(); loadCurrentImage();
+    }
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -2027,6 +2153,8 @@ async function exportPDF() {
 initOverlayGrids();
 renderPatientList();
 window.addEventListener('resize', () => { if ((state.currentPatient?.images || []).length) resizeCanvases(); });
+// Carrega pacientes do servidor ao iniciar (sincroniza entre dispositivos)
+_loadPatientsFromServer();
 
 // Clique fora de overlay desseleciona
 document.getElementById('overlay-layer').addEventListener('click', e => {
