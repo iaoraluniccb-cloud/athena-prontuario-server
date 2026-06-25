@@ -1075,6 +1075,38 @@ async function _ocrRaioxNome(file) {
   } catch(e) { return null; }
 }
 
+async function _ocrRaioxNome(file) {
+  const token = localStorage.getItem('athena_token') || localStorage.getItem('dio_token');
+  if (!token) return null;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const resp = await fetch('https://athena-prontuario-server.onrender.com/api/ocr-raiox', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData,
+    });
+    if (!resp.ok) return null;
+    const dados = await resp.json();
+    return dados.nome || null;
+  } catch(e) { return null; }
+}
+
+function _aplicarOcrNome(file) {
+  const nomeCampo = document.getElementById('p-nome');
+  if (!nomeCampo || nomeCampo.value) return;
+  nomeCampo.placeholder = '⏳ Lendo nome do raio-x...';
+  _ocrRaioxNome(file).then(nome => {
+    nomeCampo.placeholder = 'Ex: Maria Silva';
+    if (nome) {
+      nomeCampo.value = nome;
+      nomeCampo.style.background = '#f0fdf4';
+      nomeCampo.style.borderColor = '#86efac';
+      setTimeout(() => { nomeCampo.style.background = ''; nomeCampo.style.borderColor = ''; }, 2500);
+    }
+  });
+}
+
 function handlePatientImagePick(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -1085,21 +1117,7 @@ function handlePatientImagePick(e) {
     document.getElementById('upload-drop-placeholder').style.display = 'none';
   };
   reader.readAsDataURL(file);
-  // OCR: lê o nome do raio-x e preenche o campo automaticamente
-  const nomeCampo = document.getElementById('p-nome');
-  const statusEl = document.getElementById('upload-drop-placeholder');
-  if (nomeCampo && !nomeCampo.value) {
-    nomeCampo.placeholder = '⏳ Lendo nome do raio-x...';
-    _ocrRaioxNome(file).then(nome => {
-      nomeCampo.placeholder = 'Ex: Maria Silva';
-      if (nome) {
-        nomeCampo.value = nome;
-        nomeCampo.style.background = '#f0fdf4';
-        nomeCampo.style.borderColor = '#86efac';
-        setTimeout(() => { nomeCampo.style.background = ''; nomeCampo.style.borderColor = ''; }, 2000);
-      }
-    });
-  }
+  _aplicarOcrNome(file);
 }
 
 function handleDropZone(e) {
@@ -1114,20 +1132,7 @@ function handleDropZone(e) {
     document.getElementById('upload-drop-placeholder').style.display = 'none';
   };
   reader.readAsDataURL(file);
-  // OCR também no drag-and-drop
-  const nomeCampo = document.getElementById('p-nome');
-  if (nomeCampo && !nomeCampo.value) {
-    nomeCampo.placeholder = '⏳ Lendo nome do raio-x...';
-    _ocrRaioxNome(file).then(nome => {
-      nomeCampo.placeholder = 'Ex: Maria Silva';
-      if (nome) {
-        nomeCampo.value = nome;
-        nomeCampo.style.background = '#f0fdf4';
-        nomeCampo.style.borderColor = '#86efac';
-        setTimeout(() => { nomeCampo.style.background = ''; nomeCampo.style.borderColor = ''; }, 2000);
-      }
-    });
-  }
+  _aplicarOcrNome(file);
 }
 
 function openPatientModal() {
