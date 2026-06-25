@@ -478,7 +478,9 @@ const drawCanvas = document.getElementById('draw-canvas');
 
 // ===================== API HELPERS =====================
 const _API = 'https://athena-prontuario-server.onrender.com';
-function _getToken() { return localStorage.getItem('athena_token') || localStorage.getItem('dio_token') || ''; }
+// Token em memória — recebido via postMessage do Athena pai (domínios diferentes, localStorage não é compartilhado)
+let _dioToken = localStorage.getItem('athena_token') || localStorage.getItem('dio_token') || '';
+function _getToken() { return _dioToken || localStorage.getItem('athena_token') || localStorage.getItem('dio_token') || ''; }
 async function _apiFetch(url, opts = {}) {
   opts.headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _getToken(), ...(opts.headers || {}) };
   try {
@@ -1152,24 +1154,7 @@ async function _loadPatientsFromServer() {
 }
 
 async function _ocrRaioxNome(file) {
-  const token = localStorage.getItem('athena_token') || localStorage.getItem('dio_token');
-  if (!token) return null;
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    const resp = await fetch('https://athena-prontuario-server.onrender.com/api/ocr-raiox', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: formData,
-    });
-    if (!resp.ok) return null;
-    const dados = await resp.json();
-    return dados.nome || null;
-  } catch(e) { return null; }
-}
-
-async function _ocrRaioxNome(file) {
-  const token = localStorage.getItem('athena_token') || localStorage.getItem('dio_token');
+  const token = _getToken();
   if (!token) return null;
   try {
     const formData = new FormData();
@@ -1243,6 +1228,14 @@ function openPatientModal() {
 
 // Recebe resposta do Athena com o nome do último tour
 window.addEventListener('message', function(e) {
+  // Recebe token do Athena pai e armazena para usar no OCR e na API
+  if (e.data && e.data.type === 'athena_token' && e.data.token) {
+    _dioToken = e.data.token;
+    try { localStorage.setItem('athena_token', e.data.token); } catch(ex) {}
+    // Se há pacientes pendentes de carregar do servidor, tenta agora
+    if (!state.patients.length) _loadPatientsFromServer();
+    return;
+  }
   if (e.data && e.data.type === 'ultimo_nome_tour' && e.data.nome) {
     const campoNome = document.getElementById('p-nome');
     const modal = document.getElementById('modal-patient');
