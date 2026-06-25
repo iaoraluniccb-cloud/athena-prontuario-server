@@ -212,7 +212,7 @@ function canAccessPatient(user, patient) {
 }
 
 app.get('/api/patients', auth, async (req, res) => {
-  let q = supa.from('patients').select('*').is('deleted_at', null);
+  let q = supa.from('patients').select('*').is('deleted_at', null).order('nome', { ascending: true }).limit(2000);
   if (req.user.role === 'patient') q = q.eq('linked_user_id', req.user.id);
   const { data, error } = await q;
   if (error) return dbErr(res, error);
