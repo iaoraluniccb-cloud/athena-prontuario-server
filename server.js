@@ -127,6 +127,39 @@ function dbErr(res, error, msg = 'Erro no banco') {
   return res.status(500).json({ error: error?.message || msg });
 }
 
+// ── Helper: normaliza campos legados → colunas Supabase ───────
+function normalizarCampos(body) {
+  const b = { ...body };
+  // Endereço legado (endRua/endNumero/…) → colunas Supabase (rua/numero/…)
+  if (b.endRua      !== undefined && b.rua       === undefined) { b.rua       = b.endRua;       delete b.endRua; }
+  if (b.endNumero   !== undefined && b.numero     === undefined) { b.numero    = b.endNumero;    delete b.endNumero; }
+  if (b.endBairro   !== undefined && b.bairro     === undefined) { b.bairro    = b.endBairro;    delete b.endBairro; }
+  if (b.endCidade   !== undefined && b.cidade     === undefined) { b.cidade    = b.endCidade;    delete b.endCidade; }
+  if (b.endComplemento !== undefined && b.complemento === undefined) { b.complemento = b.endComplemento; delete b.endComplemento; }
+  // Celular legado: 'telefone' → 'celular'
+  if (b.telefone !== undefined && b.celular === undefined) { b.celular = b.telefone; }
+  delete b.telefone;
+  // Remove campos que não existem no Supabase
+  const camposInvalidos = ['endereco','estrangeiro','docTipo','docNumero','docPais','docValidade',
+    'obs','origem','foto','fotoDescriptor','flagFalta','flagRemedio','_fotoBase64','_temPlanejamento',
+    'updated_at','created_at','deleted_at',
+    // campos legados do frontend (não existem como colunas)
+    'planejamentoConcluido','anamneseHash','anamnesePdf','anamneseData','anamneseAssinatura',
+    'anamneseRespNome','anamneseAssData','anamneseAssHora',
+    'termoFinalizacao','termoFinalizacaoPdf','termoFinalizacaoHash',
+    // campos de endereço legado já mapeados acima
+    'endRua','endNumero','endBairro','endCidade','endComplemento',
+  ];
+  camposInvalidos.forEach(c => delete b[c]);
+  // Garantir que campos JSON sejam string, nunca objeto/array
+  ['anamnese','images','overlays','drawings','termo_finalizacao'].forEach(k => {
+    if (b[k] !== undefined && typeof b[k] !== 'string') {
+      b[k] = JSON.stringify(b[k]);
+    }
+  });
+  return b;
+}
+
 // ══════════════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════════════
@@ -232,8 +265,9 @@ app.post('/api/patients', auth, dentistOrAdmin, async (req, res) => {
     const { data: ex } = await supa.from('patients').select('id,nome').eq('ficha', ficha).is('deleted_at', null).limit(1);
     if (ex?.length) return res.status(409).json({ error: `Ficha #${ficha} já está cadastrada para "${ex[0].nome}".` });
   }
-  const { _id, ...body } = req.body;
-  const { data, error } = await supa.from('patients').insert({ ...body, ficha: ficha || null }).select('*').single();
+  const { _id, id, ...raw } = req.body;
+  const body = normalizarCampos({ ...raw, ficha: ficha || null });
+  const { data, error } = await supa.from('patients').insert(body).select('*').single();
   if (error) return dbErr(res, error);
   res.json(data);
 });
@@ -258,7 +292,8 @@ app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
     const { data: ex } = await supa.from('patients').select('id,nome').eq('ficha', novaFicha).neq('id', req.params.id).is('deleted_at', null).limit(1);
     if (ex?.length) return res.status(409).json({ error: `Ficha #${novaFicha} já está cadastrada para "${ex[0].nome}".` });
   }
-  const { error } = await supa.from('patients').update({ ...update, ficha: novaFicha || null }).eq('id', req.params.id);
+  const update = normalizarCampos({ ...raw, ficha: novaFicha || null });
+  const { error } = await supa.from('patients').update(update).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
@@ -399,7 +434,11 @@ app.put('/api/patients/:id/images', auth, dentistOrAdmin, async (req, res) => {
 });
 
 app.put('/api/patients/:id/overlays', auth, dentistOrAdmin, async (req, res) => {
-  const { error } = await supa.from('patients').update({ overlays: req.body.overlays, drawings: req.body.drawings }).eq('id', req.params.id);
+  const ov = req.body.overlays, dr = req.body.drawings;
+  const { error } = await supa.from('patients').update({
+    overlays: typeof ov === 'string' ? ov : JSON.stringify(ov || {}),
+    drawings: typeof dr === 'string' ? dr : JSON.stringify(dr || {}),
+  }).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
@@ -808,6 +847,40 @@ Retorne APENAS o JSON, omita campos null.`;
   }
 });
 
+// ══════════════════════════════════════════════════════════════
+//  OCR — Raio-X (lê nome do paciente no canto superior esquerdo)
+// ══════════════════════════════════════════════════════════════
+app.post('/api/ocr-raiox', auth, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: 'Arquivo inválido: ' + err.message });
+    next();
+  });
+}, async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+  const prompt = `Esta é uma radiografia odontológica panorâmica (raio-x). No canto superior esquerdo da imagem geralmente aparece o nome do paciente e a data do exame impressos.
+
+Leia cuidadosamente o texto no canto superior esquerdo e extraia:
+- "nome": nome completo do paciente (em maiúsculas como aparece na imagem)
+- "data": data do exame no formato que aparecer
+
+Retorne APENAS JSON: {"nome": null, "data": null}
+Se não conseguir ler, retorne {"nome": null, "data": null}.`;
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001', max_tokens: 256,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: req.file.mimetype, data: req.file.buffer.toString('base64') } },
+        { type: 'text', text: prompt },
+      ]}],
+    });
+    const match = response.content[0].text.match(/\{[\s\S]*\}/);
+    res.json(match ? JSON.parse(match[0]) : { nome: null, data: null });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Proxy Kanban ─────────────────────────────────────────────
 const https = require('https');
 // ── Odontograma: salvar imagem composta ──────────────────────
@@ -929,4 +1002,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🦷 Athena — Prontuário Digital | Oral Unic CB`);
   console.log(`   Porta: ${PORT}`);
   console.log(`   Supabase: ${process.env.SUPABASE_URL || 'ugsolisojqawbjaeencq'}\n`);
+  // Backup imediato ao iniciar
+  fs.mkdirSync('C:\\Users\\DWOS\\Desktop\\backups-dio-dental', { recursive: true });
+  fazerBackupAutomatico();
 });
