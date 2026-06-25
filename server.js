@@ -48,6 +48,16 @@ app.use(express.json({ limit: '50mb' }));
     }
   } catch(e) { console.warn('Bucket check:', e.message); }
 
+  // Garante tabela dio_pacientes
+  try {
+    const chkDio = await supa.from('dio_pacientes').select('id').limit(1);
+    if (chkDio.error) {
+      console.warn('dio_pacientes não existe — execute criar-tabela-dio-pacientes.sql no Supabase Dashboard');
+    } else {
+      console.log('Tabela dio_pacientes OK.');
+    }
+  } catch(e) { console.warn('dio_pacientes check:', e.message); }
+
   // Garante tabela home_config — tenta insert de teste; se falhar cria
   try {
     const chk = await supa.from('home_config').select('id').limit(1);
