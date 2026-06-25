@@ -303,6 +303,12 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 /* TAB DASHBOARD */
 #tab-dashboard { flex:1; overflow-y:auto; padding:20px; display:none; background:#FDF9F4; }
 #tab-dashboard.visible { display:block; }
+
+/* TABS ODONTOGRAMA + SIMULADOR */
+#tab-odontograma { flex:1; display:none; flex-direction:column; background:#fff; overflow:hidden; }
+#tab-odontograma.visible { display:flex; }
+#tab-simulador { flex:1; display:none; flex-direction:column; background:#fff; overflow:hidden; }
+#tab-simulador.visible { display:flex; }
 .dash-section { margin-bottom:24px; }
 .dash-section h4 { font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:12px; border-bottom:1.5px solid #E0C9B8; padding-bottom:6px; }
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
@@ -381,6 +387,8 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
       <button class="tab-btn active" onclick="showTab('dados')" id="tbtn-dados">📋 Dados</button>
       <button class="tab-btn" onclick="showTab('planejamento')" id="tbtn-planejamento">📝 Planejamento</button>
       <button class="tab-btn" onclick="showTab('dashboard')" id="tbtn-dashboard">📊 Dashboard</button>
+      <button class="tab-btn" onclick="showTab('odontograma')" id="tbtn-odontograma">🦷 Odontograma</button>
+      <button class="tab-btn" onclick="showTab('simulador')" id="tbtn-simulador">😁 Simulador</button>
       <button class="tab-btn" onclick="showTab('recepcao')" id="tbtn-recepcao" style="position:relative;">🔔 Pendências<span id="badge-comandas" style="display:none;position:absolute;top:4px;right:4px;background:#dc2626;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:800;"></span></button>
     </div>
     <div id="tab-content">
@@ -771,6 +779,38 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
         </div>
       </div>
 
+      <!-- TAB ODONTOGRAMA -->
+      <div id="tab-odontograma" style="display:flex;flex-direction:column;height:100%;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1.5px solid #E0C9B8;flex-shrink:0;">
+          <div>
+            <h3 style="font-size:15px;color:#1A0F0A;font-weight:800;margin:0;">🦷 Odontograma</h3>
+            <div id="odontograma-paciente-label" style="font-size:11px;color:#8B2D42;margin-top:2px;"></div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="recarregarOdontograma()">🔄 Recarregar</button>
+        </div>
+        <iframe id="iframe-odontograma"
+          src="about:blank"
+          style="flex:1;border:none;width:100%;height:100%;"
+          allow="camera; microphone"></iframe>
+      </div>
+
+      <!-- TAB SIMULADOR DE SORRISO -->
+      <div id="tab-simulador" style="display:flex;flex-direction:column;height:100%;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1.5px solid #E0C9B8;flex-shrink:0;">
+          <div>
+            <h3 style="font-size:15px;color:#1A0F0A;font-weight:800;margin:0;">😁 Simulador de Sorriso</h3>
+            <div id="simulador-paciente-label" style="font-size:11px;color:#8B2D42;margin-top:2px;"></div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="abrirSimuladorExterno()">🔗 Abrir em nova aba</button>
+            <button class="btn btn-outline btn-sm" onclick="recarregarSimulador()">🔄 Recarregar</button>
+          </div>
+        </div>
+        <iframe id="iframe-simulador"
+          src="about:blank"
+          style="flex:1;border:none;width:100%;height:100%;"
+          allow="camera; microphone"></iframe>
+      </div>
 
     </div><!-- /tab-content -->
   </div><!-- /canvas-area -->
@@ -1820,22 +1860,7 @@ function authHeaders() {
 async function apiFetch(url, opts = {}) {
   opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
   const r = await fetch(API + url, opts);
-  if (r.status === 401) {
-    // Tenta renovar token antes de deslogar
-    try {
-      const ar = await fetch(API + '/api/auto-token');
-      if (ar.ok) {
-        const ad = await ar.json();
-        localStorage.setItem('athena_token', ad.token);
-        localStorage.setItem('dio_token', ad.token);
-        opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
-        const r2 = await fetch(API + url, opts);
-        if (!r2.ok && r2.status === 401) { logout(); return null; }
-        return r2;
-      }
-    } catch {}
-    logout(); return null;
-  }
+  if (r.status === 401) { logout(); return null; }
   return r;
 }
 
@@ -1853,8 +1878,8 @@ function logout() {
 
 async function initAuth() {
   let token = getToken();
-  // Renova o token via auto-token — com retry para cold start do Render
-  for (let _attempt = 0; _attempt < 4; _attempt++) {
+  // Sem token salvo — busca automaticamente sem tela de login
+  if (!token) {
     try {
       const ar = await fetch(API + '/api/auto-token');
       if (ar.ok) {
@@ -1862,14 +1887,8 @@ async function initAuth() {
         token = ad.token;
         localStorage.setItem('athena_token', token);
         localStorage.setItem('dio_token', token);
-        break;
       }
     } catch {}
-    if (_attempt < 3) await new Promise(r => setTimeout(r, 8000)); // aguarda cold start
-  }
-  if (!token) {
-    // fallback: tenta localStorage
-    token = getToken();
   }
   if (token) {
     currentToken = token;
@@ -2000,7 +2019,7 @@ const state = {
 let currentTab = 'dados';
 function showTab(tab) {
   currentTab = tab;
-  ['dados','planejamento','dashboard','recepcao'].forEach(t => {
+  ['dados','planejamento','dashboard','recepcao','odontograma','simulador'].forEach(t => {
     const el = document.getElementById('tab-'+t);
     const btn = document.getElementById('tbtn-'+t);
     if (el) el.classList.toggle('visible', t === tab);
@@ -2014,16 +2033,110 @@ function showTab(tab) {
   if (tab === 'dashboard') carregarDashboard();
   if (tab === 'dados' && state.currentPatient) renderHistoricoConsultas();
   if (tab === 'recepcao') { recepTab('comandas'); }
+  if (tab === 'odontograma') carregarOdontograma();
+  if (tab === 'simulador') carregarSimulador();
+}
+
+function _extUrl(relPath) {
+  // Local: usa rota /ext/ do servidor Express
+  // Produção (render.com): usa URL do Vercel (sistemaathena.app.br/projects/...)
+  const isRender = window.location.hostname.includes('onrender.com');
+  if (isRender) return 'https://sistemaathena.app.br/' + relPath;
+  return window.location.origin + '/ext/' + relPath;
+}
+
+function carregarOdontograma() {
+  const p = state.currentPatient;
+  const iframe = document.getElementById('iframe-odontograma');
+  const label = document.getElementById('odontograma-paciente-label');
+  if (!p) {
+    iframe.src = 'about:blank';
+    if (label) label.textContent = '';
+    return;
+  }
+  if (label) label.textContent = p.nome + (p.ficha ? ' · Ficha #' + p.ficha : '');
+  const url = _extUrl('dio-dental/odontograma.html') + '?paciente=' + encodeURIComponent(p.nome) + '&id=' + encodeURIComponent(p._id || p.id || '');
+  if (iframe.src !== url) iframe.src = url;
+}
+
+function recarregarOdontograma() {
+  const iframe = document.getElementById('iframe-odontograma');
+  if (iframe) { const s = iframe.src; iframe.src = 'about:blank'; setTimeout(() => iframe.src = s, 100); }
+}
+
+function carregarSimulador() {
+  const p = state.currentPatient;
+  const iframe = document.getElementById('iframe-simulador');
+  const label = document.getElementById('simulador-paciente-label');
+  if (!p) {
+    iframe.src = 'about:blank';
+    if (label) label.textContent = '';
+    return;
+  }
+  if (label) label.textContent = p.nome + (p.ficha ? ' · Ficha #' + p.ficha : '');
+  const url = _extUrl('simulador-sorriso/index.html') + '?nome=' + encodeURIComponent(p.nome) + '&ficha=' + encodeURIComponent(p.ficha || '');
+  if (iframe.src !== url) iframe.src = url;
+}
+
+function recarregarSimulador() {
+  const iframe = document.getElementById('iframe-simulador');
+  if (iframe) { const s = iframe.src; iframe.src = 'about:blank'; setTimeout(() => iframe.src = s, 100); }
+}
+
+function abrirSimuladorExterno() {
+  const p = state.currentPatient;
+  if (!p) return;
+  window.open(_extUrl('simulador-sorriso/index.html') + '?nome=' + encodeURIComponent(p.nome), '_blank');
 }
 
 // ═══════════════════════════════════════════════
 //  PATIENTS — API
 // ═══════════════════════════════════════════════
+function normalizarPaciente(p) {
+  if (!p) return p;
+  // Supabase usa 'id' (UUID); o frontend espera '_id'
+  if (!p._id) p._id = p.id || p._id;
+  // Endereço: Supabase usa rua/numero/bairro/cidade/complemento
+  if (!p.endRua)         p.endRua         = p.rua         || '';
+  if (!p.endNumero)      p.endNumero      = p.numero      || '';
+  if (!p.endBairro)      p.endBairro      = p.bairro      || '';
+  if (!p.endCidade)      p.endCidade      = p.cidade      || '';
+  if (!p.endComplemento) p.endComplemento = p.complemento || '';
+  // Celular: Supabase usa 'celular', legado usava 'telefone'
+  if (!p.telefone) p.telefone = p.celular || '';
+  // Campos JSON armazenados como string no Supabase — parsear para array/objeto
+  if (typeof p.images   === 'string') { try { p.images   = JSON.parse(p.images);   } catch(e) { p.images   = []; } }
+  if (typeof p.overlays === 'string') { try { p.overlays = JSON.parse(p.overlays); } catch(e) { p.overlays = {}; } }
+  if (typeof p.drawings === 'string') { try { p.drawings = JSON.parse(p.drawings); } catch(e) { p.drawings = {}; } }
+  if (typeof p.anamnese === 'string') { try { p.anamnese = JSON.parse(p.anamnese); } catch(e) { p.anamnese = {}; } }
+  if (typeof p.termo_finalizacao === 'string') { try { p.termo_finalizacao = JSON.parse(p.termo_finalizacao); } catch(e) { p.termo_finalizacao = null; } }
+  if (!Array.isArray(p.images))   p.images   = [];
+  if (!p.overlays || typeof p.overlays !== 'object') p.overlays = {};
+  if (!p.drawings || typeof p.drawings !== 'object') p.drawings = {};
+  // Expor campos de anamnese (salvos dentro do objeto anamnese)
+  if (p.anamnese && typeof p.anamnese === 'object') {
+    if (!p.anamneseAssinatura) p.anamneseAssinatura = p.anamnese._assinatura || null;
+    if (!p.anamneseData)       p.anamneseData       = p.anamnese._data       || null;
+    if (!p.anamneseRespNome)   p.anamneseRespNome   = p.anamnese._respNome   || null;
+    if (!p.anamneseAssData)    p.anamneseAssData    = p.anamnese._assData    || null;
+    if (!p.anamneseAssHora)    p.anamneseAssHora    = p.anamnese._assHora    || null;
+    if (!p.anamneseHash)       p.anamneseHash       = p.anamnese._hash       || null;
+    if (!p.anamnesePdf)        p.anamnesePdf        = p.anamnese._pdf        || null;
+  }
+  // Expor termo de finalização (campo Supabase = termo_finalizacao)
+  if (!p.termoFinalizacao && p.termo_finalizacao) p.termoFinalizacao = p.termo_finalizacao;
+  if (p.termoFinalizacao) {
+    if (!p.termoFinalizacaoHash) p.termoFinalizacaoHash = p.termoFinalizacao._hash || null;
+    if (!p.termoFinalizacaoPdf)  p.termoFinalizacaoPdf  = p.termoFinalizacao._pdf  || null;
+  }
+  return p;
+}
+
 async function loadPatients() {
   const r = await apiFetch('/api/patients');
   if (!r) return;
-  const _raw = await r.json();
-  state.patients = _raw.map(p => ({ ...p, _id: p._id || p.id }));
+  const raw = await r.json();
+  state.patients = (raw || []).map(normalizarPaciente);
   const searchEl = document.getElementById('patient-search');
   if (searchEl) searchEl.value = '';
   renderPatientList();
@@ -2104,7 +2217,7 @@ function renderPatientList() {
 async function selectPatient(id) {
   const r = await apiFetch('/api/patients/' + id);
   if (!r) return;
-  const _p = await r.json(); state.currentPatient = { ..._p, _id: _p._id || _p.id };
+  state.currentPatient = normalizarPaciente(await r.json());
   state.currentImageIndex = 0;
   document.getElementById('tab-bar').style.display = 'flex';
   document.getElementById('patient-name').textContent = state.currentPatient.nome;
@@ -2124,6 +2237,11 @@ async function selectPatient(id) {
   document.getElementById('extra-obs-wrap').style.display = 'none';
   atualizarEstadoPlanejamento();
   renderHistoricoConsultas();
+  // Reseta iframes de abas externas para forçar reload ao navegar para elas
+  const ifOdonto = document.getElementById('iframe-odontograma');
+  const ifSim = document.getElementById('iframe-simulador');
+  if (ifOdonto) ifOdonto.src = 'about:blank';
+  if (ifSim) ifSim.src = 'about:blank';
   showTab('dados');
 }
 
@@ -3409,8 +3527,9 @@ function atualizarBadgeDocumentacao() {
   const btn = document.getElementById('perfil-aba-documentacao');
   if (!btn || !p) return;
   let pendentes = 0;
-  // Anamnese preenchida mas não assinada
-  if (p.anamnese && Object.keys(p.anamnese).length > 0 && !p.anamneseAssinatura) pendentes++;
+  // Anamnese preenchida mas não assinada (ignora chaves internas _*)
+  const anamResps = p.anamnese ? Object.keys(p.anamnese).filter(k => !k.startsWith('_')).length : 0;
+  if (anamResps > 0 && !p.anamneseAssinatura) pendentes++;
   // Termos Protéticos com dados mas sem assinatura
   if (typeof planningSteps !== 'undefined') {
     planningSteps.forEach(s => {
@@ -3474,6 +3593,11 @@ function renderDocumentacaoPerfil() {
       <div style="font-weight:700;color:#0891b2;margin-bottom:8px;">🩺 Anamnese assinada</div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Data: ${p.anamneseAssData ? new Date(p.anamneseAssData+'T00:00:00').toLocaleDateString('pt-BR') : (p.anamneseData ? new Date(p.anamneseData).toLocaleDateString('pt-BR') : '—')}${p.anamneseAssHora ? ' às ' + p.anamneseAssHora : ''} · CPF: ${p.cpf || '—'}</div>
       ${sigHtml}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-sm" style="background:#0891b2;color:#fff;" onclick="baixarPDFAnamnese()">📄 Baixar PDF</button>
+        ${p.anamnesePdf ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="(()=>{const w=window.open();w.document.write('<iframe src=\\''+state.currentPatient.anamnesePdf+'\\' style=\\'width:100%;height:100%;border:none;\\'></iframe>');})()">👁️ Visualizar</button>` : ''}
+        ${p.anamneseHash ? `<div style="margin-top:6px;width:100%;background:#f3f4f6;border-radius:6px;padding:6px 8px;"><div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase;margin-bottom:2px;">🔒 Hash SHA-256 (integridade)</div><div style="font-size:8px;color:#374151;font-family:monospace;word-break:break-all;">${p.anamneseHash}</div></div>` : ''}
+      </div>
     </div>`);
   } else {
     docs.push(`<div style="background:#f0f9ff;border:1.5px dashed #bae6fd;border-radius:10px;padding:14px 18px;margin-bottom:10px;color:#0891b2;font-size:12px;">
@@ -3537,10 +3661,16 @@ function renderDocumentacaoPerfil() {
 
   // Termo de Finalização
   if (p.termoFinalizacao) {
+    const tfHash = p.termoFinalizacaoHash || p.termoFinalizacao._hash || null;
+    const tfPdf  = p.termoFinalizacaoPdf  || p.termoFinalizacao._pdf  || null;
     docs.push(`<div style="background:#fff;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin-bottom:10px;">
       <div style="font-weight:700;color:#059669;margin-bottom:8px;">🏁 Termo de Finalização</div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Data: ${p.termoFinalizacao.data ? new Date(p.termoFinalizacao.data).toLocaleDateString('pt-BR') : '—'}</div>
       ${p.termoFinalizacao.assinatura === 'FISICO' ? `<div style="background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:6px;padding:8px 14px;font-size:12px;color:#065f46;font-weight:600;">📋 Assinado no prontuário físico</div>` : p.termoFinalizacao.assinatura ? `<img src="${p.termoFinalizacao.assinatura}" style="border:1.5px solid #d1fae5;border-radius:6px;max-width:100%;height:70px;object-fit:contain;background:#f0fdf4;">` : '<span style="font-size:11px;color:#9ca3af;">Sem assinatura salva</span>'}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${tfPdf ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="(()=>{const a=document.createElement('a');a.href='${tfPdf}';a.download='Termo_Finalizacao.pdf';a.click();})()">📄 Baixar PDF</button>` : ''}
+        ${tfHash ? `<div style="margin-top:6px;width:100%;background:#f3f4f6;border-radius:6px;padding:6px 8px;"><div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase;margin-bottom:2px;">🔒 Hash SHA-256 (integridade)</div><div style="font-size:8px;color:#374151;font-family:monospace;word-break:break-all;">${tfHash}</div></div>` : ''}
+      </div>
     </div>`);
   } else {
     docs.push(`<div style="background:#f0fdf4;border:1.5px dashed #bbf7d0;border-radius:10px;padding:14px 18px;margin-bottom:10px;color:#059669;font-size:12px;">🏁 Nenhum Termo de Finalização ainda.</div>`);
@@ -3787,25 +3917,41 @@ async function salvarAnamnesePreop() {
   const assHora = document.getElementById('anamnese-assina-hora')?.value || new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   const anamneseDataHora = new Date().toISOString();
 
+  // Gera PDF + hash antes de salvar (para incluir no mesmo objeto)
+  let anamneseHash = null, anamnesePdfB64 = null;
+  try {
+    const resultado = await gerarPDFAnamnese(state.currentPatient, dados, assinaturaImg, respNome, assData, assHora);
+    if (resultado) { anamneseHash = resultado.hash; anamnesePdfB64 = resultado.pdfBase64; }
+  } catch(e) { console.error('Erro ao gerar PDF anamnese:', e); }
+
+  // Monta objeto anamnese com metadados embutidos (campos _ são internos)
+  const anamneseObj = {
+    ...dados,
+    _assinatura: assinaturaImg,
+    _data: anamneseDataHora,
+    _respNome: respNome,
+    _assData: assData,
+    _assHora: assHora,
+    _hash: anamneseHash,
+    _pdf: anamnesePdfB64,
+  };
+
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
-    method: 'PUT', body: JSON.stringify({
-      anamnese: dados,
-      anamneseData: anamneseDataHora,
-      anamneseAssinatura: assinaturaImg,
-      anamneseRespNome: respNome,
-      anamneseAssData: assData,
-      anamneseAssHora: assHora,
-    }),
+    method: 'PUT', body: JSON.stringify({ anamnese: anamneseObj }),
   });
   if (r && r.ok) {
-    state.currentPatient.anamnese = dados;
+    state.currentPatient.anamnese = anamneseObj;
     state.currentPatient.anamneseAssinatura = assinaturaImg;
+    state.currentPatient.anamneseData = anamneseDataHora;
     state.currentPatient.anamneseAssData = assData;
     state.currentPatient.anamneseAssHora = assHora;
+    state.currentPatient.anamneseRespNome = respNome;
+    state.currentPatient.anamneseHash = anamneseHash;
+    state.currentPatient.anamnesePdf = anamnesePdfB64;
     document.getElementById('modal-anamnese-preop').classList.remove('open');
     renderPlanning();
     atualizarBadgeDocumentacao();
-    alert('✅ Anamnese salva!');
+    alert(anamneseHash ? '✅ Anamnese salva! PDF gerado com assinatura e hash de integridade.' : '✅ Anamnese salva!');
   }
 }
 
@@ -4103,7 +4249,7 @@ async function impConfirmar() {
   }
 
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = await pr.json();
+  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
 
   // Salvar dentistas extraídos pelo OCR no perfil do paciente
   const _impDa = document.getElementById('pp-dentista-avaliador')?.value?.trim();
@@ -4741,11 +4887,34 @@ function formatDate(d) {
 // ═══════════════════════════════════════════════
 let planningSteps = [];
 
+function normalizarStep(s) {
+  if (!s) return s;
+  if (!s._id)             s._id             = s.id             || s._id;
+  if (!s.order)           s.order           = s.sort_order     || s.order || 0;
+  if (!s.descricaoTipo)   s.descricaoTipo   = s.descricao_tipo || '';
+  if (!s.tempoDentista)   s.tempoDentista   = s.tempo_dentista || '';
+  if (!s.retornoEm)       s.retornoEm       = s.retorno_em     || '';
+  if (!s.descricaoProc)   s.descricaoProc   = s.descricao_proc || '';
+  if (s.requer_termo_protetica   !== undefined && s.requerTermoProtetica   === undefined) s.requerTermoProtetica   = s.requer_termo_protetica;
+  if (s.requer_termo_finalizacao !== undefined && s.requerTermoFinalizacao === undefined) s.requerTermoFinalizacao = s.requer_termo_finalizacao;
+  if (s.sem_comanda !== undefined && s.semComanda === undefined) s.semComanda = s.sem_comanda;
+  if (s.created_by_name !== undefined && s.createdBy === undefined) s.createdBy = s.created_by_name;
+  if (!s.patientId) s.patientId = s.patient_id || '';
+  if (!s.signatures) s.signatures = [];
+  if (!s.historico)  s.historico  = [];
+  // Data de conclusão: usa updated_at quando status é concluido/signed (registrado pelo Supabase automaticamente)
+  if (!s.concluido_em && (s.status === 'concluido' || s.status === 'signed') && s.updated_at) {
+    s.concluido_em = s.updated_at;
+  }
+  return s;
+}
+
 async function loadPlanning() {
   if (!state.currentPatient) return;
   const r = await apiFetch('/api/patients/' + state.currentPatient._id + '/planning');
   if (!r) return;
-  planningSteps = await r.json();
+  const raw = await r.json();
+  planningSteps = (raw || []).map(normalizarStep);
   renderPlanning();
 }
 
@@ -4920,6 +5089,7 @@ function renderStepCard(step, i, _numMap) {
       ${sigPills}
       ${(step.retornoEm || (step.notes ? (step.notes.match(/retorno[:\s]+([^\.\n,]+)/i)||[])[1]?.trim() : '')) ? `<span style="font-size:9px;padding:2px 8px;border-radius:20px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;white-space:nowrap;flex-shrink:0;">📅 ${step.retornoEm || (step.notes.match(/retorno[:\s]+([^\.\n,]+)/i)||[])[1]?.trim()}</span>` : ''}
       <span class="step-badge ${badgeClass(statusAtual)}">${badgeLabel(statusAtual)}</span>
+      ${(statusAtual === 'concluido' || statusAtual === 'signed') && step.concluido_em ? `<span style="font-size:9px;color:#15803d;font-weight:600;white-space:nowrap;flex-shrink:0;background:#dcfce7;border:1px solid #bbf7d0;border-radius:12px;padding:2px 7px;">✅ ${new Date(step.concluido_em).toLocaleDateString('pt-BR')} ${new Date(step.concluido_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>` : ''}
       ${step.tipo !== 'urgencia' && !step.semComanda ? `<button class="btn btn-sm" style="background:#059669;color:#fff;font-size:10px;padding:3px 9px;line-height:1.4;flex-shrink:0;" onclick="event.stopPropagation();abrirEnviarComanda('${step._id}')">📋</button>` : ''}
       <span class="step-chevron">▼</span>
     </div>
@@ -5082,7 +5252,7 @@ function renderStepCard(step, i, _numMap) {
       <div class="step-action-bar">
         <button class="btn btn-primary btn-sm" onclick="saveStep('${step._id}')">💾 Salvar</button>
         <button class="btn btn-danger btn-sm" onclick="deleteStep('${step._id}')">🗑️</button>
-        ${step.tipo === 'cirurgia_pre' ? `<button class="btn btn-sm" style="background:#0891b2;color:#fff;" onclick="abrirAnamnesePaciente()">${state.currentPatient?.anamnese ? '📋 Ver Anamnese' : '📋 Anamnese'}</button>` : ''}
+        ${step.tipo === 'cirurgia_pre' ? `<button class="btn btn-sm" style="background:#0891b2;color:#fff;" onclick="abrirAnamnesePaciente()">${state.currentPatient?.anamnese ? '📋 Ver Anamnese' : '📋 Anamnese'}</button>${state.currentPatient?.anamneseAssinatura ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="baixarPDFAnamnese()">📄 PDF</button>` : ''}` : ''}
         ${step.tipo === 'cirurgia_pre' ? `<button class="btn btn-sm" style="background:#0369a1;color:#fff;" onclick="abrirReceituario('${step._id}')">💊 Receituário</button>` : ''}
         ${step.tipo === 'ortodontia' ? `<button class="btn btn-sm" style="background:#7c3aed;color:#fff;font-weight:700;" onclick="abrirPastaOrtodontia('${step._id}')">📂 Pasta Ortodôntica</button>` : ''}
         ${(() => { const p2 = (step.procedure||'').toLowerCase(); const isImpl = (p2.includes('implante') && p2.includes('cirurgia')) || step.tipo==='implante'; if (!isImpl) return ''; const temReg = !!step.registroImplante?.savedAt; return `<button class="btn btn-sm" style="background:#be185d;color:#fff;font-weight:700;" onclick="abrirRegistrarImplante('${step._id}')">🦷 ${temReg ? 'Editar Registro' : 'Registrar Implante'}</button>${temReg ? `<button class="btn btn-sm" style="background:#0891b2;color:#fff;font-weight:700;" onclick="verRegistroImplante('${step._id}')">👁️ Ver Registro</button>` : ''}`; })()}
@@ -5262,10 +5432,23 @@ async function setStepStatus(stepId, newStatus) {
     });
     const badge = card.querySelector('.step-badge');
     if (badge) { badge.className = 'step-badge '+badgeClass(newStatus); badge.textContent = badgeLabel(newStatus); }
+    // Mostra/oculta pill de data de conclusão
+    const oldPill = card.querySelector('.concluido-em-pill');
+    if (oldPill) oldPill.remove();
+    if (newStatus === 'concluido' || newStatus === 'signed') {
+      const dt = new Date();
+      const pill = document.createElement('span');
+      pill.className = 'concluido-em-pill';
+      pill.style.cssText = 'font-size:9px;color:#15803d;font-weight:600;white-space:nowrap;flex-shrink:0;background:#dcfce7;border:1px solid #bbf7d0;border-radius:12px;padding:2px 7px;';
+      pill.textContent = `✅ ${dt.toLocaleDateString('pt-BR')} ${dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+      badge.insertAdjacentElement('afterend', pill);
+    }
   }
   // auto-save status change
   const statusAnterior = step.status;
   step.status = newStatus;
+  const agora = new Date().toISOString();
+  if (newStatus === 'concluido') step.concluido_em = agora;
   await apiFetch(`/api/patients/${state.currentPatient._id}/planning/${stepId}`, {
     method: 'PUT', body: JSON.stringify({ status: newStatus }),
   });
@@ -5283,6 +5466,7 @@ async function setStepStatus(stepId, newStatus) {
     const stepsAntes = sortedAll.filter(s => (s.order||0) < currentOrder && s.status !== 'concluido' && s.status !== 'cancelado');
     for (const anterior of stepsAntes) {
       anterior.status = 'concluido';
+      anterior.concluido_em = agora;
       await apiFetch(`/api/patients/${state.currentPatient._id}/planning/${anterior._id}`, {
         method: 'PUT', body: JSON.stringify({ status: 'concluido' }),
       });
@@ -5525,7 +5709,7 @@ async function salvarConsultaExtra() {
     }),
   });
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = await pr.json();
+  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
   document.getElementById('modal-consulta-extra').classList.remove('open');
   renderPlanning();
   alert('✅ Consulta extra criada!');
@@ -5569,7 +5753,7 @@ async function salvarUrgencia() {
     }),
   });
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = await pr.json();
+  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
   document.getElementById('modal-urgencia').classList.remove('open');
   renderPlanning();
   alert('🚨 Consulta de urgência criada!');
@@ -5861,7 +6045,7 @@ async function confirmarRegistrarImplante() {
   }
 
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = await pr.json();
+  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
   // Atualiza o registro na step local para os botões refletirem imediatamente
   const stepAtual = planningSteps.find(s => s._id === stepId);
   if (stepAtual) stepAtual.registroImplante = registro;
@@ -5924,7 +6108,7 @@ async function confirmarImplantePerguntas() {
 
   // Recarrega planejamento
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = await pr.json();
+  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
   renderPlanning();
 
   // Se NÃO foi possível implante imediato → cria consulta extra no planejamento e vai pro Planejador
@@ -6012,22 +6196,208 @@ function abrirFinalizarPlanejamento() {
   setTimeout(() => window._initMfpSig?.(), 100);
 }
 
+async function gerarPDFFinalizacao(p, termoFinalizacao) {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) return null;
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const PW = 210, PH = 297, M = 15;
+  const vinho = [139, 45, 66];
+  const verde = [5, 150, 105];
+  const moka = [90, 60, 50];
+  const cinza = [120, 120, 120];
+  const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  let y = M;
+
+  // Cabeçalho
+  doc.setFillColor(...vinho);
+  doc.rect(0, 0, PW, 22, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ORAL UNIC CARLOS BARBOSA', M, 10);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Termo de Finalização de Tratamento — Documento com Validade Jurídica', M, 16);
+  y = 30;
+
+  // Faixa verde
+  doc.setFillColor(240, 253, 244);
+  doc.roundedRect(M, y, PW - M*2, 12, 3, 3, 'F');
+  doc.setDrawColor(...verde);
+  doc.roundedRect(M, y, PW - M*2, 12, 3, 3, 'S');
+  doc.setTextColor(...verde);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('🏁 TRATAMENTO CONCLUÍDO COM SUCESSO', PW/2, y + 7.5, { align: 'center' });
+  y += 18;
+
+  // Dados do paciente
+  doc.setTextColor(...vinho);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('IDENTIFICAÇÃO DO PACIENTE', M, y); y += 5;
+  doc.setDrawColor(...vinho);
+  doc.line(M, y, PW - M, y); y += 5;
+
+  doc.setTextColor(...moka);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Nome: ${p.nome || '—'}`, M, y);
+  doc.text(`Ficha nº: ${p.ficha || '—'}`, PW/2, y); y += 5;
+  doc.text(`CPF: ${p.cpf || termoFinalizacao.cpf || '—'}`, M, y);
+  doc.text(`Data de conclusão: ${termoFinalizacao.data ? new Date(termoFinalizacao.data+'T12:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}`, PW/2, y); y += 5;
+  doc.text(`Celular: ${p.celular || p.telefone || '—'}`, M, y); y += 10;
+
+  // Resumo das etapas concluídas
+  doc.setTextColor(...vinho);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ETAPAS DO TRATAMENTO REALIZADAS', M, y); y += 5;
+  doc.line(M, y, PW - M, y); y += 5;
+
+  const sorted = [...planningSteps].sort((a,b) => (a.order||0) - (b.order||0));
+  const concluidas = sorted.filter(s => s.status === 'concluido' || s.status === 'signed');
+  const naoCanc = sorted.filter(s => s.status !== 'cancelado');
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  let num = 1;
+  for (const s of naoCanc) {
+    if (y > PH - 50) { doc.addPage(); y = M; }
+    const isConcluido = s.status === 'concluido' || s.status === 'signed';
+    const cor = isConcluido ? verde : [180, 180, 180];
+    doc.setTextColor(...cor);
+    const icone = isConcluido ? '✓' : '○';
+    const dataConc = s.concluido_em ? ` — ${new Date(s.concluido_em).toLocaleDateString('pt-BR')} ${new Date(s.concluido_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}` : '';
+    const linha = `${icone} ${num}. ${(s.procedure||'Etapa').slice(0,70)}${s.dentista ? ' | '+s.dentista : ''}${dataConc}`;
+    const linhas = doc.splitTextToSize(linha, PW - M*2);
+    doc.text(linhas, M, y);
+    y += linhas.length * 4.5;
+    num++;
+  }
+  y += 5;
+
+  // Totais
+  doc.setFillColor(248, 247, 250);
+  doc.roundedRect(M, y, PW - M*2, 12, 3, 3, 'F');
+  doc.setTextColor(...vinho);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text(`Total de etapas: ${naoCanc.length}   |   Concluídas: ${concluidas.length}   |   Em andamento: ${naoCanc.length - concluidas.length}`, PW/2, y + 7.5, { align: 'center' });
+  y += 18;
+
+  // Declaração
+  if (y > PH - 70) { doc.addPage(); y = M; }
+  doc.setFillColor(240, 253, 244);
+  doc.roundedRect(M, y, PW - M*2, 24, 3, 3, 'F');
+  doc.setTextColor(...moka);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  const decl = 'Declaro que estou satisfeito(a) com o tratamento realizado na Oral Unic Carlos Barbosa e que todas as etapas foram concluídas conforme planejado. Confirmo que recebi todas as orientações necessárias para manutenção dos resultados obtidos.';
+  const declLinhas = doc.splitTextToSize(decl, PW - M*2 - 6);
+  doc.text(declLinhas, M + 3, y + 5);
+  y += 28;
+
+  // Assinatura
+  if (y > PH - 55) { doc.addPage(); y = M; }
+  doc.setDrawColor(...verde);
+  doc.line(M, y, PW - M, y); y += 5;
+  doc.setTextColor(...vinho);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('ASSINATURA E AUTENTICAÇÃO', M, y); y += 7;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...moka);
+  doc.text(`Paciente: ${p.nome || '—'}`, M, y);
+  doc.text(`CPF: ${p.cpf || '—'}`, PW/2, y); y += 5;
+  doc.text(`Data: ${termoFinalizacao.data ? new Date(termoFinalizacao.data+'T12:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR')}`, M, y);
+  doc.text(`Registro: ${timestamp}`, PW/2, y); y += 8;
+
+  const assinatura = termoFinalizacao.assinatura;
+  if (assinatura && assinatura !== 'FISICO') {
+    try { doc.addImage(assinatura, 'PNG', M, y, 80, 20); y += 22; } catch(e) {}
+  } else {
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(M, y, 80, 20);
+    if (assinatura === 'FISICO') {
+      doc.setTextColor(...cinza);
+      doc.setFontSize(7);
+      doc.text('Assinatura física — original arquivado', M + 2, y + 10);
+    }
+    y += 22;
+  }
+  doc.setDrawColor(...cinza);
+  doc.line(M, y, M + 80, y);
+  doc.setTextColor(...cinza);
+  doc.setFontSize(7);
+  doc.text(p.nome || '', M, y + 4); y += 8;
+
+  // Hash
+  const conteudoHash = JSON.stringify({ paciente: p.nome, cpf: p.cpf, etapas: concluidas.map(s => s._id), timestamp });
+  const hash = await gerarHashSHA256(conteudoHash);
+
+  if (y > PH - 20) { doc.addPage(); y = M; }
+  doc.setFillColor(245, 245, 245);
+  doc.rect(M, y, PW - M*2, 14, 'F');
+  doc.setTextColor(...cinza);
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HASH DE INTEGRIDADE (SHA-256):', M + 2, y + 4);
+  doc.setFont('helvetica', 'normal');
+  doc.text(hash, M + 2, y + 9);
+
+  doc.setFontSize(7);
+  doc.setTextColor(...cinza);
+  doc.text(`Documento gerado em ${timestamp} | Oral Unic Carlos Barbosa`, PW/2, PH - 6, { align: 'center' });
+
+  return { pdfBase64: doc.output('datauristring'), hash };
+}
+
 async function confirmarFinalizarPlanejamento(modo) {
   const fisico = modo === 'FISICO';
   const cv = document.getElementById('mfp-sig-canvas');
   const assinatura = fisico ? 'FISICO' : (cv ? cv.toDataURL('image/png') : null);
   const data = document.getElementById('mfp-data').value;
   const p = state.currentPatient;
-  const termoFinalizacao = { data, assinatura, cpf: p?.cpf || '', assinadoFisico: fisico };
+  const termoBase = { data, assinatura, cpf: p?.cpf || '', assinadoFisico: fisico };
+
+  // Gera PDF + hash antes de salvar (para incluir no mesmo objeto)
+  let termoFinalizacao = { ...termoBase };
+  let pdfLink = null;
+  try {
+    const resultado = await gerarPDFFinalizacao(p, termoBase);
+    if (resultado) {
+      termoFinalizacao._hash = resultado.hash;
+      termoFinalizacao._pdf  = resultado.pdfBase64;
+      pdfLink = resultado.pdfBase64;
+    }
+  } catch(e) { console.error('Erro ao gerar PDF finalização:', e); }
+
   const r = await apiFetch('/api/patients/' + p._id, {
-    method: 'PUT', body: JSON.stringify({ planejamentoConcluido: true, termoFinalizacao }),
+    method: 'PUT', body: JSON.stringify({ planejamentoConcluido: true, termo_finalizacao: termoFinalizacao }),
   });
   if (r && r.ok) {
     state.currentPatient.planejamentoConcluido = true;
     state.currentPatient.termoFinalizacao = termoFinalizacao;
+    state.currentPatient.termo_finalizacao = termoFinalizacao;
+    state.currentPatient.termoFinalizacaoHash = termoFinalizacao._hash || null;
+    state.currentPatient.termoFinalizacaoPdf  = termoFinalizacao._pdf  || null;
     document.getElementById('modal-finalizar-planejamento').classList.remove('open');
     atualizarBadgeDocumentacao();
-    alert('🏁 Planejamento concluído! Se o paciente retornar com novo tratamento, um novo planejamento será criado.');
+
+    // Baixa PDF automaticamente
+    if (pdfLink) {
+      const link = document.createElement('a');
+      link.href = pdfLink;
+      link.download = `Termo_Finalizacao_${(p.nome||'paciente').replace(/\s+/g,'_')}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
+      link.click();
+    }
+
+    alert(pdfLink ? '🏁 Planejamento concluído! PDF do Termo de Finalização gerado e baixado automaticamente.' : '🏁 Planejamento concluído!');
     renderPlanning();
   }
 }
@@ -6114,7 +6484,7 @@ async function addStep() {
     body: JSON.stringify({ order: planningSteps.length + 1, procedure: '', tooth: '', duration: '', notes: '', tipo: '', dentista: '', tempoDentista: '', status: 'pending' }),
   });
   if (!r) return;
-  const step = await r.json();
+  const step = normalizarStep(await r.json());
   planningSteps.push(step);
   renderPlanning();
   showTab('planejamento');
@@ -6142,7 +6512,7 @@ async function importarDoContrato() {
       status: 'pending',
     };
     const r = await apiFetch(`/api/patients/${p._id}/planning`, { method: 'POST', body: JSON.stringify(body) });
-    if (r) { const step = await r.json(); planningSteps.push(step); }
+    if (r) { const step = normalizarStep(await r.json()); planningSteps.push(step); }
   }
   renderPlanning();
   showTab('planejamento');
@@ -6623,7 +6993,7 @@ async function aplicarTemplate(templateId) {
     const r = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, {
       method: 'POST', body: JSON.stringify(step),
     });
-    if (r) { const saved = await r.json(); planningSteps.push(saved); }
+    if (r) { const saved = normalizarStep(await r.json()); planningSteps.push(saved); }
   }
   // salva obs do template no campo obs do paciente se ainda estiver vazio
   if (t.obs && !state.currentPatient.obs) {
@@ -7228,8 +7598,7 @@ async function handleImageUpload(e){
     if(!state.currentPatient.images)state.currentPatient.images=[];
     state.currentPatient.images.push({src:ev.target.result,date:new Date().toLocaleDateString('pt-BR'),name:file.name});
     state.currentImageIndex=state.currentPatient.images.length-1;
-    const _r = await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({images:state.currentPatient.images})});
-    if (_r && _r.ok) { const _d = await _r.json(); if (_d.images) { state.currentPatient.images = _d.images; state.currentImageIndex = state.currentPatient.images.length-1; } }
+    await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',body:JSON.stringify({images:state.currentPatient.images})});
     renderImagesPanel();loadCurrentImage();
   };
   reader.readAsDataURL(file);e.target.value='';
@@ -7282,6 +7651,204 @@ async function exportPDF(){
     doc.save(`DIO_${state.currentPatient.nome.replace(/\s+/g,'_')}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
   }catch(err){alert('Erro ao gerar PDF: '+err.message);}
   finally{if(btn){btn.textContent='⬇️ PDF';btn.disabled=false;}}
+}
+
+// ── PDF Anamnese com Hash SHA-256 ─────────────────────────────
+async function gerarHashSHA256(texto) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(texto));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function gerarPDFAnamnese(p, dados, assinaturaImg, respNome, assData, assHora) {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { console.error('jsPDF não carregou'); return null; }
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const PW = 210, PH = 297;
+  const M = 15; // margem
+  const vinho = [139, 45, 66];
+  const moka = [90, 60, 50];
+  const cinza = [120, 120, 120];
+  const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+  let y = M;
+
+  // ── Cabeçalho ──────────────────────────────────────────────
+  doc.setFillColor(...vinho);
+  doc.rect(0, 0, PW, 22, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ORAL UNIC CARLOS BARBOSA', M, 10);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Ficha de Anamnese — Documento com Validade Jurídica', M, 16);
+  y = 30;
+
+  // ── Dados do paciente ───────────────────────────────────────
+  doc.setTextColor(...vinho);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('IDENTIFICAÇÃO DO PACIENTE', M, y); y += 6;
+  doc.setDrawColor(...vinho);
+  doc.line(M, y, PW - M, y); y += 5;
+
+  doc.setTextColor(...moka);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`Nome: ${p.nome || '—'}`, M, y); y += 5;
+  doc.text(`CPF: ${p.cpf || '—'}`, M, y);
+  doc.text(`Ficha nº: ${p.ficha || '—'}`, PW/2, y); y += 5;
+  doc.text(`Data de nascimento: ${p.nascimento ? new Date(p.nascimento+'T12:00').toLocaleDateString('pt-BR') : '—'}`, M, y);
+  doc.text(`Celular: ${p.celular || p.telefone || '—'}`, PW/2, y); y += 5;
+  doc.text(`Endereço: ${[p.rua||p.endRua, p.numero||p.endNumero, p.bairro||p.endBairro, p.cidade||p.endCidade].filter(Boolean).join(', ') || '—'}`, M, y);
+  y += 8;
+
+  // ── Perguntas e respostas ───────────────────────────────────
+  doc.setTextColor(...vinho);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('QUESTIONÁRIO DE SAÚDE', M, y); y += 6;
+  doc.setDrawColor(...vinho);
+  doc.line(M, y, PW - M, y); y += 5;
+
+  for (const secObj of ANAMNESE_PERGUNTAS) {
+    // Verifica se há resposta em alguma pergunta da seção
+    const temResp = secObj.perguntas.some(pq => dados[pq.id] || dados[pq.id+'_obs']);
+    if (!temResp) continue;
+
+    // Verifica espaço na página
+    if (y > PH - 40) { doc.addPage(); y = M; }
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...vinho);
+    doc.text(secObj.sec.toUpperCase(), M, y); y += 5;
+
+    for (const pq of secObj.perguntas) {
+      const resp = dados[pq.id];
+      const obs = dados[pq.id + '_obs'];
+      if (!resp && !obs) continue;
+      if (y > PH - 30) { doc.addPage(); y = M; }
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...moka);
+      const respLabel = resp === 'sim' ? 'SIM' : resp === 'nao' ? 'NÃO' : (resp || '');
+      const cor = resp === 'sim' ? [220, 38, 38] : [5, 150, 105];
+      const linhaTexto = `• ${pq.txt}`;
+      const linhas = doc.splitTextToSize(linhaTexto, PW - M - 50);
+      doc.text(linhas, M, y);
+      if (resp) {
+        doc.setTextColor(...cor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(respLabel, PW - M - 15, y);
+      }
+      doc.setTextColor(...moka);
+      doc.setFont('helvetica', 'normal');
+      y += linhas.length * 4;
+      if (obs) {
+        doc.setTextColor(...cinza);
+        doc.setFontSize(7);
+        const obsLinhas = doc.splitTextToSize(`  → ${obs}`, PW - M - 10);
+        doc.text(obsLinhas, M + 3, y);
+        y += obsLinhas.length * 3.5;
+      }
+    }
+    y += 3;
+  }
+
+  // ── Declaração ──────────────────────────────────────────────
+  if (y > PH - 60) { doc.addPage(); y = M; }
+  y += 5;
+  doc.setFillColor(253, 242, 248);
+  doc.roundedRect(M, y, PW - M*2, 20, 3, 3, 'F');
+  doc.setTextColor(...moka);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  const decl = 'Declaro que as informações prestadas acima são verdadeiras e de minha inteira responsabilidade. Autorizo a equipe da Oral Unic Carlos Barbosa a realizar os procedimentos odontológicos necessários ao meu tratamento, tendo sido devidamente informado(a) sobre os riscos e benefícios.';
+  const declLinhas = doc.splitTextToSize(decl, PW - M*2 - 6);
+  doc.text(declLinhas, M + 3, y + 5);
+  y += 24;
+
+  // ── Assinatura ──────────────────────────────────────────────
+  if (y > PH - 55) { doc.addPage(); y = M; }
+  doc.setDrawColor(...vinho);
+  doc.line(M, y, PW - M, y); y += 5;
+  doc.setTextColor(...vinho);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('ASSINATURA E AUTENTICAÇÃO', M, y); y += 7;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...moka);
+  doc.text(`Responsável pela assinatura: ${respNome || p.nome || '—'}`, M, y); y += 5;
+  doc.text(`CPF: ${p.cpf || '—'}`, M, y);
+  doc.text(`Data: ${assData || new Date().toLocaleDateString('pt-BR')}`, PW/2, y); y += 5;
+  doc.text(`Hora: ${assHora || '—'}`, M, y);
+  doc.text(`Registro: ${timestamp}`, PW/2, y); y += 8;
+
+  if (assinaturaImg && assinaturaImg !== 'FISICO') {
+    try {
+      doc.addImage(assinaturaImg, 'PNG', M, y, 80, 20);
+      y += 22;
+    } catch(e) {}
+  } else if (assinaturaImg === 'FISICO') {
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(M, y, 80, 20);
+    doc.setTextColor(...cinza);
+    doc.setFontSize(7);
+    doc.text('Assinatura física — original arquivado', M + 2, y + 10);
+    y += 22;
+  } else {
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(M, y, 80, 20);
+    y += 22;
+  }
+  doc.setTextColor(...cinza);
+  doc.setFontSize(7);
+  doc.line(M, y, M + 80, y);
+  doc.text(respNome || p.nome || '', M, y + 4); y += 8;
+
+  // ── Hash SHA-256 ─────────────────────────────────────────────
+  const conteudoHash = JSON.stringify({ paciente: p.nome, cpf: p.cpf, dados, timestamp, respNome });
+  const hash = await gerarHashSHA256(conteudoHash);
+
+  if (y > PH - 20) { doc.addPage(); y = M; }
+  doc.setFillColor(245, 245, 245);
+  doc.rect(M, y, PW - M*2, 14, 'F');
+  doc.setTextColor(...cinza);
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HASH DE INTEGRIDADE (SHA-256):', M + 2, y + 4);
+  doc.setFont('helvetica', 'normal');
+  doc.text(hash, M + 2, y + 9);
+  y += 16;
+
+  doc.setFontSize(7);
+  doc.setTextColor(...cinza);
+  doc.text(`Documento gerado em ${timestamp} | Oral Unic Carlos Barbosa`, PW/2, PH - 6, { align: 'center' });
+
+  const pdfBase64 = doc.output('datauristring');
+  return { pdfBase64, hash };
+}
+
+async function baixarPDFAnamnese() {
+  const p = state.currentPatient;
+  if (!p) return;
+  const dados = typeof p.anamnese === 'object' ? p.anamnese : {};
+  const resultado = await gerarPDFAnamnese(
+    p, dados,
+    p.anamneseAssinatura, p.anamneseRespNome,
+    p.anamneseAssData, p.anamneseAssHora
+  );
+  if (!resultado) return;
+  const link = document.createElement('a');
+  link.href = resultado.pdfBase64;
+  link.download = `Anamnese_${(p.nome||'paciente').replace(/\s+/g,'_')}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
+  link.click();
 }
 
 // ── Aba Imagens / Raio-X ───────────────────────────────────────
@@ -8554,8 +9121,8 @@ async function agendaCarregarPlanejamentos() {
     const r = await apiFetch('/api/dashboard/planning');
     if (!r || !r.ok) return;
     const steps = await r.json();
-    const comPlan = new Set(steps.map(s => s.patientId));
-    state.patients.forEach(p => { p._temPlanejamento = comPlan.has(p._id); });
+    const comPlan = new Set(steps.map(s => s.patient_id || s.patientId));
+    state.patients.forEach(p => { p._temPlanejamento = comPlan.has(p._id) || comPlan.has(p.id); });
   } catch(e) {}
 }
 

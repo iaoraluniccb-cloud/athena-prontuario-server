@@ -87,6 +87,19 @@ app.use(express.static(path.join(__dirname), {
   }
 }));
 
+// Serve módulos externos do sistema via /ext/ (simulador de sorriso, odontograma, etc.)
+// No Render, esses arquivos são hospedados em athena.app.br separadamente
+// Em desenvolvimento local, usa a pasta pai
+const EXT_PATH = process.env.EXT_MODULES_PATH || path.join(__dirname, '..', 'projects');
+app.use('/ext', express.static(EXT_PATH, {
+  etag: false, lastModified: false,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.removeHeader('X-Frame-Options');
+    res.removeHeader('Content-Security-Policy');
+  }
+}));
+
 // ── Auth middleware ──────────────────────────────────────────
 function auth(req, res, next) {
   const h = req.headers.authorization;
@@ -226,7 +239,20 @@ app.post('/api/patients', auth, dentistOrAdmin, async (req, res) => {
 });
 
 app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
-  const { _id, id, ...update } = req.body;
+  const { _id, id, ...raw } = req.body;
+  // Remove campos que não existem no Supabase (legado frontend / campos virtuais)
+  const CAMPOS_INVALIDOS = ['planejamentoConcluido','termoFinalizacao','anamneseHash','anamnesePdf',
+    'anamneseData','anamneseAssinatura','anamneseRespNome','anamneseAssData','anamneseAssHora',
+    'termoFinalizacaoPdf','termoFinalizacaoHash','endereco','estrangeiro','docTipo','docNumero',
+    'docPais','docValidade','obs','origem','foto','fotoDescriptor','flagFalta','flagRemedio',
+    '_fotoBase64','_temPlanejamento','updated_at','created_at','deleted_at',
+    'endRua','endNumero','endBairro','endCidade','endComplemento','telefone',
+  ];
+  const update = Object.fromEntries(Object.entries(raw).filter(([k]) => !CAMPOS_INVALIDOS.includes(k)));
+  // Stringify campos JSON
+  ['anamnese','images','overlays','drawings','termo_finalizacao'].forEach(k => {
+    if (update[k] !== undefined && typeof update[k] !== 'string') update[k] = JSON.stringify(update[k]);
+  });
   const novaFicha = (update.ficha || '').toString().trim();
   if (novaFicha) {
     const { data: ex } = await supa.from('patients').select('id,nome').eq('ficha', novaFicha).neq('id', req.params.id).is('deleted_at', null).limit(1);
