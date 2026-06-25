@@ -1075,6 +1075,26 @@ app.post('/api/athena-migrate', async (req, res) => {
   });
 });
 
+// ── Google Calendar proxy (evita CORS e restrição de origem na API Key) ──────
+app.get('/api/google-calendar', auth, async (req, res) => {
+  const { calendarId, date } = req.query;
+  if (!calendarId || !date) return res.status(400).json({ error: 'calendarId e date obrigatórios' });
+  const GC_KEY = process.env.GOOGLE_CALENDAR_API_KEY || 'AIzaSyAqwN64E8CJ1S7jXNoznBbuGZ2BUgoI3G0';
+  const dayStart = date + 'T00:00:00-03:00';
+  const dayEnd   = date + 'T23:59:59-03:00';
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
+    + `?key=${GC_KEY}&timeMin=${encodeURIComponent(dayStart)}&timeMax=${encodeURIComponent(dayEnd)}`
+    + `&singleEvents=true&orderBy=startTime&maxResults=50`;
+  try {
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json(data);
+    res.json(data);
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Start ────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🦷 Athena — Prontuário Digital | Oral Unic CB`);
