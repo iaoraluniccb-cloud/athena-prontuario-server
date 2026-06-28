@@ -108,6 +108,11 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #no-patient-msg { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:#E0C9B8; height:100%; }
 #no-patient-msg p { font-size:14px; letter-spacing:0.04em; }
 
+@keyframes piscar-vermelho {
+  0%, 100% { opacity: 1; background: #dc2626; }
+  50% { opacity: 0.55; background: #b91c1c; }
+}
+
 /* TAB: PLANEJAMENTO */
 #tab-planejamento { flex:1; overflow-y:auto; padding:20px; display:none; background:#FDF9F4; }
 #tab-planejamento.visible { display:block; }
@@ -2781,15 +2786,15 @@ async function carregarRelacionamento() {
     const isRemedio = !!it.flagRemedio;
     const borderColor = isUrgencia ? '#f97316' : isFalta ? '#ea580c' : isRemedio ? '#fbbf24' : isRealizado ? '#fbbf24' : (it.efetivado ? '#bbf7d0' : '#E0C9B8');
     const bgColor = isUrgencia ? '#ffedd5' : isFalta ? '#fff7ed' : isRemedio ? '#fefce8' : isRealizado ? '#fefce8' : '#fff';
-    return `<div style="background:${bgColor};border:2px solid ${borderColor};border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start;${it.efetivado?'opacity:.8':''}${isUrgencia?'border-left:6px solid #c2410c;':isRealizado?'border-left:5px solid #f59e0b;':''}">
+    return `<div style="background:${bgColor};border:2px solid ${borderColor};border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:flex-start;${it.efetivado?'opacity:.8':''}${isUrgencia?'border-left:6px solid #c2410c;':isRealizado?'border-left:5px solid #dc2626;':''}">
       <div style="font-size:20px;flex-shrink:0;">${isUrgencia ? '🚨' : (TIPO_ICONE[it.tipo]||'📌')}</div>
       <div style="flex:1;min-width:0;">
+        ${isRealizado ? `<div style="background:#dc2626;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:4px 10px;margin-bottom:8px;text-align:center;letter-spacing:.06em;animation:piscar-vermelho 1s ease-in-out infinite;">🔴 JÁ REALIZADO</div>` : ''}
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
           <span style="font-size:12px;font-weight:700;color:${isUrgencia?'#c2410c':'#7c3aed'};">${it.patientName}</span>
           ${it.ficha?`<span style="font-size:10px;background:#f3e8ff;color:#7c3aed;border-radius:4px;padding:1px 5px;">#${it.ficha}</span>`:''}
           ${isUrgencia?`<span style="font-size:9px;background:#ea580c;color:#fff;border-radius:4px;padding:1px 6px;font-weight:700;">🚨 URGÊNCIA</span>`:''}
           ${isAdicional && !isUrgencia?`<span style="font-size:9px;background:#fff7ed;color:#c2410c;border-radius:4px;padding:1px 5px;border:1px solid #fed7aa;">➕ Adicional</span>`:''}
-          ${isRealizado?`<span style="font-size:9px;background:#fef9c3;color:#92400e;border-radius:4px;padding:1px 6px;font-weight:700;border:1px solid #fbbf24;">✅ JÁ REALIZADO</span>`:''}
           ${it.efetivado?`<span style="font-size:9px;background:#d1fae5;color:#059669;border-radius:4px;padding:1px 5px;">✅ Efetivado</span>`:''}
         </div>
         <div style="font-size:10px;color:#9ca3af;margin-bottom:6px;">${dt} · ${it.criadoPor||''}</div>
