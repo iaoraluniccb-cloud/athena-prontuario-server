@@ -2074,15 +2074,15 @@ function normalizarPaciente(p) {
   if (!Array.isArray(p.images))   p.images   = [];
   if (!p.overlays || typeof p.overlays !== 'object') p.overlays = {};
   if (!p.drawings || typeof p.drawings !== 'object') p.drawings = {};
-  // Expor campos de anamnese (salvos dentro do objeto anamnese)
+  // Expor campos de anamnese (salvos dentro do objeto anamnese) — sempre sobrescreve do banco
   if (p.anamnese && typeof p.anamnese === 'object') {
-    if (!p.anamneseAssinatura) p.anamneseAssinatura = p.anamnese._assinatura || null;
-    if (!p.anamneseData)       p.anamneseData       = p.anamnese._data       || null;
-    if (!p.anamneseRespNome)   p.anamneseRespNome   = p.anamnese._respNome   || null;
-    if (!p.anamneseAssData)    p.anamneseAssData    = p.anamnese._assData    || null;
-    if (!p.anamneseAssHora)    p.anamneseAssHora    = p.anamnese._assHora    || null;
-    if (!p.anamneseHash)       p.anamneseHash       = p.anamnese._hash       || null;
-    if (!p.anamnesePdf)        p.anamnesePdf        = p.anamnese._pdf        || null;
+    p.anamneseAssinatura = p.anamnese._assinatura || null;
+    p.anamneseData       = p.anamnese._data       || null;
+    p.anamneseRespNome   = p.anamnese._respNome   || null;
+    p.anamneseAssData    = p.anamnese._assData    || null;
+    p.anamneseAssHora    = p.anamnese._assHora    || null;
+    p.anamneseHash       = p.anamnese._hash       || null;
+    p.anamnesePdf        = p.anamnese._pdf        || null; // legado — normalmente null
   }
   // Expor termo de finalização (campo Supabase = termo_finalizacao)
   if (!p.termoFinalizacao && p.termo_finalizacao) p.termoFinalizacao = p.termo_finalizacao;
@@ -4061,7 +4061,8 @@ async function salvarAnamnesePreop() {
     if (resultado) { anamneseHash = resultado.hash; anamnesePdfB64 = resultado.pdfBase64; }
   } catch(e) { console.error('Erro ao gerar PDF anamnese:', e); }
 
-  // Monta objeto anamnese com metadados embutidos (campos _ são internos)
+  // Monta objeto anamnese SEM o PDF (evita JSONB grande demais no Supabase)
+  // O PDF é gerado na hora do download — apenas o hash fica armazenado
   const anamneseObj = {
     ...dados,
     _assinatura: assinaturaImg,
@@ -4070,7 +4071,6 @@ async function salvarAnamnesePreop() {
     _assData: assData,
     _assHora: assHora,
     _hash: anamneseHash,
-    _pdf: anamnesePdfB64,
   };
 
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
@@ -4084,7 +4084,7 @@ async function salvarAnamnesePreop() {
     state.currentPatient.anamneseAssHora = assHora;
     state.currentPatient.anamneseRespNome = respNome;
     state.currentPatient.anamneseHash = anamneseHash;
-    state.currentPatient.anamnesePdf = anamnesePdfB64;
+    state.currentPatient.anamnesePdf = anamnesePdfB64; // apenas em memória (sessão atual)
     document.getElementById('modal-anamnese-preop').classList.remove('open');
     renderPlanning();
     atualizarBadgeDocumentacao();
