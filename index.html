@@ -4106,17 +4106,20 @@ async function salvarAnamnesePreop() {
   const assHora = document.getElementById('anamnese-assina-hora')?.value || new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   const anamneseDataHora = new Date().toISOString();
 
+  // Dados físicos (lidos antes do PDF para incluir no documento)
+  const tipoSanguineo = document.getElementById('anamnese-tipo-sanguineo')?.value || '';
+  const peso = document.getElementById('anamnese-peso')?.value || '';
+  const altura = document.getElementById('anamnese-altura')?.value || '';
+  dados._tipoSanguineo = tipoSanguineo;
+  dados._peso = peso;
+  dados._altura = altura;
+
   // Gera PDF + hash antes de salvar (para incluir no mesmo objeto)
   let anamneseHash = null, anamnesePdfB64 = null;
   try {
     const resultado = await gerarPDFAnamnese(state.currentPatient, dados, assinaturaImg, respNome, assData, assHora);
     if (resultado) { anamneseHash = resultado.hash; anamnesePdfB64 = resultado.pdfBase64; }
   } catch(e) { console.error('Erro ao gerar PDF anamnese:', e); }
-
-  // Dados físicos
-  const tipoSanguineo = document.getElementById('anamnese-tipo-sanguineo')?.value || '';
-  const peso = document.getElementById('anamnese-peso')?.value || '';
-  const altura = document.getElementById('anamnese-altura')?.value || '';
 
   // Monta objeto anamnese SEM o PDF (evita JSONB grande demais no Supabase)
   const anamneseObj = {
@@ -7929,7 +7932,26 @@ async function gerarPDFAnamnese(p, dados, assinaturaImg, respNome, assData, assH
   doc.text(`Data de nascimento: ${p.nascimento ? new Date(p.nascimento+'T12:00').toLocaleDateString('pt-BR') : '—'}`, M, y);
   doc.text(`Celular: ${p.celular || p.telefone || '—'}`, PW/2, y); y += 5;
   doc.text(`Endereço: ${[p.rua||p.endRua, p.numero||p.endNumero, p.bairro||p.endBairro, p.cidade||p.endCidade].filter(Boolean).join(', ') || '—'}`, M, y);
-  y += 8;
+  y += 5;
+
+  // Dados físicos (tipo sanguíneo, peso, altura)
+  const tSang = dados._tipoSanguineo || '';
+  const peso  = dados._peso || '';
+  const alt   = dados._altura || '';
+  if (tSang || peso || alt) {
+    doc.setFillColor(224, 242, 254);
+    doc.roundedRect(M, y, PW - M*2, 8, 2, 2, 'F');
+    doc.setTextColor(3, 105, 161);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    let fx = M + 3;
+    if (tSang) { doc.text(`Tipo Sanguíneo: ${tSang}`, fx, y + 5); fx += 55; }
+    if (peso)  { doc.text(`Peso: ${peso} kg`, fx, y + 5); fx += 35; }
+    if (alt)   { doc.text(`Altura: ${alt} cm`, fx, y + 5); }
+    y += 12;
+  } else {
+    y += 3;
+  }
 
   // ── Perguntas e respostas ───────────────────────────────────
   doc.setTextColor(...vinho);
