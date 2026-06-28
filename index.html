@@ -4355,16 +4355,22 @@ async function impConfirmar() {
     modo = 'adicionar';
   }
 
+  // Bloqueia o botão para evitar clique duplo
+  const impBtnConfirmar = document.querySelector('#modal-importar-plano .btn-success');
+  if (impBtnConfirmar) { impBtnConfirmar.disabled = true; impBtnConfirmar.textContent = '⏳ Salvando...'; }
+
+  try {
   if (modo === 'substituir') {
-    // Apaga todas as etapas existentes
-    for (const s of planningSteps) {
-      await apiFetch(`/api/patients/${state.currentPatient._id}/planning/${s._id}`, { method: 'DELETE' });
-    }
+    // Deleta todas as etapas de uma vez (1 request)
+    await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, { method: 'DELETE' });
     planningSteps = [];
   }
 
   const maxOrder = planningSteps.length ? Math.max(...planningSteps.map(s => s.order||0)) : 0;
   let ordem = maxOrder + 1;
+
+  // Monta array de etapas para bulk insert
+  const novasEtapas = [];
 
   // Se substituindo: cria Anamnese inicial, EXCETO se a PRIMEIRA etapa já for PRÉ-OP
   if (modo === 'substituir') {
@@ -4373,22 +4379,25 @@ async function impConfirmar() {
       /pr[eé]\s*operat/i.test(etapas[0].procedure)
     );
     if (!primeiraEPreOp) {
-      await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, {
-        method: 'POST',
-        body: JSON.stringify({ order: ordem++, procedure: 'Anamnese + Avaliação Inicial', tipo: 'cirurgia_pre', duration: '30min', status: 'pending', notes: 'Primeira consulta — anamnese preenchida no cadastro.' }),
-      });
+      novasEtapas.push({ order: ordem++, procedure: 'Anamnese + Avaliação Inicial', tipo: 'cirurgia_pre', duration: '30min', status: 'pending', notes: 'Primeira consulta — anamnese preenchida no cadastro.' });
     }
   }
 
   for (const s of etapas) {
-    await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, {
-      method: 'POST',
-      body: JSON.stringify({ order: ordem++, procedure: s.procedure, duration: s.duration||'30min', retornoEm: s.retorno||'', dentista: normalizeDentista(s.dentista||''), notes: s.notes||'', status: s.concluido ? 'concluido' : 'pending', tipo:'importado', requerTermoProtetica: !!s.requerTermoProtetica, requerTermoFinalizacao: !!s.requerTermoFinalizacao }),
-    });
+    novasEtapas.push({ order: ordem++, procedure: s.procedure, duration: s.duration||'30min', retornoEm: s.retorno||'', dentista: normalizeDentista(s.dentista||''), notes: s.notes||'', status: s.concluido ? 'concluido' : 'pending', tipo:'importado', requerTermoProtetica: !!s.requerTermoProtetica, requerTermoFinalizacao: !!s.requerTermoFinalizacao });
   }
+
+  // Insere todas de uma vez (1 request)
+  await apiFetch(`/api/patients/${state.currentPatient._id}/planning/bulk`, {
+    method: 'POST',
+    body: JSON.stringify({ steps: novasEtapas }),
+  });
 
   const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
   if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
+  } finally {
+    if (impBtnConfirmar) { impBtnConfirmar.disabled = false; impBtnConfirmar.textContent = '✅ Confirmar'; }
+  }
 
   // Salvar dentistas extraídos pelo OCR no perfil do paciente
   const _impDa = document.getElementById('pp-dentista-avaliador')?.value?.trim();
@@ -4947,12 +4956,22 @@ async function confirmarEfetivar() {
 
   const btns = document.querySelectorAll('#modal-efetivar .btn-success');
   btns.forEach(b => { b.disabled = true; b.textContent = '⏳ Salvando...'; });
-  const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
-    method: 'PUT', body: JSON.stringify(updates),
-  });
-  btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
-  if (!r) { alert('❌ Sem resposta do servidor. Verifique a conexão.'); return; }
+  let r;
+  try {
+    r = await apiFetch('/api/patients/' + state.currentPatient._id, {
+      method: 'PUT', body: JSON.stringify(updates),
+    });
+  } catch(e) {
+    btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
+    alert('❌ Sem resposta do servidor. Verifique a conexão.');
+    return;
+  }
+  if (!r) {
+    btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
+    alert('❌ Sem resposta do servidor. Verifique a conexão.'); return;
+  }
   if (!r.ok) {
+    btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
     let msg = 'Erro ao salvar paciente.';
     try { const j = await r.json(); msg = j.error || j.message || JSON.stringify(j); } catch(e) {}
     alert('❌ Erro ao efetivar: ' + msg);
@@ -4963,47 +4982,25 @@ async function confirmarEfetivar() {
     const idx = state.patients.findIndex(p => p._id === state.currentPatient._id);
     if (idx >= 0) Object.assign(state.patients[idx], updates);
 
-    // Cria Anamnese como etapa 1, EXCETO se a PRIMEIRA etapa importada já for PRÉ-OP
+    // Monta todas as etapas e insere em bulk (1 request)
     const primeiraStepPreOp = _efImportSteps.length > 0 && (
       /pr[eé][\s\-]?op/i.test(_efImportSteps[0].procedure) ||
       /pr[eé]\s*operat/i.test(_efImportSteps[0].procedure) ||
       /cirurgia[\s_]pre/i.test(_efImportSteps[0].procedure || _efImportSteps[0].tipo || '')
     );
-    let ordemImport;
+    const novasEtapasEf = [];
+    let ordemImport = 1;
     if (!primeiraStepPreOp) {
-      await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, {
-        method: 'POST',
-        body: JSON.stringify({
-          order: 1,
-          procedure: 'Anamnese + Avaliação Inicial',
-          tipo: 'cirurgia_pre',
-          duration: '30min',
-          dentista: '',
-          status: 'pending',
-          notes: 'Primeira consulta — anamnese já preenchida no cadastro.',
-        }),
-      });
-      ordemImport = 2;
-    } else {
-      ordemImport = 1; // PRÉ-OP é a primeira → começa direto nele
+      novasEtapasEf.push({ order: ordemImport++, procedure: 'Anamnese + Avaliação Inicial', tipo: 'cirurgia_pre', duration: '30min', dentista: '', status: 'pending', notes: 'Primeira consulta — anamnese já preenchida no cadastro.' });
     }
-    // etapas importadas
     for (const s of _efImportSteps) {
       if (!s.procedure.trim()) continue;
-      await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, {
+      novasEtapasEf.push({ order: ordemImport++, procedure: s.procedure, duration: s.duration||'', dentista: normalizeDentista(s.dentista||''), status: s.concluido ? 'concluido' : 'pending', tipo: 'importado', notes: s.notes||'', retornoEm: s.retorno||'', requerTermoProtetica: !!s.requerTermoProtetica, requerTermoFinalizacao: !!s.requerTermoFinalizacao });
+    }
+    if (novasEtapasEf.length) {
+      await apiFetch(`/api/patients/${state.currentPatient._id}/planning/bulk`, {
         method: 'POST',
-        body: JSON.stringify({
-          order: ordemImport++,
-          procedure: s.procedure,
-          duration: s.duration || '',
-          dentista: normalizeDentista(s.dentista || ''),
-          status: s.concluido ? 'concluido' : 'pending',
-          tipo: 'importado',
-          notes: s.notes || '',
-          retornoEm: s.retorno||'',
-          requerTermoProtetica: !!s.requerTermoProtetica,
-          requerTermoFinalizacao: !!s.requerTermoFinalizacao,
-        }),
+        body: JSON.stringify({ steps: novasEtapasEf }),
       });
     }
 
@@ -5025,6 +5022,7 @@ async function confirmarEfetivar() {
       }
     }
 
+    btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
     fecharEfetivar();
     renderPatientList();
     atualizarEstadoPlanejamento();

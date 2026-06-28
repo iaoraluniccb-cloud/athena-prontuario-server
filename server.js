@@ -370,6 +370,36 @@ app.delete('/api/patients/:id/planning/:stepId', auth, dentistOrAdmin, async (re
   res.json({ ok: true });
 });
 
+// Deleta TODAS as etapas do paciente de uma vez (bulk delete para substituição)
+app.delete('/api/patients/:id/planning', auth, dentistOrAdmin, async (req, res) => {
+  const { error } = await supa.from('planning').update({ deleted_at: new Date().toISOString() }).eq('patient_id', req.params.id).is('deleted_at', null);
+  if (error) return dbErr(res, error);
+  res.json({ ok: true });
+});
+
+// Insere várias etapas de uma vez (bulk insert)
+app.post('/api/patients/:id/planning/bulk', auth, dentistOrAdmin, async (req, res) => {
+  const { steps } = req.body;
+  if (!Array.isArray(steps) || !steps.length) return res.status(400).json({ error: 'steps must be a non-empty array' });
+  const rows = steps.map(s => ({
+    patient_id: req.params.id,
+    sort_order: s.order || 0,
+    procedure: s.procedure || '',
+    duration: s.duration || '',
+    dentista: s.dentista || '',
+    status: s.status || 'pending',
+    tipo: s.tipo || 'importado',
+    notes: s.notes || '',
+    retorno_em: s.retornoEm || '',
+    requer_termo_protetica: !!s.requerTermoProtetica,
+    requer_termo_finalizacao: !!s.requerTermoFinalizacao,
+    created_by_name: req.user.name || '',
+  }));
+  const { error } = await supa.from('planning').insert(rows);
+  if (error) return dbErr(res, error);
+  res.json({ ok: true, count: rows.length });
+});
+
 // ── Assinatura ───────────────────────────────────────────────
 app.post('/api/patients/:id/planning/:stepId/sign', auth, async (req, res) => {
   const { signatureData, signatureType } = req.body;
