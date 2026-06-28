@@ -1602,7 +1602,31 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
     <p style="font-size:11px;color:#9ca3af;margin-bottom:20px;font-style:italic;">Informações estritamente confidenciais para uso exclusivo dos profissionais da clínica.</p>
     <div id="anamnese-ocr-status" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:12px;"></div>
     <div id="anamnese-preop-container"></div>
-    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:16px;margin-top:20px;">
+
+    <!-- Confirmação de identidade + foto -->
+    <div id="anamnese-confirm-bloco" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:16px 20px;margin-top:20px;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:12px;">📸 Confirmação de Identidade</div>
+      <div style="display:flex;gap:18px;align-items:flex-start;">
+        <div style="flex-shrink:0;text-align:center;">
+          <div id="anamnese-confirm-foto-wrap" style="width:90px;height:90px;border-radius:10px;overflow:hidden;border:2px solid #fde68a;background:#fef9c3;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-bottom:6px;" onclick="document.getElementById('anamnese-confirm-foto-input').click()">
+            <img id="anamnese-confirm-foto-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;">
+            <span id="anamnese-confirm-foto-placeholder" style="font-size:28px;">📷</span>
+          </div>
+          <input type="file" id="anamnese-confirm-foto-input" accept="image/*" capture="user" style="display:none;" onchange="anamneseConfirmFotoCarregar(event)">
+          <button type="button" onclick="document.getElementById('anamnese-confirm-foto-input').click()" style="font-size:10px;background:#f59e0b;color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:700;">📷 Tirar / Carregar</button>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#78350f;margin-bottom:8px;font-weight:600;">Confirme com o paciente se os dados estão corretos:</div>
+          <div id="anamnese-confirm-dados" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:12px;color:#374151;"></div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;font-size:12px;color:#065f46;font-weight:600;background:#d1fae5;border:1.5px solid #6ee7b7;border-radius:8px;padding:8px 12px;">
+            <input type="checkbox" id="anamnese-confirm-ok" style="accent-color:#059669;width:15px;height:15px;" onchange="anamneseConfirmToggle()">
+            ✅ Confirmo que os dados e a identidade do paciente estão corretos
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:16px;margin-top:0px;">
       <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px;">Declaração do Paciente</div>
       <div style="font-size:12px;color:#374151;margin-bottom:12px;">Declaro que as informações prestadas são verdadeiras e que fui esclarecido de todos os termos técnicos que constam neste documento.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 120px;gap:12px;margin-bottom:16px;">
@@ -3993,6 +4017,41 @@ function abrirAnamnesePaciente() {
   const agora = new Date();
   document.getElementById('anamnese-assina-data').value = agora.toISOString().split('T')[0];
   document.getElementById('anamnese-assina-hora').value = agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}).replace(':',':');
+
+  // Preencher bloco de confirmação de identidade
+  const confirmDados = document.getElementById('anamnese-confirm-dados');
+  if (confirmDados) {
+    const campos = [
+      ['Nome', p.nome || '—'],
+      ['CPF', p.cpf || '—'],
+      ['Data de nascimento', p.dataNascimento ? new Date(p.dataNascimento+'T12:00:00').toLocaleDateString('pt-BR') : '—'],
+      ['Telefone', p.telefone || '—'],
+      ['Convênio', p.convenio || 'Particular'],
+      ['Dentista', p.dentista || '—'],
+    ];
+    confirmDados.innerHTML = campos.map(([l,v]) =>
+      `<div><span style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;">${l}</span><br><strong style="color:#1f2937;">${v}</strong></div>`
+    ).join('');
+  }
+  const fotoImg = document.getElementById('anamnese-confirm-foto-img');
+  const fotoPlaceholder = document.getElementById('anamnese-confirm-foto-placeholder');
+  if (fotoImg && fotoPlaceholder) {
+    if (p.foto || p._fotoBase64) {
+      fotoImg.src = p._fotoBase64 || p.foto;
+      fotoImg.style.display = 'block';
+      fotoPlaceholder.style.display = 'none';
+    } else {
+      fotoImg.style.display = 'none';
+      fotoPlaceholder.style.display = '';
+    }
+  }
+  // Reset confirmação
+  const chk = document.getElementById('anamnese-confirm-ok');
+  if (chk) chk.checked = false;
+  const confirmBloco = document.getElementById('anamnese-confirm-bloco');
+  if (confirmBloco) confirmBloco.style.display = 'block';
+  anamneseConfirmToggle();
+
   document.getElementById('modal-anamnese-preop').classList.add('open');
   setTimeout(() => {
     limparAssinaturaAnamnese();
@@ -4000,10 +4059,45 @@ function abrirAnamnesePaciente() {
   }, 100);
 }
 
+function anamneseConfirmFotoCarregar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const fotoImg = document.getElementById('anamnese-confirm-foto-img');
+    const placeholder = document.getElementById('anamnese-confirm-foto-placeholder');
+    fotoImg.src = e.target.result;
+    fotoImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    if (state.currentPatient) state.currentPatient._fotoConfirmAnamnese = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function anamneseConfirmToggle() {
+  const ok = document.getElementById('anamnese-confirm-ok');
+  const btnSalvar = document.querySelector('#modal-anamnese-preop .btn-success');
+  if (!btnSalvar) return;
+  const confirmado = ok && ok.checked;
+  btnSalvar.disabled = !confirmado;
+  btnSalvar.style.opacity = confirmado ? '' : '0.45';
+  btnSalvar.title = confirmado ? '' : 'Confirme a identidade do paciente antes de salvar';
+}
+
 function toggleSigFisicoAnamnese() {
   const isFisico = document.getElementById('anamnese-sig-fisico').checked;
   document.getElementById('anamnese-sig-canvas-wrap').style.display = isFisico ? 'none' : 'block';
   document.getElementById('anamnese-sig-fisico-badge').style.display = isFisico ? 'block' : 'none';
+  // Se físico: oculta confirmação de identidade e libera botão salvar automaticamente
+  const confirmBloco = document.getElementById('anamnese-confirm-bloco');
+  if (confirmBloco) confirmBloco.style.display = isFisico ? 'none' : 'block';
+  if (isFisico) {
+    const chk = document.getElementById('anamnese-confirm-ok');
+    if (chk) { chk.checked = true; anamneseConfirmToggle(); }
+  } else {
+    const chk = document.getElementById('anamnese-confirm-ok');
+    if (chk) { chk.checked = false; anamneseConfirmToggle(); }
+  }
 }
 async function salvarAnamnesePreop() {
   const dados = {};
