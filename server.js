@@ -296,6 +296,20 @@ app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// Toggle flag (falta/remedio) — salvo dentro do campo perfil JSONB
+app.put('/api/patients/:id/flags', auth, dentistOrAdmin, async (req, res) => {
+  const { flag, value } = req.body;
+  if (!['falta','remedio'].includes(flag)) return res.status(400).json({ error: 'flag inválida' });
+  const { data: pac } = await supa.from('patients').select('perfil').eq('id', req.params.id).single();
+  if (!pac) return res.status(404).json({ error: 'Paciente não encontrado' });
+  const perfilAtual = typeof pac.perfil === 'string' ? JSON.parse(pac.perfil || '{}') : (pac.perfil || {});
+  const fieldKey = flag === 'falta' ? 'flagFalta' : 'flagRemedio';
+  perfilAtual[fieldKey] = !!value;
+  const { error } = await supa.from('patients').update({ perfil: JSON.stringify(perfilAtual) }).eq('id', req.params.id);
+  if (error) return dbErr(res, error);
+  res.json({ ok: true, [fieldKey]: !!value });
+});
+
 app.delete('/api/patients/:id', auth, adminOnly, async (req, res) => {
   await supa.from('patients').update({ deleted_at: new Date().toISOString() }).eq('id', req.params.id);
   await supa.from('planning').update({ deleted_at: new Date().toISOString() }).eq('patient_id', req.params.id);

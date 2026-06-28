@@ -2110,6 +2110,14 @@ function normalizarPaciente(p) {
   if (!Array.isArray(p.images))   p.images   = [];
   if (!p.overlays || typeof p.overlays !== 'object') p.overlays = {};
   if (!p.drawings || typeof p.drawings !== 'object') p.drawings = {};
+  // Expor flags do perfil JSONB
+  if (p.perfil && typeof p.perfil === 'object') {
+    p.flagFalta   = !!p.perfil.flagFalta;
+    p.flagRemedio = !!p.perfil.flagRemedio;
+  } else {
+    if (p.flagFalta   === undefined) p.flagFalta   = false;
+    if (p.flagRemedio === undefined) p.flagRemedio = false;
+  }
   // Expor campos de anamnese (salvos dentro do objeto anamnese) — sempre sobrescreve do banco
   if (p.anamnese && typeof p.anamnese === 'object') {
     p.anamneseAssinatura = p.anamnese._assinatura || null;
@@ -2779,9 +2787,15 @@ async function toggleFlagPaciente(id, flag) {
   if (!p) return;
   const field = flag === 'falta' ? 'flagFalta' : 'flagRemedio';
   const novoValor = !p[field];
-  await apiFetch('/api/patients/' + id, { method: 'PUT', body: JSON.stringify({ [field]: novoValor }) });
+  await apiFetch('/api/patients/' + id + '/flags', { method: 'PUT', body: JSON.stringify({ flag, value: novoValor }) });
   p[field] = novoValor;
-  if (state.currentPatient?._id === id) state.currentPatient[field] = novoValor;
+  if (!p.perfil) p.perfil = {};
+  p.perfil[field] = novoValor;
+  if (state.currentPatient?._id === id) {
+    state.currentPatient[field] = novoValor;
+    if (!state.currentPatient.perfil) state.currentPatient.perfil = {};
+    state.currentPatient.perfil[field] = novoValor;
+  }
   renderPatientList();
 }
 async function toggleFlagRelacionamento(id, flag) {
