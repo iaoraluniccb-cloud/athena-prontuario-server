@@ -2979,7 +2979,7 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
           <div style="font-size:11px;color:#6b7280;margin-top:6px;">✍️ Assinatura: <strong>${c.assinaturaNome} (${c.assinatura})</strong>${c.dentista ? ' · ' + c.dentista : ''}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-          <button class="btn btn-sm" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;" onclick="toggleEditRetornoComanda('${c._id}')">✏️ Editar Retorno</button>
+          ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;" onclick="toggleEditRetornoComanda('${c._id}')">✏️ Editar Retorno</button>` : ''}
           ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="marcarComandaStatus('${c._id}','agendado')">📅 Agendado</button>` : ''}
           ${status !== 'pendente' ? `<button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="marcarComandaStatus('${c._id}','pendente')">⏳ Pendente</button>` : ''}
           ${(currentUser?.role === 'admin' || currentUser?.role === 'dentist') ? `<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;" onclick="excluirComanda('${c._id}')">🗑️ Excluir</button>` : ''}
@@ -3007,7 +3007,8 @@ async function salvarEdicaoComanda(id) {
 
 async function marcarComandaStatus(id, novoStatus) {
   await apiFetch('/api/comandas/'+id+'/lida', { method: 'PUT', body: JSON.stringify({ status: novoStatus }) });
-  carregarComandas();
+  await carregarComandas();
+  if (novoStatus === 'agendado') comandasSubTab('agendados');
 }
 
 async function excluirProntuario(id, nome) {
