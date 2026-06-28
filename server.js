@@ -147,6 +147,7 @@ function normalizarCampos(body) {
     // campos legados do frontend (não existem como colunas)
     'planejamentoConcluido','anamneseHash','anamnesePdf','anamneseData','anamneseAssinatura',
     'anamneseRespNome','anamneseAssData','anamneseAssHora',
+    'respNome','respCpf',
     'termoFinalizacao','termoFinalizacaoPdf','termoFinalizacaoHash',
     // campos de endereço legado já mapeados acima
     'endRua','endNumero','endBairro','endCidade','endComplemento',
