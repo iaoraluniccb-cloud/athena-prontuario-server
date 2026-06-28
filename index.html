@@ -5017,6 +5017,12 @@ async function confirmarEfetivar() {
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
     method: 'PUT', body: JSON.stringify(updates),
   });
+  if (r && !r.ok) {
+    let msg = 'Erro ao salvar paciente.';
+    try { const j = await r.json(); msg = j.error || j.message || JSON.stringify(j); } catch(e) {}
+    alert('❌ Erro ao efetivar: ' + msg);
+    return;
+  }
   if (r && r.ok) {
     Object.assign(state.currentPatient, updates);
     const idx = state.patients.findIndex(p => p._id === state.currentPatient._id);

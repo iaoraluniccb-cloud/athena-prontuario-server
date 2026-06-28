@@ -4,6 +4,7 @@ const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const cors     = require('cors');
 const path     = require('path');
+const fs       = require('fs');
 const multer   = require('multer');
 const Anthropic = require('@anthropic-ai/sdk');
 const { createClient } = require('@supabase/supabase-js');
@@ -47,16 +48,6 @@ app.use(express.json({ limit: '50mb' }));
       console.log('Bucket odontogramas criado.');
     }
   } catch(e) { console.warn('Bucket check:', e.message); }
-
-  // Garante tabela dio_pacientes
-  try {
-    const chkDio = await supa.from('dio_pacientes').select('id').limit(1);
-    if (chkDio.error) {
-      console.warn('dio_pacientes não existe — execute criar-tabela-dio-pacientes.sql no Supabase Dashboard');
-    } else {
-      console.log('Tabela dio_pacientes OK.');
-    }
-  } catch(e) { console.warn('dio_pacientes check:', e.message); }
 
   // Garante tabela home_config — tenta insert de teste; se falhar cria
   try {
@@ -284,15 +275,8 @@ app.post('/api/patients', auth, dentistOrAdmin, async (req, res) => {
 
 app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
   const { _id, id, ...raw } = req.body;
-  // Remove campos que não existem no Supabase (legado frontend / campos virtuais)
-  const CAMPOS_INVALIDOS = ['planejamentoConcluido','termoFinalizacao','anamneseHash','anamnesePdf',
-    'anamneseData','anamneseAssinatura','anamneseRespNome','anamneseAssData','anamneseAssHora',
-    'termoFinalizacaoPdf','termoFinalizacaoHash','endereco','estrangeiro','docTipo','docNumero',
-    'docPais','docValidade','obs','origem','foto','fotoDescriptor','flagFalta','flagRemedio',
-    '_fotoBase64','_temPlanejamento','updated_at','created_at','deleted_at',
-    'endRua','endNumero','endBairro','endCidade','endComplemento','telefone',
-  ];
-  const update = Object.fromEntries(Object.entries(raw).filter(([k]) => !CAMPOS_INVALIDOS.includes(k)));
+  // normalizarCampos converte legado (endRua→rua, telefone→celular) e remove inválidos
+  const update = normalizarCampos(raw);
   // Stringify campos JSON
   ['anamnese','images','overlays','drawings','termo_finalizacao'].forEach(k => {
     if (update[k] !== undefined && typeof update[k] !== 'string') update[k] = JSON.stringify(update[k]);
@@ -302,8 +286,7 @@ app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
     const { data: ex } = await supa.from('patients').select('id,nome').eq('ficha', novaFicha).neq('id', req.params.id).is('deleted_at', null).limit(1);
     if (ex?.length) return res.status(409).json({ error: `Ficha #${novaFicha} já está cadastrada para "${ex[0].nome}".` });
   }
-  const update = normalizarCampos({ ...raw, ficha: novaFicha || null });
-  const { error } = await supa.from('patients').update(update).eq('id', req.params.id);
+  const { error } = await supa.from('patients').update({ ...update, ficha: novaFicha || null }).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
@@ -891,74 +874,6 @@ Se não conseguir ler, retorne {"nome": null, "data": null}.`;
   }
 });
 
-// ══════════════════════════════════════════════════════════════
-//  DIO-V2: Pacientes (sincroniza entre dispositivos via Supabase)
-// ══════════════════════════════════════════════════════════════
-app.get('/api/dio-pacientes', auth, async (req, res) => {
-  const { data, error } = await supa.from('dio_pacientes').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-  if (error) return dbErr(res, error);
-  res.json(data || []);
-});
-
-app.post('/api/dio-pacientes', auth, async (req, res) => {
-  const { id, nome, nascimento, telefone, obs, images, overlays, drawings } = req.body;
-  if (!nome) return res.status(400).json({ error: 'Nome obrigatório' });
-  const row = {
-    id: id ? String(id) : undefined,
-    nome, nascimento: nascimento || null, telefone: telefone || null, obs: obs || null,
-    images: typeof images === 'string' ? images : JSON.stringify(images || []),
-    overlays: typeof overlays === 'string' ? overlays : JSON.stringify(overlays || {}),
-    drawings: typeof drawings === 'string' ? drawings : JSON.stringify(drawings || {}),
-  };
-  if (!row.id) delete row.id;
-  const { data, error } = await supa.from('dio_pacientes').insert(row).select().single();
-  if (error) return dbErr(res, error);
-  res.json(data);
-});
-
-app.put('/api/dio-pacientes/:id', auth, async (req, res) => {
-  const { nome, nascimento, telefone, obs, images, overlays, drawings } = req.body;
-  const update = {};
-  if (nome !== undefined) update.nome = nome;
-  if (nascimento !== undefined) update.nascimento = nascimento || null;
-  if (telefone !== undefined) update.telefone = telefone || null;
-  if (obs !== undefined) update.obs = obs || null;
-  if (images !== undefined) update.images = typeof images === 'string' ? images : JSON.stringify(images);
-  if (overlays !== undefined) update.overlays = typeof overlays === 'string' ? overlays : JSON.stringify(overlays);
-  if (drawings !== undefined) update.drawings = typeof drawings === 'string' ? drawings : JSON.stringify(drawings);
-
-  // Faz upload de imagens base64 para o Storage
-  if (images) {
-    const imgs = typeof images === 'string' ? JSON.parse(images) : images;
-    const processed = await Promise.all(imgs.map(async (img, idx) => {
-      if (!img.src || !img.src.startsWith('data:')) return img;
-      try {
-        const matches = img.src.match(/^data:([^;]+);base64,(.+)$/);
-        if (!matches) return img;
-        const mimeType = matches[1];
-        const ext = mimeType.split('/')[1] || 'jpg';
-        const buffer = Buffer.from(matches[2], 'base64');
-        const filePath = `dio/${req.params.id}/${idx}_${Date.now()}.${ext}`;
-        const { error: upErr } = await supa.storage.from('prontuario-fotos').upload(filePath, buffer, { contentType: mimeType, upsert: true });
-        if (upErr) return img;
-        const { data: pub } = supa.storage.from('prontuario-fotos').getPublicUrl(filePath);
-        return { ...img, src: pub.publicUrl };
-      } catch(e) { return img; }
-    }));
-    update.images = JSON.stringify(processed);
-  }
-
-  const { data, error } = await supa.from('dio_pacientes').update(update).eq('id', req.params.id).select().single();
-  if (error) return dbErr(res, error);
-  res.json(data);
-});
-
-app.delete('/api/dio-pacientes/:id', auth, async (req, res) => {
-  const { error } = await supa.from('dio_pacientes').update({ deleted_at: new Date().toISOString() }).eq('id', req.params.id);
-  if (error) return dbErr(res, error);
-  res.json({ ok: true });
-});
-
 // ── Proxy Kanban ─────────────────────────────────────────────
 const https = require('https');
 // ── Odontograma: salvar imagem composta ──────────────────────
@@ -1075,32 +990,9 @@ app.post('/api/athena-migrate', async (req, res) => {
   });
 });
 
-// ── Google Calendar proxy (evita CORS e restrição de origem na API Key) ──────
-app.get('/api/google-calendar', auth, async (req, res) => {
-  const { calendarId, date } = req.query;
-  if (!calendarId || !date) return res.status(400).json({ error: 'calendarId e date obrigatórios' });
-  const GC_KEY = process.env.GOOGLE_CALENDAR_API_KEY || 'AIzaSyAqwN64E8CJ1S7jXNoznBbuGZ2BUgoI3G0';
-  const dayStart = date + 'T00:00:00-03:00';
-  const dayEnd   = date + 'T23:59:59-03:00';
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
-    + `?key=${GC_KEY}&timeMin=${encodeURIComponent(dayStart)}&timeMax=${encodeURIComponent(dayEnd)}`
-    + `&singleEvents=true&orderBy=startTime&maxResults=50`;
-  try {
-    const r = await fetch(url);
-    const data = await r.json();
-    if (!r.ok) return res.status(r.status).json(data);
-    res.json(data);
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // ── Start ────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🦷 Athena — Prontuário Digital | Oral Unic CB`);
   console.log(`   Porta: ${PORT}`);
-  console.log(`   Supabase: ${process.env.SUPABASE_URL || 'ugsolisojqawbjaeencq'}\n`);
-  // Backup imediato ao iniciar
-  fs.mkdirSync('C:\\Users\\DWOS\\Desktop\\backups-dio-dental', { recursive: true });
-  fazerBackupAutomatico();
+  console.log(`   Supabase: ${process.env.SUPABASE_URL || 'eeqpvuaigqzclpompxao'}\n`);
 });
