@@ -1067,8 +1067,8 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
         <input type="text" id="madt-nome" readonly style="background:#f9fafb;">
       </div>
       <div class="form-group" style="margin:0;">
-        <label>Dentista</label>
-        <input type="text" id="madt-dentista" readonly style="background:#f9fafb;">
+        <label>Dentista responsável</label>
+        <input type="text" id="madt-dentista" placeholder="Nome do dentista..." style="width:100%;box-sizing:border-box;">
       </div>
     </div>
     <div class="form-group">
@@ -1078,6 +1078,10 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
     <div class="form-group">
       <label>🦷 Dente / Arcada <span style="color:#dc2626;">*</span></label>
       <input type="text" id="madt-dente" placeholder="Ex: Dente 36, Arcada superior, Região posterior inf..." style="width:100%;box-sizing:border-box;">
+    </div>
+    <div class="form-group">
+      <label>Observação</label>
+      <textarea id="madt-observacao" rows="2" placeholder="Observações adicionais (opcional)..." style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
     </div>
     <div class="form-group">
       <label>Já foi realizado?</label>
@@ -5784,9 +5788,10 @@ function abrirAdicionalTratamentoStep(stepId) {
   document.getElementById('madt-data').value = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
   document.getElementById('madt-ficha').value = p?.ficha || '';
   document.getElementById('madt-nome').value = p?.nome || '';
-  document.getElementById('madt-dentista').value = step?.dentista || state.currentUser?.name || '';
+  document.getElementById('madt-dentista').value = step?.dentista || currentUser?.name || '';
   document.getElementById('madt-tipo').value = '';
   document.getElementById('madt-dente').value = '';
+  document.getElementById('madt-observacao').value = '';
   document.querySelector('input[name="madt-realizado"][value="nao"]').checked = true;
   document.getElementById('modal-adicional-step').classList.add('open');
   setTimeout(() => document.getElementById('madt-tipo').focus(), 100);
@@ -5796,12 +5801,22 @@ async function salvarAdicionalStep() {
   const stepId = document.getElementById('madt-step-id').value;
   const tipo = document.getElementById('madt-tipo').value.trim();
   const dente = document.getElementById('madt-dente').value.trim();
+  const dentista = document.getElementById('madt-dentista').value.trim();
+  const observacao = document.getElementById('madt-observacao').value.trim();
   if (!tipo) { alert('Informe o tipo de tratamento.'); return; }
   if (!dente) { alert('Informe o dente ou arcada. Campo obrigatório.'); document.getElementById('madt-dente').focus(); return; }
   const p = state.currentPatient;
-  const step = planningSteps.find(s => s._id === stepId);
   const agora = new Date();
   const dataFmt = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  const linhasAnotacao = [
+    `📋 Adicional de Tratamento`,
+    `Data: ${dataFmt}`,
+    `Paciente: ${p.nome}${p.ficha ? ' #'+p.ficha : ''}`,
+    dentista ? `Dentista: ${dentista}` : null,
+    `Tratamento: ${tipo}`,
+    `Dente/Arcada: ${dente}`,
+    observacao ? `Observação: ${observacao}` : null,
+  ].filter(Boolean).join('\n');
   await apiFetch('/api/relacionamento', {
     method: 'POST',
     body: JSON.stringify({
@@ -5809,7 +5824,7 @@ async function salvarAdicionalStep() {
       patientName: p.nome,
       ficha: p.ficha || '',
       tipo: 'presencial',
-      anotacao: `📋 Adicional de Tratamento\nData: ${dataFmt}\nPaciente: ${p.nome}${p.ficha ? ' #'+p.ficha : ''}\nDentista: ${step?.dentista || ''}\nTratamento: ${tipo}\nDente/Arcada: ${dente}`,
+      anotacao: linhasAnotacao,
       dataContato: agora.toISOString(),
       origem: 'adicional',
       realizado: document.querySelector('input[name="madt-realizado"]:checked')?.value === 'sim',

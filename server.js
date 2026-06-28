@@ -670,7 +670,19 @@ app.delete('/api/adicionais/:id', auth, adminOnly, async (req, res) => {
 app.get('/api/relacionamento', auth, async (req, res) => {
   const { data, error } = await supa.from('relacionamento').select('*').is('deleted_at', null).order('criado_em', { ascending: false });
   if (error) return dbErr(res, error);
-  res.json(data || []);
+  const normalizado = (data || []).map(r => ({
+    ...r,
+    patientId:      r.patient_id,
+    patientName:    r.patient_name,
+    dataContato:    r.data_contato,
+    criadoEm:       r.criado_em,
+    criadoPorNome:  r.criado_por_nome,
+    efetivadoEm:    r.efetivado_em,
+    efetivadoPorNome: r.efetivado_por_nome,
+    flagFalta:      r.flag_falta,
+    flagRemedio:    r.flag_remedio,
+  }));
+  res.json(normalizado);
 });
 
 app.post('/api/relacionamento', auth, dentistOrAdmin, async (req, res) => {
