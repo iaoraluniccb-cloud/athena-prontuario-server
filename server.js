@@ -287,7 +287,11 @@ app.put('/api/patients/:id', auth, dentistOrAdmin, async (req, res) => {
     const { data: ex } = await supa.from('patients').select('id,nome').eq('ficha', novaFicha).neq('id', req.params.id).is('deleted_at', null).limit(1);
     if (ex?.length) return res.status(409).json({ error: `Ficha #${novaFicha} já está cadastrada para "${ex[0].nome}".` });
   }
-  const { error } = await supa.from('patients').update({ ...update, ficha: novaFicha || null }).eq('id', req.params.id);
+  // Só sobrescreve ficha se ela veio explicitamente no body; nunca zera ficha existente
+  const updateFinal = { ...update };
+  if ('ficha' in req.body) updateFinal.ficha = novaFicha || null;
+  else delete updateFinal.ficha;
+  const { error } = await supa.from('patients').update(updateFinal).eq('id', req.params.id);
   if (error) return dbErr(res, error);
   res.json({ ok: true });
 });
