@@ -4945,16 +4945,20 @@ async function confirmarEfetivar() {
     respCpf: document.getElementById('ef-resp-cpf').value.trim(),
   };
 
+  const btns = document.querySelectorAll('#modal-efetivar .btn-success');
+  btns.forEach(b => { b.disabled = true; b.textContent = '⏳ Salvando...'; });
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
     method: 'PUT', body: JSON.stringify(updates),
   });
-  if (r && !r.ok) {
+  btns.forEach(b => { b.disabled = false; b.textContent = b.textContent.includes('abrir') ? '✅ Efetivar e abrir Planejamento' : '✅ Efetivar'; });
+  if (!r) { alert('❌ Sem resposta do servidor. Verifique a conexão.'); return; }
+  if (!r.ok) {
     let msg = 'Erro ao salvar paciente.';
     try { const j = await r.json(); msg = j.error || j.message || JSON.stringify(j); } catch(e) {}
     alert('❌ Erro ao efetivar: ' + msg);
     return;
   }
-  if (r && r.ok) {
+  if (r.ok) {
     Object.assign(state.currentPatient, updates);
     const idx = state.patients.findIndex(p => p._id === state.currentPatient._id);
     if (idx >= 0) Object.assign(state.patients[idx], updates);
