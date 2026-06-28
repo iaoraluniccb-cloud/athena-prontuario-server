@@ -2976,7 +2976,7 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
               <button class="btn btn-sm btn-outline" onclick="document.getElementById('edit-retorno-${c._id}').style.display='none'">Cancelar</button>
             </div>
           </div>
-          <div style="font-size:11px;color:#6b7280;margin-top:6px;">✍️ Assinatura: <strong>${c.assinaturaNome || c.assinatura || '—'}</strong>${c.dentista ? ' · ' + c.dentista : ''}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:6px;">✍️ Assinatura: <strong>${c.dentista || c.assinaturaNome || c.assinatura || '—'}</strong></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
           ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;" onclick="toggleEditRetornoComanda('${c._id}')">✏️ Editar Retorno</button>` : ''}
