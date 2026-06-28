@@ -576,6 +576,7 @@ app.get('/api/comandas', auth, async (req, res) => {
     tipoComanda:           c.tipo_comanda,
     criadaEm:              c.criada_em,
     manutencaoCount:       c.manutencao_count,
+    assinaturaNome:        c.assinatura_nome,
   }));
   res.json(normalizada);
 });
