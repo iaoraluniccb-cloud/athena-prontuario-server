@@ -2470,10 +2470,11 @@ async function saveNewPatient() {
   const patient = { nome, efetivado: false, ficha: '', images: [], overlays: {}, drawings: {} };
   const r = await apiFetch('/api/patients', { method: 'POST', body: JSON.stringify(patient) });
   if (!r) return;
-  const saved = await r.json();
+  const savedRaw = await r.json();
+  const saved = normalizarPaciente(savedRaw);
   state.patients.unshift(saved);
   closePatientModal();
-  await selectPatient(saved._id);
+  await selectPatient(saved._id || saved.id);
   showTab('dados');
   setTimeout(() => abrirEfetivar(), 200);
 }
@@ -4887,24 +4888,9 @@ async function efOcrDocumento(files) {
 }
 
 async function confirmarEfetivar() {
-  let p = state.currentPatient;
+  const p = state.currentPatient;
   // Garante que _id está populado (fallback para id do Supabase)
   if (p && !p._id && p.id) p._id = p.id;
-  // Paciente novo sem _id: cria no banco antes de efetivar
-  if (p && !p._id) {
-    try {
-      const payload = { nome: p.nome || document.getElementById('ef-nome').value.trim() || 'Novo Paciente', efetivado: false, ficha: '' };
-      const r = await apiFetch('/api/patients', { method: 'POST', body: JSON.stringify(payload) });
-      if (!r) { alert('❌ Erro ao criar paciente. Verifique a conexão.'); return; }
-      const saved = await r.json();
-      state.patients.unshift(saved);
-      p._id = saved._id || saved.id;
-      state.currentPatient._id = p._id;
-    } catch(e) {
-      alert('❌ Erro ao criar paciente: ' + e.message);
-      return;
-    }
-  }
   if (!p || !p._id) {
     alert('❌ Paciente não selecionado corretamente. Feche o modal, clique no paciente na lista e tente novamente.');
     return;
@@ -4965,7 +4951,8 @@ async function confirmarEfetivar() {
     endCidade: document.getElementById('ef-cidade').value.trim(),
     endComplemento: document.getElementById('ef-complemento').value.trim(),
     endereco: [document.getElementById('ef-rua').value.trim(), document.getElementById('ef-numero').value.trim(), document.getElementById('ef-bairro').value.trim(), document.getElementById('ef-cidade').value.trim(), document.getElementById('ef-complemento').value.trim()].filter(Boolean).join(', '),
-    obs: (state.currentPatient.obs || '') + (document.getElementById('ef-resp-nome').value.trim() ? '\nResponsável: ' + document.getElementById('ef-resp-nome').value.trim() : ''),
+    respNome: document.getElementById('ef-resp-nome').value.trim(),
+    respCpf: document.getElementById('ef-resp-cpf').value.trim(),
   };
 
   const btns = document.querySelectorAll('#modal-efetivar .btn-success');
