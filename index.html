@@ -367,7 +367,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
   <!-- ESQUERDA -->
   <div id="sidebar-left">
-    <h3 style="display:flex;align-items:center;justify-content:space-between">Pacientes <button onclick="loadPatients()" title="Recarregar lista" style="background:none;border:none;cursor:pointer;color:#8B2D42;font-size:14px;padding:0 2px;line-height:1" id="btn-reload-patients">↻</button></h3>
+    <h3>Pacientes</h3>
     <button class="btn btn-primary btn-sm" id="btn-new-patient" onclick="openPatientModal()">+ Novo Paciente</button>
     <div id="sidebar-search">
       <div class="search-wrap">
@@ -1576,6 +1576,33 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
     <input type="file" id="ocr-anamnese-input" accept="image/*" multiple style="display:none;" onchange="ocrAnamnese(this.files)">
     <p style="font-size:11px;color:#9ca3af;margin-bottom:20px;font-style:italic;">Informações estritamente confidenciais para uso exclusivo dos profissionais da clínica.</p>
     <div id="anamnese-ocr-status" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:12px;"></div>
+
+    <!-- Dados físicos — topo da anamnese -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;font-weight:700;color:#0369a1;">🩸 Tipo Sanguíneo</label>
+        <select id="anamnese-tipo-sanguineo" style="font-size:13px;padding:6px 10px;width:100%;box-sizing:border-box;">
+          <option value="">Não informado</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;font-weight:700;color:#0369a1;">⚖️ Peso (kg) <span style="font-weight:400;color:#9ca3af;">opcional</span></label>
+        <input type="number" id="anamnese-peso" placeholder="Ex: 70" min="1" max="300" step="0.1" style="font-size:13px;padding:6px 10px;width:100%;box-sizing:border-box;">
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;font-weight:700;color:#0369a1;">📏 Altura (cm) <span style="font-weight:400;color:#9ca3af;">opcional</span></label>
+        <input type="number" id="anamnese-altura" placeholder="Ex: 170" min="50" max="250" step="1" style="font-size:13px;padding:6px 10px;width:100%;box-sizing:border-box;">
+      </div>
+    </div>
+
     <div id="anamnese-preop-container"></div>
 
     <!-- Confirmação de identidade + foto -->
@@ -2103,36 +2130,13 @@ function normalizarPaciente(p) {
 }
 
 async function loadPatients() {
-  let r = await apiFetch('/api/patients');
-  // Se falhou (401/sem token), renova token e tenta de novo
-  if (!r) {
-    try {
-      const ar = await fetch(API + '/api/auto-token');
-      if (ar.ok) {
-        const ad = await ar.json();
-        localStorage.setItem('athena_token', ad.token);
-        localStorage.setItem('dio_token', ad.token);
-        currentToken = ad.token;
-      }
-    } catch {}
-    r = await apiFetch('/api/patients');
-  }
-  if (!r) { renderPatientListError(); return; }
+  const r = await apiFetch('/api/patients');
+  if (!r) return;
   const raw = await r.json();
   state.patients = (raw || []).map(normalizarPaciente);
-  // Se veio vazio mas houve resposta, lista não tem pacientes cadastrados
   const searchEl = document.getElementById('patient-search');
   if (searchEl) searchEl.value = '';
   renderPatientList();
-}
-
-function renderPatientListError() {
-  const list = document.getElementById('patient-list');
-  if (!list) return;
-  list.innerHTML = `<div style="padding:20px 16px;text-align:center">
-    <div style="font-size:13px;color:#9ca3af;margin-bottom:12px">Não foi possível carregar os pacientes.</div>
-    <button onclick="loadPatients()" style="background:#8B2D42;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Josefin Sans',sans-serif">↻ Tentar novamente</button>
-  </div>`;
 }
 
 let sidebarFilter = 'all';
@@ -3598,6 +3602,14 @@ function renderAnamneseViewPerfil(dados) {
     return;
   }
   let html = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn btn-outline btn-sm" onclick="abrirAnamnesePaciente()">✏️ Editar Anamnese</button></div>`;
+  // Bloco de dados físicos no topo
+  if (dados._tipoSanguineo || dados._peso || dados._altura) {
+    html += `<div style="display:flex;gap:16px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;">`;
+    if (dados._tipoSanguineo) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">🩸 Tipo Sanguíneo</span><br><strong style="font-size:14px;color:#0c4a6e;">${dados._tipoSanguineo}</strong></div>`;
+    if (dados._peso) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">⚖️ Peso</span><br><strong style="font-size:13px;color:#0c4a6e;">${dados._peso} kg</strong></div>`;
+    if (dados._altura) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">📏 Altura</span><br><strong style="font-size:13px;color:#0c4a6e;">${dados._altura} cm</strong></div>`;
+    html += `</div>`;
+  }
   for (const secObj of ANAMNESE_PERGUNTAS) {
     const perguntasComDados = secObj.perguntas.filter(p => dados[p.id] !== undefined && dados[p.id] !== '');
     if (!perguntasComDados.length) continue;
@@ -3967,6 +3979,13 @@ function abrirAnamnesePaciente() {
   const st = document.getElementById('anamnese-ocr-status');
   if (st) { st.style.display = 'none'; st.textContent = ''; st.style.background=''; st.style.borderColor=''; st.style.color=''; }
   renderAnamneseForm('anamnese-preop-container', p.anamnese, 'anpre');
+  // Dados físicos
+  const tsEl = document.getElementById('anamnese-tipo-sanguineo');
+  const pesoEl = document.getElementById('anamnese-peso');
+  const altEl = document.getElementById('anamnese-altura');
+  if (tsEl) tsEl.value = p.tipoSanguineo || p.anamnese?._tipoSanguineo || '';
+  if (pesoEl) pesoEl.value = p.peso || p.anamnese?._peso || '';
+  if (altEl) altEl.value = p.altura || p.anamnese?._altura || '';
   document.getElementById('anamnese-cpf').value = p.cpf || '';
   document.getElementById('anamnese-resp-nome').value = p.respNome || p.nome || '';
   const agora = new Date();
@@ -4094,10 +4113,17 @@ async function salvarAnamnesePreop() {
     if (resultado) { anamneseHash = resultado.hash; anamnesePdfB64 = resultado.pdfBase64; }
   } catch(e) { console.error('Erro ao gerar PDF anamnese:', e); }
 
+  // Dados físicos
+  const tipoSanguineo = document.getElementById('anamnese-tipo-sanguineo')?.value || '';
+  const peso = document.getElementById('anamnese-peso')?.value || '';
+  const altura = document.getElementById('anamnese-altura')?.value || '';
+
   // Monta objeto anamnese SEM o PDF (evita JSONB grande demais no Supabase)
-  // O PDF é gerado na hora do download — apenas o hash fica armazenado
   const anamneseObj = {
     ...dados,
+    _tipoSanguineo: tipoSanguineo,
+    _peso: peso,
+    _altura: altura,
     _assinatura: assinaturaImg,
     _data: anamneseDataHora,
     _respNome: respNome,
