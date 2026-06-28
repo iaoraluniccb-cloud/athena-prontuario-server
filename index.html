@@ -4978,7 +4978,6 @@ async function confirmarEfetivar() {
     endComplemento: document.getElementById('ef-complemento').value.trim(),
     endereco: [document.getElementById('ef-rua').value.trim(), document.getElementById('ef-numero').value.trim(), document.getElementById('ef-bairro').value.trim(), document.getElementById('ef-cidade').value.trim(), document.getElementById('ef-complemento').value.trim()].filter(Boolean).join(', '),
     respNome: document.getElementById('ef-resp-nome').value.trim(),
-    respCpf: document.getElementById('ef-resp-cpf').value.trim(),
   };
 
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
