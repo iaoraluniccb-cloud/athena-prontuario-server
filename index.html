@@ -387,7 +387,6 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
       <button class="tab-btn active" onclick="showTab('dados')" id="tbtn-dados">📋 Dados</button>
       <button class="tab-btn" onclick="showTab('planejamento')" id="tbtn-planejamento">📝 Planejamento</button>
       <button class="tab-btn" onclick="showTab('dashboard')" id="tbtn-dashboard">📊 Dashboard</button>
-
       <button class="tab-btn" onclick="showTab('recepcao')" id="tbtn-recepcao" style="position:relative;">🔔 Pendências<span id="badge-comandas" style="display:none;position:absolute;top:4px;right:4px;background:#dc2626;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:800;"></span></button>
     </div>
     <div id="tab-content">
@@ -2040,8 +2039,6 @@ function showTab(tab) {
   if (tab === 'dashboard') carregarDashboard();
   if (tab === 'dados' && state.currentPatient) renderHistoricoConsultas();
   if (tab === 'recepcao') { recepTab('comandas'); }
-  if (tab === 'odontograma') carregarOdontograma();
-  if (tab === 'simulador') carregarSimulador();
 }
 
 function _extUrl(relPath) {
@@ -2052,49 +2049,6 @@ function _extUrl(relPath) {
   return window.location.origin + '/ext/' + relPath;
 }
 
-function carregarOdontograma() {
-  const p = state.currentPatient;
-  const iframe = document.getElementById('iframe-odontograma');
-  const label = document.getElementById('odontograma-paciente-label');
-  if (!p) {
-    iframe.src = 'about:blank';
-    if (label) label.textContent = '';
-    return;
-  }
-  if (label) label.textContent = p.nome + (p.ficha ? ' · Ficha #' + p.ficha : '');
-  const url = _extUrl('dio-dental/odontograma.html') + '?paciente=' + encodeURIComponent(p.nome) + '&id=' + encodeURIComponent(p._id || p.id || '');
-  if (iframe.src !== url) iframe.src = url;
-}
-
-function recarregarOdontograma() {
-  const iframe = document.getElementById('iframe-odontograma');
-  if (iframe) { const s = iframe.src; iframe.src = 'about:blank'; setTimeout(() => iframe.src = s, 100); }
-}
-
-function carregarSimulador() {
-  const p = state.currentPatient;
-  const iframe = document.getElementById('iframe-simulador');
-  const label = document.getElementById('simulador-paciente-label');
-  if (!p) {
-    iframe.src = 'about:blank';
-    if (label) label.textContent = '';
-    return;
-  }
-  if (label) label.textContent = p.nome + (p.ficha ? ' · Ficha #' + p.ficha : '');
-  const url = _extUrl('simulador-sorriso/index.html') + '?nome=' + encodeURIComponent(p.nome) + '&ficha=' + encodeURIComponent(p.ficha || '');
-  if (iframe.src !== url) iframe.src = url;
-}
-
-function recarregarSimulador() {
-  const iframe = document.getElementById('iframe-simulador');
-  if (iframe) { const s = iframe.src; iframe.src = 'about:blank'; setTimeout(() => iframe.src = s, 100); }
-}
-
-function abrirSimuladorExterno() {
-  const p = state.currentPatient;
-  if (!p) return;
-  window.open(_extUrl('simulador-sorriso/index.html') + '?nome=' + encodeURIComponent(p.nome), '_blank');
-}
 
 // ═══════════════════════════════════════════════
 //  PATIENTS — API
@@ -4978,6 +4932,7 @@ async function confirmarEfetivar() {
     endComplemento: document.getElementById('ef-complemento').value.trim(),
     endereco: [document.getElementById('ef-rua').value.trim(), document.getElementById('ef-numero').value.trim(), document.getElementById('ef-bairro').value.trim(), document.getElementById('ef-cidade').value.trim(), document.getElementById('ef-complemento').value.trim()].filter(Boolean).join(', '),
     respNome: document.getElementById('ef-resp-nome').value.trim(),
+    respCpf: document.getElementById('ef-resp-cpf').value.trim(),
   };
 
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
