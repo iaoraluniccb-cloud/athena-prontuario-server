@@ -566,7 +566,18 @@ app.get('/api/agenda/dentistas-ativos-hoje', auth, async (req, res) => {
 app.get('/api/comandas', auth, async (req, res) => {
   const { data, error } = await supa.from('comandas').select('*').is('deleted_at', null).order('created_at', { ascending: false });
   if (error) return dbErr(res, error);
-  res.json(data || []);
+  // Normaliza snake_case → camelCase para o frontend
+  const normalizada = (data || []).map(c => ({
+    ...c,
+    patientId:             c.patient_id,
+    patientName:           c.patient_name,
+    procedimentoConcluido: c.procedimento_concluido,
+    proximoProcedimento:   c.proximo_procedimento,
+    tipoComanda:           c.tipo_comanda,
+    criadaEm:              c.criada_em,
+    manutencaoCount:       c.manutencao_count,
+  }));
+  res.json(normalizada);
 });
 
 app.post('/api/comandas', auth, async (req, res) => {
