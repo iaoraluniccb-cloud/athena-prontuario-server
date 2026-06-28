@@ -4165,6 +4165,9 @@ async function ocrAnamnese(files) {
 
 function abrirEfetivar() {
   const p = state.currentPatient;
+  if (!p) return;
+  // Garante _id populado
+  if (!p._id && p.id) p._id = p.id;
   document.getElementById('ef-ficha').value = p.ficha || '';
   document.getElementById('ef-nome').value = p.nome || '';
   document.getElementById('ef-nasc').value = p.nascimento || '';
@@ -4875,6 +4878,13 @@ async function efOcrDocumento(files) {
 }
 
 async function confirmarEfetivar() {
+  const p = state.currentPatient;
+  // Garante que _id está populado (fallback para id do Supabase)
+  if (p && !p._id && p.id) p._id = p.id;
+  if (!p || !p._id) {
+    alert('❌ Paciente não selecionado corretamente. Feche o modal, clique no paciente na lista e tente novamente.');
+    return;
+  }
   const ficha = document.getElementById('ef-ficha').value.trim();
   const nome = document.getElementById('ef-nome').value.trim();
   const nasc = document.getElementById('ef-nasc').value.trim();
