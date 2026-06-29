@@ -2453,9 +2453,10 @@ async function addImageFromPending() {
   if (!state.currentPatient.images) state.currentPatient.images = [];
   state.currentPatient.images.push({ src: imgObj.src, date: imgObj.date, name: imgObj.name });
   state.currentImageIndex = state.currentPatient.images.length - 1;
-  await apiFetch('/api/patients/' + state.currentPatient._id + '/images', { method: 'PUT', body: JSON.stringify({ images: state.currentPatient.images }) });
   renderImagesPanel();
   loadCurrentImage();
+  const r = await apiFetch('/api/patients/' + state.currentPatient._id + '/images', { method: 'PUT', body: JSON.stringify({ images: state.currentPatient.images }) });
+  if (r && r.ok) { const d = await r.json(); if (d.images) state.currentPatient.images = d.images; }
   _pendingPatientImage = null;
 }
 
@@ -7908,8 +7909,9 @@ async function handleImageUpload(e){
     if(!state.currentPatient.images)state.currentPatient.images=[];
     state.currentPatient.images.push({src:ev.target.result,date:new Date().toLocaleDateString('pt-BR'),name:file.name});
     state.currentImageIndex=state.currentPatient.images.length-1;
-    await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',body:JSON.stringify({images:state.currentPatient.images})});
     renderImagesPanel();loadCurrentImage();
+    const r=await apiFetch('/api/patients/'+state.currentPatient._id+'/images',{method:'PUT',body:JSON.stringify({images:state.currentPatient.images})});
+    if(r&&r.ok){const d=await r.json();if(d.images)state.currentPatient.images=d.images;}
   };
   reader.readAsDataURL(file);e.target.value='';
 }
