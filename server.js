@@ -85,6 +85,9 @@ app.use(express.static(path.join(__dirname), {
   setHeaders: (res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.removeHeader('X-Frame-Options');
+    // Libera câmera e microfone para todos os dispositivos
+    res.setHeader('Permissions-Policy', 'camera=*, microphone=*, geolocation=*');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   }
 }));
 
