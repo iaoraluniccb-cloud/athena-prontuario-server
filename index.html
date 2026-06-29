@@ -8457,18 +8457,39 @@ setInterval(carregarAlertas, 60000);
   // Registra com todas as variações de nome possíveis
   function _regSig(nomes, fn) { nomes.forEach(n => _ASSINATURAS_FIXAS[n.toLowerCase().trim()] = fn); }
 
-  _regSig(['Stéfany B. Nery','Dra. Stéfany','Stefany B. Nery','stefany'], function(ctx, w, h) {
-    // Desenha apenas o carimbo — a assinatura será feita manualmente na mesa
+  function _desenharCarimbo(ctx, w, h, nomeCompleto, titulo, cro) {
     ctx.clearRect(0, 0, w, h);
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#1a0a6e';
-    ctx.font = '500 ' + Math.round(h * 0.15) + 'px "Josefin Sans", sans-serif';
-    ctx.fillText('Cirurgiã-Dentista  ·  CRO/RS 30630', w / 2, h * 0.82);
+    // Linha separadora
     ctx.strokeStyle = '#c4b5fd';
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.70); ctx.lineTo(w * 0.85, h * 0.70); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.55); ctx.lineTo(w * 0.85, h * 0.55); ctx.stroke();
+    // Nome
+    ctx.fillStyle = '#1a0a6e';
+    ctx.font = 'italic bold ' + Math.round(h * 0.22) + 'px "Brush Script MT", cursive';
+    ctx.fillText(nomeCompleto, w / 2, h * 0.45);
+    // Título e CRO
+    ctx.font = '600 ' + Math.round(h * 0.13) + 'px "Josefin Sans", sans-serif';
+    ctx.fillStyle = '#4c1d95';
+    ctx.fillText(titulo + '  ·  ' + cro, w / 2, h * 0.72);
     ctx.restore();
+  }
+
+  _regSig(['Stéfany B. Nery','Dra. Stéfany','Stefany B. Nery','stefany','dra. stéfany'], function(ctx, w, h) {
+    _desenharCarimbo(ctx, w, h, 'Stéfany B. Nery', 'Cirurgiã-Dentista', 'CRO/RS 30630');
+  });
+
+  _regSig(['Dr. Scharles','Dr. Scharles Ferri','Scharles Ferri','scharles'], function(ctx, w, h) {
+    _desenharCarimbo(ctx, w, h, 'Dr. Scharles Ferri', 'Cirurgião-Dentista', 'CRO/RS 32037');
+  });
+
+  _regSig(['Ana Paula Berton','Dra. Ana','ana paula berton','dra. ana'], function(ctx, w, h) {
+    _desenharCarimbo(ctx, w, h, 'Ana Paula Berton', 'Cirurgiã-Dentista', 'CRO/RS 28046');
+  });
+
+  _regSig(['Dr. Aurélio','Dr. Aurélio Machado','Aurélio Machado','aurelio','dr. aurélio'], function(ctx, w, h) {
+    _desenharCarimbo(ctx, w, h, 'Dr. Aurélio Machado', 'Implantodontista', 'CRO/RS 13492');
   });
 
   // Gera assinatura cursiva no canvas a partir de um nome
@@ -8544,14 +8565,16 @@ setInterval(carregarAlertas, 60000);
       painel.style.display = '';
       // Dentistas fixos cadastrados + campo livre
       const dentistasFixos = [
-        { id: 'stefany', nome: 'Stéfany B. Nery' },
-        { id: 'scharles', nome: 'Dr. Scharles' },
+        { id: 'scharles', nome: 'Dr. Scharles Ferri',   cro: 'CRO/RS 32037' },
+        { id: 'stefany',  nome: 'Stéfany B. Nery',      cro: 'CRO/RS 30630' },
+        { id: 'ana',      nome: 'Ana Paula Berton',      cro: 'CRO/RS 28046' },
+        { id: 'aurelio',  nome: 'Dr. Aurélio Machado',   cro: 'CRO/RS 13492' },
       ];
       lista.innerHTML = dentistasFixos.map(d =>
         `<button id="maf-btn-dentista-${d.id}"
           onclick="colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')"
-          style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Josefin Sans',sans-serif;transition:all .15s;">
-          ✍️ ${d.nome}
+          style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Josefin Sans',sans-serif;transition:all .15s;text-align:left;line-height:1.4;">
+          ✍️ ${d.nome}<br><span style="font-size:9px;color:#7c3aed;font-weight:400;">${d.cro}</span>
         </button>`
       ).join('') +
       `<div style="display:flex;gap:6px;align-items:center;margin-top:4px;width:100%;">
