@@ -8593,11 +8593,22 @@ setInterval(carregarAlertas, 60000);
         { id: 'ana',      nome: 'Ana Paula Berton',      cro: 'CRO/RS 28046' },
         { id: 'aurelio',  nome: 'Dr. Aurélio Machado',   cro: 'CRO/RS 13492' },
       ];
+      // Injeta CSS de seleção dos botões de dentista
+      if (!document.getElementById('_maf-btn-style')) {
+        const s = document.createElement('style');
+        s.id = '_maf-btn-style';
+        s.textContent = `
+          .maf-dent-btn { background:#fff !important; border:1.5px solid #c4b5fd !important; color:#4c1d95 !important; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:11px; font-weight:700; font-family:'Josefin Sans',sans-serif; transition:all .15s; text-align:left; line-height:1.4; }
+          .maf-dent-btn span { color:#7c3aed !important; font-size:9px; font-weight:400; }
+          .maf-dent-btn.selecionado { background:#7c3aed !important; border-color:#7c3aed !important; color:#fff !important; }
+          .maf-dent-btn.selecionado span { color:#e9d5ff !important; }
+        `;
+        document.head.appendChild(s);
+      }
       lista.innerHTML = dentistasFixos.map(d =>
-        `<button id="maf-btn-dentista-${d.id}"
-          onclick="(function(btn){document.querySelectorAll('#maf-dentistas-lista button').forEach(b=>{b.style.background='#fff';b.style.borderColor='#c4b5fd';b.style.color='#4c1d95';});btn.style.background='#7c3aed';btn.style.borderColor='#7c3aed';btn.style.color='#fff';btn.querySelector('span').style.color='#e9d5ff';})(this); colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')"
-          style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Josefin Sans',sans-serif;transition:all .15s;text-align:left;line-height:1.4;">
-          ✍️ ${d.nome}<br><span style="font-size:9px;color:#7c3aed;font-weight:400;">${d.cro}</span>
+        `<button id="maf-btn-dentista-${d.id}" class="maf-dent-btn"
+          onclick="document.querySelectorAll('#maf-dentistas-lista .maf-dent-btn').forEach(b=>b.classList.remove('selecionado')); this.classList.add('selecionado'); colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')">
+          ✍️ ${d.nome}<br><span>${d.cro}</span>
         </button>`
       ).join('') +
       `<div style="display:flex;gap:6px;align-items:center;margin-top:4px;width:100%;">
@@ -8658,14 +8669,9 @@ setInterval(carregarAlertas, 60000);
   };
 
   window.colarAssinaturaDentista = function(nome, id) {
-    // Destaca botão selecionado
-    document.querySelectorAll('#maf-dentistas-lista button').forEach(b => {
-      b.style.background = '#fff';
-      b.style.borderColor = '#c4b5fd';
-      b.style.color = '#4c1d95';
-    });
+    document.querySelectorAll('#maf-dentistas-lista .maf-dent-btn').forEach(b => b.classList.remove('selecionado'));
     const btn = document.getElementById('maf-btn-dentista-' + id);
-    if (btn) { btn.style.background = '#7c3aed'; btn.style.borderColor = '#7c3aed'; btn.style.color = '#fff'; }
+    if (btn) btn.classList.add('selecionado');
     gerarAssinaturaNome(nome, getCanvas());
   };
 
