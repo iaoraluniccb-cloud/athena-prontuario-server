@@ -9532,21 +9532,29 @@ let _cameraFotoBase64 = null;
 
 async function abrirModalCameraFoto() {
   if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
+  // Libera stream anterior se existir
+  if (_cameraFotoStream) { _cameraFotoStream.getTracks().forEach(t => t.stop()); _cameraFotoStream = null; }
   const modal = document.getElementById('modal-camera-foto');
   modal.style.display = 'flex';
   _cameraFotoBase64 = null;
-  // Resetar para o estado de vídeo ao vivo
   document.getElementById('camera-foto-video').style.display = 'block';
   document.getElementById('camera-foto-preview').style.display = 'none';
   document.getElementById('camera-foto-btns-vivo').style.display = 'flex';
   document.getElementById('camera-foto-btns-preview').style.display = 'none';
   document.getElementById('camera-foto-status').textContent = '';
   try {
-    _cameraFotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 680, height: 510 } });
-    document.getElementById('camera-foto-video').srcObject = _cameraFotoStream;
-  } catch(e) {
-    document.getElementById('camera-foto-status').textContent = '⚠️ Câmera não disponível: ' + e.message;
+    // Tenta câmera frontal primeiro
+    _cameraFotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+  } catch(e1) {
+    try {
+      // Fallback: qualquer câmera disponível
+      _cameraFotoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch(e2) {
+      document.getElementById('camera-foto-status').textContent = '⚠️ Câmera não disponível: ' + e2.message;
+      return;
+    }
   }
+  document.getElementById('camera-foto-video').srcObject = _cameraFotoStream;
 }
 
 function fecharModalCameraFoto() {
@@ -9654,13 +9662,18 @@ async function abrirModalFacialAgenda() {
   document.getElementById('facial-status').textContent = '⏳ Inicializando câmera...';
 
   // Inicia câmera
+  if (_facialStream) { _facialStream.getTracks().forEach(t => t.stop()); _facialStream = null; }
   try {
-    _facialStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 760, height: 570 } });
-    document.getElementById('facial-video').srcObject = _facialStream;
-  } catch(e) {
-    document.getElementById('facial-status').textContent = '⚠️ Câmera indisponível: ' + e.message;
-    return;
+    _facialStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+  } catch(e1) {
+    try {
+      _facialStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch(e2) {
+      document.getElementById('facial-status').textContent = '⚠️ Câmera indisponível: ' + e2.message;
+      return;
+    }
   }
+  document.getElementById('facial-video').srcObject = _facialStream;
 
   // Carrega modelos
   const ok = await carregarModelosFace();
