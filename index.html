@@ -343,6 +343,11 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .template-card .t-step-pill { background:#EDDDD4; color:#8B2D42; border-radius:6px; padding:2px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; font-weight:300; }
 .template-card .t-meta { font-size:11px; color:#3D2A20; margin-top:6px; }
 .template-card .t-obs { font-size:11px; color:#92400e; background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:4px 8px; margin:6px 0 4px; }
+/* Botões seleção dentista */
+button.maf-dent-btn { background-color:#fff !important; border:1.5px solid #c4b5fd !important; color:#4c1d95 !important; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:11px; font-weight:700; font-family:'Josefin Sans',sans-serif; transition:background-color .15s,border-color .15s,color .15s; text-align:left; line-height:1.4; outline:none; }
+button.maf-dent-btn span { color:#7c3aed !important; font-size:9px; font-weight:400; }
+button.maf-dent-btn.selecionado, button.maf-dent-btn.selecionado:focus, button.maf-dent-btn.selecionado:hover { background-color:#7c3aed !important; border-color:#7c3aed !important; color:#fff !important; }
+button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
 </style>
 </head>
 <body>
@@ -8593,18 +8598,6 @@ setInterval(carregarAlertas, 60000);
         { id: 'ana',      nome: 'Ana Paula Berton',      cro: 'CRO/RS 28046' },
         { id: 'aurelio',  nome: 'Dr. Aurélio Machado',   cro: 'CRO/RS 13492' },
       ];
-      // Injeta CSS de seleção dos botões de dentista
-      if (!document.getElementById('_maf-btn-style')) {
-        const s = document.createElement('style');
-        s.id = '_maf-btn-style';
-        s.textContent = `
-          .maf-dent-btn { background:#fff !important; border:1.5px solid #c4b5fd !important; color:#4c1d95 !important; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:11px; font-weight:700; font-family:'Josefin Sans',sans-serif; transition:all .15s; text-align:left; line-height:1.4; }
-          .maf-dent-btn span { color:#7c3aed !important; font-size:9px; font-weight:400; }
-          .maf-dent-btn.selecionado { background:#7c3aed !important; border-color:#7c3aed !important; color:#fff !important; }
-          .maf-dent-btn.selecionado span { color:#e9d5ff !important; }
-        `;
-        document.head.appendChild(s);
-      }
       lista.innerHTML = dentistasFixos.map(d =>
         `<button id="maf-btn-dentista-${d.id}" class="maf-dent-btn"
           onclick="document.querySelectorAll('#maf-dentistas-lista .maf-dent-btn').forEach(b=>b.classList.remove('selecionado')); this.classList.add('selecionado'); colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')">
