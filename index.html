@@ -2884,23 +2884,48 @@ async function carregarRelacionamento() {
 // ─── Ditado por Voz (Web Speech API) ─────────────────────────
 function _criarReconhecimento(stepId, onResultado) {
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    alert('Seu navegador não suporta reconhecimento de voz. Use Chrome.'); return;
+    alert('Seu navegador não suporta reconhecimento de voz.\nUse o Google Chrome no celular ou desktop.'); return;
   }
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   const rec = new Rec();
   rec.lang = 'pt-BR';
-  rec.interimResults = false;
+  rec.interimResults = true;
+  rec.continuous = true;
   rec.maxAlternatives = 1;
   const micBtn = document.getElementById('mic-btn-'+stepId);
   const micStatus = document.getElementById('mic-status-'+stepId);
   if (micStatus) micStatus.style.display = '';
   if (micBtn) { micBtn.textContent = '⏹️ Parar'; micBtn.style.background = '#dc2626'; }
-  const reset = () => { if (micStatus) micStatus.style.display = 'none'; if (micBtn) { micBtn.textContent = '🎙️ Microfone'; micBtn.style.background = '#7c3aed'; micBtn.onclick = () => iniciarDitadoDescricao(stepId); } };
-  rec.onresult = (e) => { onResultado(e.results[0][0].transcript); };
-  rec.onerror = reset;
+  const reset = () => {
+    if (micStatus) micStatus.style.display = 'none';
+    if (micBtn) { micBtn.textContent = '🎙️ Microfone'; micBtn.style.background = '#7c3aed'; micBtn.onclick = () => iniciarDitadoDescricao(stepId); }
+  };
+  rec.onresult = (e) => {
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+    }
+    if (final.trim()) onResultado(final.trim());
+  };
+  rec.onerror = (e) => {
+    reset();
+    if (e.error === 'not-allowed') {
+      alert('❌ Permissão de microfone negada.\n\nPara liberar:\n• Chrome: clique no 🔒 na barra de endereço → Microfone → Permitir\n• Recarregue a página após permitir');
+    } else if (e.error === 'no-speech') {
+      // silencioso — nenhuma fala detectada
+    } else {
+      alert('Erro no microfone: ' + e.error);
+    }
+  };
   rec.onend = reset;
-  rec.start();
-  if (micBtn) micBtn.onclick = () => rec.stop();
+  // Pede permissão explicitamente antes de iniciar
+  navigator.mediaDevices?.getUserMedia({ audio: true }).then(() => {
+    rec.start();
+    if (micBtn) micBtn.onclick = () => rec.stop();
+  }).catch(() => {
+    reset();
+    alert('❌ Permissão de microfone negada.\n\nPara liberar:\n• Chrome: clique no 🔒 na barra de endereço → Microfone → Permitir\n• Recarregue a página após permitir');
+  });
 }
 
 function iniciarDitado(stepId) {
