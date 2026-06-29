@@ -2910,7 +2910,7 @@ function _criarReconhecimento(stepId, onResultado) {
   rec.onerror = (e) => {
     reset();
     if (e.error === 'not-allowed') {
-      alert('❌ Permissão de microfone negada.\n\nPara liberar:\n• Chrome: clique no 🔒 na barra de endereço → Microfone → Permitir\n• Recarregue a página após permitir');
+      _mostrarErroMicrofone();
     } else if (e.error === 'no-speech') {
       // silencioso — nenhuma fala detectada
     } else {
@@ -2924,8 +2924,31 @@ function _criarReconhecimento(stepId, onResultado) {
     if (micBtn) micBtn.onclick = () => rec.stop();
   }).catch(() => {
     reset();
-    alert('❌ Permissão de microfone negada.\n\nPara liberar:\n• Chrome: clique no 🔒 na barra de endereço → Microfone → Permitir\n• Recarregue a página após permitir');
+    _mostrarErroMicrofone();
   });
+}
+
+function _mostrarErroMicrofone() {
+  let el = document.getElementById('_mic-perm-modal');
+  if (el) { el.style.display = 'flex'; return; }
+  el = document.createElement('div');
+  el.id = '_mic-perm-modal';
+  el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;';
+  el.innerHTML = `<div style="background:#1e1b4b;border:1.5px solid #7c3aed;border-radius:16px;padding:28px 28px 22px;max-width:360px;width:92%;color:#e0d9ff;font-family:inherit;">
+    <div style="font-size:1.15rem;font-weight:700;margin-bottom:10px;">🎙️ Microfone bloqueado</div>
+    <div style="font-size:.92rem;line-height:1.6;color:#c4b5fd;margin-bottom:18px;">
+      O microfone foi bloqueado neste navegador.<br><br>
+      <b style="color:#fff;">Para liberar:</b><br>
+      1. Clique no <b>🔒</b> na barra de endereço<br>
+      2. Localize <b>Microfone</b> → mude para <b>Permitir</b><br>
+      3. Recarregue a página
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="document.getElementById('_mic-perm-modal').style.display='none'" style="background:transparent;border:1px solid #7c3aed;color:#c4b5fd;border-radius:8px;padding:7px 18px;cursor:pointer;font-size:.9rem;">Fechar</button>
+      <button onclick="window.location.reload()" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:7px 18px;cursor:pointer;font-size:.9rem;font-weight:600;">Recarregar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
 }
 
 function iniciarDitado(stepId) {
