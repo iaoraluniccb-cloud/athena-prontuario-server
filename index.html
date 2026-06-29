@@ -8572,7 +8572,7 @@ setInterval(carregarAlertas, 60000);
       ];
       lista.innerHTML = dentistasFixos.map(d =>
         `<button id="maf-btn-dentista-${d.id}"
-          onclick="colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')"
+          onclick="(function(btn){document.querySelectorAll('#maf-dentistas-lista button').forEach(b=>{b.style.background='#fff';b.style.borderColor='#c4b5fd';b.style.color='#4c1d95';});btn.style.background='#7c3aed';btn.style.borderColor='#7c3aed';btn.style.color='#fff';btn.querySelector('span').style.color='#e9d5ff';})(this); colarAssinaturaDentista(${JSON.stringify(d.nome)}, '${d.id}')"
           style="background:#fff;border:1.5px solid #c4b5fd;color:#4c1d95;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Josefin Sans',sans-serif;transition:all .15s;text-align:left;line-height:1.4;">
           ✍️ ${d.nome}<br><span style="font-size:9px;color:#7c3aed;font-weight:400;">${d.cro}</span>
         </button>`
@@ -8622,31 +8622,6 @@ setInterval(carregarAlertas, 60000);
     });
   };
 
-  _regSig(['Dr. Scharles','Dr Scharles','scharles'], function(ctx, w, h) {
-    ctx.clearRect(0, 0, w, h);
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#1a0a6e';
-    ctx.font = '500 ' + Math.round(h * 0.15) + 'px "Josefin Sans", sans-serif';
-    ctx.fillText('Cirurgião-Dentista  ·  CRO/RS 32037', w / 2, h * 0.82);
-    ctx.strokeStyle = '#c4b5fd';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.70); ctx.lineTo(w * 0.85, h * 0.70); ctx.stroke();
-    ctx.restore();
-  });
-
-  _regSig(['Dr. Aurélio','Dr Aurelio','Dr. Aurelio','aurelio'], function(ctx, w, h) {
-    ctx.clearRect(0, 0, w, h);
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#1a0a6e';
-    ctx.font = '500 ' + Math.round(h * 0.15) + 'px "Josefin Sans", sans-serif';
-    ctx.fillText('Cirurgião-Dentista  ·  CRO/RS 13492', w / 2, h * 0.82);
-    ctx.strokeStyle = '#c4b5fd';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.70); ctx.lineTo(w * 0.85, h * 0.70); ctx.stroke();
-    ctx.restore();
-  });
 
   window.colarAssinaturaNomelivre = function() {
     const input = document.getElementById('maf-nome-livre');
