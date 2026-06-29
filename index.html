@@ -820,15 +820,6 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
 <div class="modal-overlay" id="modal-patient">
   <div class="modal" style="min-width:380px;max-width:440px;">
     <h2>👤 Novo Paciente</h2>
-    <!-- Opção raio-x OCR -->
-    <div style="margin-bottom:14px;padding:12px 14px;background:#f0f9ff;border:2px dashed #7dd3fc;border-radius:10px;">
-      <div style="font-size:10px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">📷 Ler nome do Raio-X automaticamente</div>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <label for="p-raiox-file" style="cursor:pointer;padding:7px 14px;background:#0369a1;color:#fff;border-radius:7px;font-size:11px;font-weight:700;white-space:nowrap;">🩻 Abrir imagem</label>
-        <input type="file" id="p-raiox-file" accept="image/*" style="display:none;" onchange="ocrRaiox(this.files)">
-        <span id="p-raiox-status" style="font-size:11px;color:#0369a1;"></span>
-      </div>
-    </div>
     <div class="form-group">
       <label>Nome completo *</label>
       <input type="text" id="p-nome" placeholder="Nome completo do paciente" autocomplete="off"
