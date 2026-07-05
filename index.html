@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><!-- v20260629-1009 -->
+<!DOCTYPE html><!-- v20260629-1009 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -7,14 +7,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Athena — Prontuário Digital | Oral Unic</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Josefin+Sans:wght@300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter-spacing:0.04em; background:#F5EDE2; color:#1A0F0A; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+body { font-family:'Nunito','Segoe UI',sans-serif; font-weight:300; letter-spacing:0.04em; background:#F5EDE2; color:#1A0F0A; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
 
 /* HEADER */
 #header { background:#fff; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid #E0C9B8; min-height:56px; flex-shrink:0; box-shadow:0 2px 8px #8B2D4211; }
@@ -27,7 +27,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #header-user { font-size:11px; color:#8B2D42; font-weight:300; padding:5px 10px; background:#F5EDE2; border-radius:6px; letter-spacing:0.04em; }
 
 /* BUTTONS */
-.btn { padding:7px 16px; border:none; border-radius:6px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:10px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; transition:all .18s; }
+.btn { padding:7px 16px; border:none; border-radius:6px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:10px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; transition:all .18s; }
 .btn-primary { background:#8B2D42; color:#FDF9F4; } .btn-primary:hover { background:#6A1F30; }
 .btn-success { background:#059669; color:#fff; } .btn-success:hover { background:#047857; }
 .btn-danger { background:#dc2626; color:#fff; }
@@ -41,15 +41,15 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* SIDEBAR LEFT */
 #sidebar-left { width:250px; background:#FDF9F4; border-right:2px solid #E0C9B8; display:flex; flex-direction:column; flex-shrink:0; }
-#sidebar-left h3 { padding:12px 14px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; }
+#sidebar-left h3 { padding:12px 14px 8px; font-family:'Nunito',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; }
 #btn-new-patient { margin:8px 10px 6px; }
 #sidebar-search { padding:0 10px 6px; }
-#sidebar-search input { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:6px 10px 6px 28px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; }
+#sidebar-search input { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:6px 10px 6px 28px; font-family:'Nunito',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; }
 #sidebar-search input:focus { border-color:#8B2D42; }
 #sidebar-search .search-wrap { position:relative; }
 #sidebar-search .search-icon { position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:12px; color:#3D2A20; pointer-events:none; }
 #sidebar-filters { display:flex; gap:4px; padding:0 10px 8px; }
-.filter-btn { flex:1; padding:4px 0; font-family:'Josefin Sans',sans-serif; font-size:9px; font-weight:300; letter-spacing:0.12em; border:1.5px solid #E0C9B8; border-radius:6px; background:#fff; color:#3D2A20; cursor:pointer; transition:all .15s; text-align:center; }
+.filter-btn { flex:1; padding:4px 0; font-family:'Nunito',sans-serif; font-size:9px; font-weight:300; letter-spacing:0.12em; border:1.5px solid #E0C9B8; border-radius:6px; background:#fff; color:#3D2A20; cursor:pointer; transition:all .15s; text-align:center; }
 .filter-btn.active { border-color:#8B2D42; background:#8B2D42; color:#FDF9F4; }
 .filter-btn.f-eval.active { border-color:#d97706; background:#d97706; color:#fff; }
 .filter-btn.f-efet.active { border-color:#059669; background:#059669; color:#fff; }
@@ -58,7 +58,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .patient-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid #EDDDD4; transition:background .15s; }
 .patient-item:hover { background:#F5EDE2; }
 .patient-item.active { background:#EDDDD4; border-left:3px solid #8B2D42; }
-.patient-item .p-name { font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
+.patient-item .p-name { font-family:'Nunito',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
 .patient-item .p-meta { font-size:10px; color:#3D2A20; margin-top:2px; }
 .patient-item .p-ficha { font-size:10px; font-weight:300; color:#8B2D42; background:#F5EDE2; border-radius:4px; padding:1px 6px; margin-left:4px; letter-spacing:0.04em; }
 .patient-item.efetivado .p-name::before { content:''; display:inline-block; width:7px; height:7px; border-radius:50%; background:#059669; margin-right:5px; }
@@ -66,7 +66,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 /* CENTER TABS */
 #canvas-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 #tab-bar { background:#fff; border-bottom:2px solid #E0C9B8; display:flex; flex-shrink:0; }
-.tab-btn { padding:10px 20px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:#3D2A20; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
+.tab-btn { padding:10px 20px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:#3D2A20; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
 .tab-btn.active { color:#8B2D42; border-bottom-color:#8B2D42; }
 .tab-btn:hover { color:#8B2D42; background:#F5EDE2; }
 #tab-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
@@ -79,10 +79,10 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .form-row { display:flex; gap:12px; margin-bottom:13px; }
 .form-row .form-group { flex:1; }
 .form-group { margin-bottom:13px; }
-.form-group label { display:block; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#3D2A20; margin-bottom:4px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; }
+.form-group label { display:block; font-family:'Nunito',sans-serif; font-size:10px; color:#3D2A20; margin-bottom:4px; font-weight:300; letter-spacing:0.28em; text-transform:uppercase; }
 .form-group input, .form-group select, .form-group textarea {
   width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px;
-  padding:8px 12px; color:#1A0F0A; font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; outline:none; transition:border .2s;
+  padding:8px 12px; color:#1A0F0A; font-family:'Nunito',sans-serif; font-size:12px; font-weight:300; outline:none; transition:border .2s;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#8B2D42; }
 .save-bar { position:sticky; bottom:0; background:#FDF9F4; border-top:1.5px solid #E0C9B8; padding:12px 0; margin-top:8px; }
@@ -93,11 +93,11 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #tab-imagens.visible { display:flex; }
 #tab-raiox.visible { display:flex; }
 #canvas-toolbar { background:#FDF9F4; padding:7px 14px; display:flex; align-items:center; gap:8px; border-bottom:2px solid #E0C9B8; flex-wrap:wrap; flex-shrink:0; display:none; }
-#canvas-toolbar label { font-family:'Josefin Sans',sans-serif; font-size:11px; color:#8B2D42; font-weight:300; letter-spacing:0.04em; }
+#canvas-toolbar label { font-family:'Nunito',sans-serif; font-size:11px; color:#8B2D42; font-weight:300; letter-spacing:0.04em; }
 #canvas-toolbar input[type=range] { width:75px; accent-color:#8B2D42; }
 #canvas-toolbar input[type=color] { width:32px; height:28px; border:none; border-radius:4px; cursor:pointer; }
 .toolbar-sep { width:1px; height:24px; background:#E0C9B8; margin:0 4px; }
-.draw-tool-btn { background:#F5EDE2; border:1.5px solid transparent; border-radius:6px; padding:5px 9px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; transition:all .15s; }
+.draw-tool-btn { background:#F5EDE2; border:1.5px solid transparent; border-radius:6px; padding:5px 9px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; transition:all .15s; }
 .draw-tool-btn:hover { border-color:#8B2D42; }
 .draw-tool-btn.active { border-color:#8B2D42; background:#EDDDD4; }
 #canvas-wrapper { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; background:#1a1a1a; }
@@ -128,8 +128,8 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .step-card.open .step-card-header { background:#F5EDE2; }
 .step-chevron { font-size:11px; color:#9ca3af; transition:transform .2s; margin-left:2px; flex-shrink:0; }
 .step-card.open .step-chevron { transform:rotate(180deg); }
-.step-num { width:26px; height:26px; border-radius:50%; background:#8B2D42; color:#FDF9F4; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.step-title { flex:1; font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.03em; line-height:1.3; }
+.step-num { width:26px; height:26px; border-radius:50%; background:#8B2D42; color:#FDF9F4; font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.step-title { flex:1; font-family:'Nunito',sans-serif; font-size:12px; font-weight:300; color:#1A0F0A; letter-spacing:0.03em; line-height:1.3; }
 .step-title-main { display:block; }
 .step-dentista-hint { font-size:10px; color:#9ca3af; margin-top:1px; display:block; }
 .step-badge { padding:2px 9px; border-radius:20px; font-size:10px; font-weight:400; letter-spacing:0.02em; flex-shrink:0; }
@@ -144,18 +144,18 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .badge-tipo { padding:1px 7px; border-radius:10px; font-size:10px; font-weight:300; background:#F5EDE2; color:#8B2D42; border:1px solid #E0C9B8; margin-left:5px; }
 /* Seção de campos internos */
 .step-section { margin-bottom:14px; }
-.step-section-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.24em; font-weight:300; padding-bottom:5px; border-bottom:1px solid #EFE5DA; margin-bottom:10px; }
+.step-section-title { font-family:'Nunito',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.24em; font-weight:300; padding-bottom:5px; border-bottom:1px solid #EFE5DA; margin-bottom:10px; }
 .step-fields { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:0; }
-.step-field select { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; cursor:pointer; }
+.step-field select { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Nunito',sans-serif; font-size:11px; color:#1A0F0A; outline:none; transition:border .2s; cursor:pointer; }
 .step-field select:focus { border-color:#8B2D42; }
-.step-field label { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#9ca3af; font-weight:300; display:block; margin-bottom:3px; letter-spacing:0.14em; text-transform:uppercase; }
-.step-field input, .step-field textarea { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Josefin Sans',sans-serif; font-size:11px; color:#1A0F0A; outline:none; resize:vertical; transition:border .2s; }
+.step-field label { font-family:'Nunito',sans-serif; font-size:9px; color:#9ca3af; font-weight:300; display:block; margin-bottom:3px; letter-spacing:0.14em; text-transform:uppercase; }
+.step-field input, .step-field textarea { width:100%; background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:5px 8px; font-family:'Nunito',sans-serif; font-size:11px; color:#1A0F0A; outline:none; resize:vertical; transition:border .2s; }
 .step-field input:focus, .step-field textarea:focus { border-color:#8B2D42; }
 .step-field.full { grid-column:1/-1; }
 /* Assinaturas */
 .sig-area { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
 .sig-box { flex:1; min-width:200px; border:1.5px solid #E0C9B8; border-radius:10px; padding:10px; background:#fff; }
-.sig-box h5 { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.24em; margin-bottom:6px; }
+.sig-box h5 { font-family:'Nunito',sans-serif; font-size:9px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.24em; margin-bottom:6px; }
 .sig-canvas-wrap { position:relative; background:#fafafa; border:1px solid #E0C9B8; border-radius:6px; overflow:hidden; }
 .sig-canvas { display:block; cursor:crosshair; touch-action:none; }
 .sig-info { font-size:10px; color:#3D2A20; margin-top:4px; min-height:16px; }
@@ -163,14 +163,14 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .step-actions { display:flex; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid #EFE5DA; justify-content:flex-end; }
 /* Bloco de Retrabalho / Termo */
 .step-check-row { display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:10px 12px; background:#fafafa; border:1px solid #EFE5DA; border-radius:8px; margin-bottom:0; }
-.step-check-row label { display:flex; align-items:center; gap:7px; cursor:pointer; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; }
+.step-check-row label { display:flex; align-items:center; gap:7px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; }
 /* Botões de ação da etapa */
 .step-action-bar { display:flex; gap:6px; flex-wrap:wrap; padding-top:10px; border-top:1px solid #EFE5DA; margin-top:2px; align-items:center; }
 /* Indicadores de assinatura no header */
 .sig-pill { font-size:9px; padding:1px 6px; border-radius:10px; letter-spacing:0.04em; flex-shrink:0; }
 /* Histórico de alterações da etapa */
 .step-historico { margin-top:10px; border-top:1px dashed #EFE5DA; padding-top:8px; }
-.step-historico-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.2em; margin-bottom:6px; }
+.step-historico-title { font-family:'Nunito',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.2em; margin-bottom:6px; }
 .step-historico-item { display:flex; align-items:flex-start; gap:8px; padding:4px 0; border-bottom:1px solid #f5ede2; }
 .step-historico-item:last-child { border-bottom:none; }
 .step-historico-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:3px; }
@@ -183,22 +183,22 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #alertas-btn .alertas-count { position:absolute; top:-4px; right:-4px; background:#fff; color:#dc2626; border-radius:50%; width:20px; height:20px; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; border:2px solid #dc2626; }
 #alertas-panel { position:fixed; bottom:88px; right:24px; z-index:9001; width:380px; max-height:560px; background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,.18); display:none; flex-direction:column; overflow:hidden; border:2px solid #fee2e2; }
 #alertas-panel.open { display:flex; }
-#alertas-panel-header { padding:14px 16px; background:#dc2626; color:#fff; font-family:'Josefin Sans',sans-serif; font-size:13px; font-weight:700; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; }
+#alertas-panel-header { padding:14px 16px; background:#dc2626; color:#fff; font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; }
 #alertas-panel-body { flex:1; overflow-y:auto; padding:8px; }
 .alerta-item { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:6px; cursor:pointer; transition:background .15s; border:1.5px solid #f3f4f6; background:#fafafa; }
 .alerta-item:hover { background:#f5ede2; border-color:#E0C9B8; }
 .alerta-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
 .alerta-body { flex:1; min-width:0; }
-.alerta-titulo { font-size:11px; font-weight:700; color:#1A0F0A; font-family:'Josefin Sans',sans-serif; }
+.alerta-titulo { font-size:11px; font-weight:700; color:#1A0F0A; font-family:'Nunito',sans-serif; }
 .alerta-desc { font-size:10px; color:#6b7280; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .alerta-paciente { font-size:10px; color:#8B2D42; font-weight:600; margin-top:1px; }
 .alerta-tempo { font-size:9px; color:#9ca3af; margin-top:2px; }
 
 /* SIDEBAR RIGHT */
 #sidebar-right { width:256px; background:#FDF9F4; border-left:2px solid #E0C9B8; display:none; flex-direction:column; overflow-y:auto; flex-shrink:0; }
-#sidebar-right h3 { padding:12px 14px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; position:sticky; top:0; background:#FDF9F4; z-index:1; }
+#sidebar-right h3 { padding:12px 14px 8px; font-family:'Nunito',sans-serif; font-size:10px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; border-bottom:1px solid #E0C9B8; font-weight:300; position:sticky; top:0; background:#FDF9F4; z-index:1; }
 .overlay-section { padding:8px 8px 0; }
-.overlay-section-title { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:5px; padding:0 4px; font-weight:300; }
+.overlay-section-title { font-family:'Nunito',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:5px; padding:0 4px; font-weight:300; }
 .overlay-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:8px; }
 .overlay-btn { background:#fff; border:1.5px solid #E0C9B8; border-radius:6px; padding:4px 2px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:all .15s; min-height:58px; justify-content:center; }
 .overlay-btn:hover { border-color:#8B2D42; background:#F5EDE2; }
@@ -222,7 +222,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* IMAGES PANEL */
 #images-panel { padding:8px; border-top:1px solid #E0C9B8; }
-#images-panel h4 { font-family:'Josefin Sans',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; font-weight:300; margin-bottom:6px; }
+#images-panel h4 { font-family:'Nunito',sans-serif; font-size:9px; color:#8B2D42; text-transform:uppercase; letter-spacing:0.28em; font-weight:300; margin-bottom:6px; }
 #images-list { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
 .img-thumb { background:#F5EDE2; border:1.5px solid #E0C9B8; border-radius:6px; overflow:hidden; cursor:pointer; transition:border .15s; }
 .img-thumb:hover { border-color:#8B2D42; }
@@ -243,7 +243,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* Gerenciar usuários */
 .user-item { display:flex; align-items:center; justify-content:space-between; background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:10px 14px; margin-bottom:8px; }
-.user-item .u-name { font-family:'Josefin Sans',sans-serif; font-size:13px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
+.user-item .u-name { font-family:'Nunito',sans-serif; font-size:13px; font-weight:300; color:#1A0F0A; letter-spacing:0.04em; }
 .user-item .u-meta { font-size:11px; color:#3D2A20; }
 .role-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:300; margin-left:6px; }
 .role-admin { background:#fde68a; color:#92400e; }
@@ -257,7 +257,7 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* STATUS BUTTONS on step card */
 .status-btn-group { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
-.status-btn { padding:6px 14px; border-radius:20px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; border:1.5px solid transparent; cursor:pointer; transition:all .15s; opacity:.5; }
+.status-btn { padding:6px 14px; border-radius:20px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; border:1.5px solid transparent; cursor:pointer; transition:all .15s; opacity:.5; }
 .status-btn.active { opacity:1; box-shadow:0 2px 8px #0002; transform:scale(1.05); }
 .status-btn.s-pending { background:#fef3c7; color:#d97706; border-color:#fde68a; }
 .status-btn.s-pending.active { background:#f59e0b; color:#fff; border-color:#d97706; }
@@ -287,14 +287,14 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 
 /* FALTA / CONSULTA EXTRA */
 .falta-row { display:flex; align-items:center; gap:10px; background:#fff8f8; border:1.5px solid #fecaca; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
-.falta-row label { font-family:'Josefin Sans',sans-serif; font-size:12px; font-weight:300; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:8px; }
+.falta-row label { font-family:'Nunito',sans-serif; font-size:12px; font-weight:300; color:#dc2626; cursor:pointer; display:flex; align-items:center; gap:8px; }
 .falta-row input[type=checkbox] { width:18px; height:18px; accent-color:#dc2626; cursor:pointer; flex-shrink:0; }
 .consulta-extra-row { background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
-.consulta-extra-row label { font-family:'Josefin Sans',sans-serif; font-size:11px; color:#059669; font-weight:300; display:flex; align-items:center; gap:8px; }
+.consulta-extra-row label { font-family:'Nunito',sans-serif; font-size:11px; color:#059669; font-weight:300; display:flex; align-items:center; gap:8px; }
 .consulta-extra-row input[type=checkbox] { width:16px; height:16px; accent-color:#059669; cursor:pointer; }
 
 /* HISTÓRICO DE CONSULTAS */
-.consulta-item { background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:8px 12px; margin-bottom:6px; font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; }
+.consulta-item { background:#fff; border:1.5px solid #E0C9B8; border-radius:8px; padding:8px 12px; margin-bottom:6px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; }
 .consulta-item .c-date { font-weight:300; color:#8B2D42; letter-spacing:0.04em; }
 .consulta-item .c-falta { color:#dc2626; }
 .consulta-item .c-extra { color:#059669; }
@@ -315,15 +315,15 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 #tab-simulador { flex:1; display:none; flex-direction:column; background:#fff; overflow:hidden; }
 #tab-simulador.visible { display:flex; }
 .dash-section { margin-bottom:24px; }
-.dash-section h4 { font-family:'Josefin Sans',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:12px; border-bottom:1.5px solid #E0C9B8; padding-bottom:6px; }
+.dash-section h4 { font-family:'Nunito',sans-serif; font-size:10px; color:#8B2D42; font-weight:300; text-transform:uppercase; letter-spacing:0.28em; margin-bottom:12px; border-bottom:1.5px solid #E0C9B8; padding-bottom:6px; }
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
 .kpi-card { background:#fff; border:1.5px solid #E0C9B8; border-radius:10px; padding:16px; text-align:center; }
 .kpi-card .kpi-val { font-family:'Cormorant SC',serif; font-size:28px; font-weight:400; color:#8B2D42; }
-.kpi-card .kpi-label { font-family:'Josefin Sans',sans-serif; font-size:10px; color:#3D2A20; font-weight:300; margin-top:4px; text-transform:uppercase; letter-spacing:0.12em; }
+.kpi-card .kpi-label { font-family:'Nunito',sans-serif; font-size:10px; color:#3D2A20; font-weight:300; margin-top:4px; text-transform:uppercase; letter-spacing:0.12em; }
 .kpi-card.danger .kpi-val { color:#dc2626; }
 .kpi-card.success .kpi-val { color:#059669; }
 .kpi-card.warning .kpi-val { color:#d97706; }
-.dash-table { width:100%; border-collapse:collapse; font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; }
+.dash-table { width:100%; border-collapse:collapse; font-size:11px; font-family:'Nunito',sans-serif; font-weight:300; }
 .dash-table th { background:#F5EDE2; color:#8B2D42; font-weight:300; padding:8px 12px; text-align:left; border-bottom:1.5px solid #E0C9B8; letter-spacing:0.12em; text-transform:uppercase; font-size:10px; }
 .dash-table td { padding:8px 12px; border-bottom:1px solid #EDDDD4; color:#1A0F0A; }
 .dash-table tr:hover td { background:#F5EDE2; }
@@ -338,13 +338,13 @@ body { font-family:'Josefin Sans','Segoe UI',sans-serif; font-weight:300; letter
 .template-card { background:#fff; border:1.5px solid #E0C9B8; border-radius:10px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:all .15s; }
 .template-card:hover { border-color:#8B2D42; background:#F5EDE2; box-shadow:0 2px 12px #8B2D4222; }
 .template-card h4 { font-family:'Cormorant SC',serif; font-size:14px; font-weight:400; color:#8B2D42; letter-spacing:0.12em; margin-bottom:4px; }
-.template-card .t-desc { font-family:'Josefin Sans',sans-serif; font-size:11px; font-weight:300; color:#3D2A20; margin-bottom:8px; }
+.template-card .t-desc { font-family:'Nunito',sans-serif; font-size:11px; font-weight:300; color:#3D2A20; margin-bottom:8px; }
 .template-card .t-steps { display:flex; flex-wrap:wrap; gap:4px; }
-.template-card .t-step-pill { background:#EDDDD4; color:#8B2D42; border-radius:6px; padding:2px 8px; font-family:'Josefin Sans',sans-serif; font-size:10px; font-weight:300; }
+.template-card .t-step-pill { background:#EDDDD4; color:#8B2D42; border-radius:6px; padding:2px 8px; font-family:'Nunito',sans-serif; font-size:10px; font-weight:300; }
 .template-card .t-meta { font-size:11px; color:#3D2A20; margin-top:6px; }
 .template-card .t-obs { font-size:11px; color:#92400e; background:#fef3c7; border:1px solid #fde68a; border-radius:6px; padding:4px 8px; margin:6px 0 4px; }
 /* Botões seleção dentista */
-button.maf-dent-btn { background-color:#fff !important; border:1.5px solid #c4b5fd !important; color:#4c1d95 !important; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:11px; font-weight:700; font-family:'Josefin Sans',sans-serif; transition:background-color .15s,border-color .15s,color .15s; text-align:left; line-height:1.4; outline:none; }
+button.maf-dent-btn { background-color:#fff !important; border:1.5px solid #c4b5fd !important; color:#4c1d95 !important; border-radius:8px; padding:6px 14px; cursor:pointer; font-size:11px; font-weight:700; font-family:'Nunito',sans-serif; transition:background-color .15s,border-color .15s,color .15s; text-align:left; line-height:1.4; outline:none; }
 button.maf-dent-btn span { color:#7c3aed !important; font-size:9px; font-weight:400; }
 button.maf-dent-btn.selecionado, button.maf-dent-btn.selecionado:focus, button.maf-dent-btn.selecionado:hover { background-color:#7c3aed !important; border-color:#7c3aed !important; color:#fff !important; }
 button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
@@ -363,6 +363,8 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
     <button class="btn btn-outline btn-sm" id="btn-new-patient-hdr" onclick="openPatientModal()">+ Paciente</button>
     <button class="btn btn-ghost btn-sm" id="btn-usuarios" onclick="abrirUsuarios()" style="display:none">👥 Usuários</button>
     <button class="btn btn-success btn-sm" onclick="exportPDF()">⬇️ PDF</button>
+    <button class="btn btn-sm" id="btn-backup" onclick="fazerBackup()" style="background:#4f46e5;color:#fff;border:none;" title="Baixar backup completo de todos os pacientes em JSON">💾 Backup</button>
+    <span id="backup-status" style="font-size:9px;color:#6b7280;letter-spacing:.04em;opacity:0;transition:opacity .4s;"></span>
     <button class="btn btn-sm" style="background:#8B2D42;color:#fff;border:none;font-weight:700;letter-spacing:.06em;" onclick="abrirAgendaDia()">📋 Agenda</button>
     <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:2px solid #fca5a5;" onclick="logout()">Sair</button>
   </div>
@@ -428,6 +430,10 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
           </div>
 
           <div class="form-row">
+            <div class="form-group" style="flex:0 0 110px">
+              <label>Nº Ficha</label>
+              <input type="text" id="d-ficha" placeholder="Ex: 1420" autocomplete="off">
+            </div>
             <div class="form-group" style="flex:2">
               <label>Nome completo *</label>
               <input type="text" id="d-nome" placeholder="Nome completo" autocomplete="off">
@@ -582,7 +588,7 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
             <svg width="56" height="56" fill="none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-8h2v6h-2z" fill="#c4b5fd"/></svg>
             <p>Selecione ou cadastre um paciente</p>
             <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;">
-              <label style="cursor:pointer;background:#0369a1;color:#fff;border-radius:8px;padding:9px 22px;font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px;">
+              <label style="cursor:pointer;background:#0369a1;color:#fff;border-radius:8px;padding:9px 22px;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:8px;">
                 🩻 Abrir Raio-X
                 <input type="file" id="raiox-direto-input" accept="image/*" style="display:none;" onchange="ocrRaioxDireto(this.files)">
               </label>
@@ -1894,7 +1900,7 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
 // ═══════════════════════════════════════════════
 //  CONFIG & AUTH
 // ═══════════════════════════════════════════════
-const API = 'https://athena-prontuario-server.onrender.com';
+const API = 'https://athena-api-vercel.vercel.app';
 let currentUser = null;
 let currentToken = null;
 
@@ -2146,7 +2152,11 @@ async function loadPatients() {
   const r = await apiFetch('/api/patients');
   if (!r) return;
   const raw = await r.json();
-  state.patients = (raw || []).map(normalizarPaciente);
+  // Exclui pacientes criados pelo módulo DIO (odontograma separado)
+  state.patients = (raw || []).filter(p => {
+    const src = (typeof p.perfil === 'string' ? JSON.parse(p.perfil || '{}') : p.perfil || {}).source;
+    return src !== 'dio';
+  }).map(normalizarPaciente);
   const searchEl = document.getElementById('patient-search');
   if (searchEl) searchEl.value = '';
   renderPatientList();
@@ -2200,7 +2210,7 @@ function renderPatientList() {
     const avatarBg = isActive ? '#8B2D42' : p.efetivado ? '#059669' : '#d97706';
     const avatarHtml = p.foto
       ? `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;overflow:hidden;border:2px solid ${isActive?'#8B2D42':'#E0C9B8'};"><img src="${p.foto}" style="width:100%;height:100%;object-fit:cover;display:block;"></div>`
-      : `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:${avatarBg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;">${initials}</div>`;
+      : `<div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:${avatarBg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;">${initials}</div>`;
     return `
     <div class="patient-item ${p.efetivado?'efetivado':''} ${isActive?'active':''}" onclick="selectPatient('${p._id}')"
       style="display:flex;align-items:center;gap:8px;padding:8px 8px 8px 12px;position:relative;border-bottom:1px solid #f0e8e0;cursor:pointer;background:${isActive?'#f5ede2':'#fff'};transition:background .15s;">
@@ -2208,7 +2218,7 @@ function renderPatientList() {
       ${avatarHtml}
       <!-- Info -->
       <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;color:#1A0F0A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;" title="${p.nome}">${p.nome}</div>
+        <div style="font-family:'Nunito',sans-serif;font-size:11px;font-weight:600;letter-spacing:.04em;color:#1A0F0A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;" title="${p.nome}">${p.nome}</div>
         <div style="display:flex;align-items:center;gap:4px;margin-top:2px;flex-wrap:nowrap;overflow:hidden;">
           ${p.ficha ? `<span style="font-size:10px;color:#8B2D42;font-weight:700;letter-spacing:.06em;flex-shrink:0;">#${p.ficha}</span>` : ''}
           <span style="font-size:9px;color:${statusColor};font-weight:600;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;">${statusLabel}</span>
@@ -2292,7 +2302,7 @@ function dadosFotoRemover() {
 
 function fillDadosForm() {
   const p = state.currentPatient;
-  const map = { nome:'nome', cpf:'cpf', nasc:'nascimento', obs:'obs', origem:'origem' };
+  const map = { nome:'nome', cpf:'cpf', nasc:'nascimento', obs:'obs', origem:'origem', ficha:'ficha' };
   Object.entries(map).forEach(([fieldId, key]) => {
     const el = document.getElementById('d-'+fieldId);
     if (el) el.value = p[key] || '';
@@ -2345,6 +2355,7 @@ async function salvarDados() {
     endComplemento: document.getElementById('d-complemento').value.trim(),
     endereco: [document.getElementById('d-rua').value.trim(), document.getElementById('d-numero').value.trim(), document.getElementById('d-bairro').value.trim(), document.getElementById('d-cidade').value.trim(), document.getElementById('d-complemento').value.trim()].filter(Boolean).join(', '),
     origem: document.getElementById('d-origem').value,
+    ficha: document.getElementById('d-ficha').value.trim(),
     obs: document.getElementById('d-obs').value,
     foto: state.currentPatient._fotoBase64 !== undefined ? state.currentPatient._fotoBase64 : (state.currentPatient.foto || ''),
     fotoDescriptor: state.currentPatient._fotoDescriptor !== undefined ? state.currentPatient._fotoDescriptor : (state.currentPatient.fotoDescriptor || null),
@@ -2469,7 +2480,7 @@ async function criarPacienteComRaiox(nome, imgObj) {
     showTab('raiox');
     return;
   }
-  const patient = { nome, efetivado: false, ficha: '', images: [], overlays: {}, drawings: {} };
+  const patient = { nome, efetivado: false, ficha: '', images: [], overlays: {}, drawings: {}, perfil: { source: 'prontuario' } };
   const r = await apiFetch('/api/patients', { method: 'POST', body: JSON.stringify(patient) });
   if (!r) return;
   const saved = await r.json();
@@ -2517,7 +2528,7 @@ async function saveNewPatient() {
     await selectPatient(duplicado._id);
     return;
   }
-  const patient = { nome, efetivado: false, ficha: '', images: [], overlays: {}, drawings: {} };
+  const patient = { nome, efetivado: false, ficha: '', images: [], overlays: {}, drawings: {}, perfil: { source: 'prontuario' } };
   const r = await apiFetch('/api/patients', { method: 'POST', body: JSON.stringify(patient) });
   if (!r) return;
   const savedRaw = await r.json();
@@ -4283,8 +4294,22 @@ async function ocrAnamnese(files) {
         continue;
       }
       if (campo.endsWith('_obs')) {
-        const id = 'anpre-' + campo.replace('_obs', '') + '-obs';
+        // suporta tanto "q1_obs" quanto "obs_q1"
+        const base = campo.replace('_obs', '').replace(/^obs_/, '');
+        const id = 'anpre-' + base + '-obs';
         const el = document.getElementById(id);
+        if (el && valor) el.value = valor;
+        continue;
+      }
+      if (campo.startsWith('obs_')) {
+        const base = campo.replace('obs_', '');
+        const id = 'anpre-' + base + '-obs';
+        const el = document.getElementById(id);
+        if (el && valor) el.value = valor;
+        continue;
+      }
+      if (campo === 'pressao') {
+        const el = document.getElementById('anpre-q15-obs');
         if (el && valor) el.value = valor;
         continue;
       }
@@ -4397,7 +4422,7 @@ async function impProcessarOCR() {
   try {
     const formData = new FormData();
     for (const f of _impFiles) formData.append('files', f);
-    const resp = await fetch('/api/ocr-planejamento', { method:'POST', headers:{'Authorization':'Bearer '+getToken()}, body:formData });
+    const resp = await fetch(API + '/api/ocr-planejamento', { method:'POST', headers:{'Authorization':'Bearer '+getToken()}, body:formData });
     if (resp.ok) {
       const data = await resp.json();
       _impSteps = (data.etapas||[]).map(e => ({ procedure: e.procedure, duration: e.duration||'30min', notes: e.notes||'', dentista: e.dentista||'', retorno: e.retorno||'' }));
@@ -4487,7 +4512,6 @@ async function impConfirmar() {
     return;
   }
 
-  // Pergunta: substituir ou adicionar
   let modo = null;
   if (planningSteps.length > 0) {
     const resp = confirm(
@@ -4500,48 +4524,67 @@ async function impConfirmar() {
     modo = 'adicionar';
   }
 
-  // Bloqueia o botão para evitar clique duplo
   const impBtnConfirmar = document.querySelector('#modal-importar-plano .btn-success');
   if (impBtnConfirmar) { impBtnConfirmar.disabled = true; impBtnConfirmar.textContent = '⏳ Salvando...'; }
 
   try {
-  if (modo === 'substituir') {
-    // Deleta todas as etapas de uma vez (1 request)
-    await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, { method: 'DELETE' });
-    planningSteps = [];
-  }
-
-  const maxOrder = planningSteps.length ? Math.max(...planningSteps.map(s => s.order||0)) : 0;
-  let ordem = maxOrder + 1;
-
-  // Monta array de etapas para bulk insert
-  const novasEtapas = [];
-
-  // Se substituindo: cria Anamnese inicial, EXCETO se a PRIMEIRA etapa já for PRÉ-OP
-  if (modo === 'substituir') {
-    const primeiraEPreOp = etapas.length > 0 && (
-      /pr[eé][\s\-]?op/i.test(etapas[0].procedure) ||
-      /pr[eé]\s*operat/i.test(etapas[0].procedure)
-    );
-    if (!primeiraEPreOp) {
-      novasEtapas.push({ order: ordem++, procedure: 'Anamnese + Avaliação Inicial', tipo: 'cirurgia_pre', duration: '30min', status: 'pending', notes: 'Primeira consulta — anamnese preenchida no cadastro.' });
+    if (modo === 'substituir') {
+      await apiFetch(`/api/patients/${state.currentPatient._id}/planning`, { method: 'DELETE' });
+      planningSteps = [];
     }
-  }
 
-  for (const s of etapas) {
-    novasEtapas.push({ order: ordem++, procedure: s.procedure, duration: s.duration||'30min', retornoEm: s.retorno||'', dentista: normalizeDentista(s.dentista||''), notes: s.notes||'', status: s.concluido ? 'concluido' : 'pending', tipo:'importado', requerTermoProtetica: !!s.requerTermoProtetica, requerTermoFinalizacao: !!s.requerTermoFinalizacao });
-  }
+    const maxOrder = planningSteps.length ? Math.max(...planningSteps.map(s => s.order||0)) : 0;
+    let ordem = maxOrder + 1;
+    const novasEtapas = [];
 
-  // Insere todas de uma vez (1 request)
-  await apiFetch(`/api/patients/${state.currentPatient._id}/planning/bulk`, {
-    method: 'POST',
-    body: JSON.stringify({ steps: novasEtapas }),
-  });
+    if (modo === 'substituir') {
+      const primeiraEPreOp = etapas.length > 0 && (
+        /pr[eé][\s\-]?op/i.test(etapas[0].procedure) ||
+        /pr[eé]\s*operat/i.test(etapas[0].procedure)
+      );
+      if (!primeiraEPreOp) {
+        novasEtapas.push({ order: ordem++, procedure: 'Anamnese + Avaliação Inicial', tipo: 'cirurgia_pre', duration: '30min', status: 'pending', notes: 'Primeira consulta — anamnese preenchida no cadastro.' });
+      }
+    }
 
-  const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
-  if (pr && pr.ok) planningSteps = (await pr.json()).map(normalizarStep);
+    for (const s of etapas) {
+      novasEtapas.push({ order: ordem++, procedure: s.procedure, duration: s.duration||'30min', retornoEm: s.retorno||'', dentista: normalizeDentista(s.dentista||''), notes: s.notes||'', status: s.concluido ? 'concluido' : 'pending', tipo:'importado', requerTermoProtetica: !!s.requerTermoProtetica, requerTermoFinalizacao: !!s.requerTermoFinalizacao });
+    }
+
+    const bulkRes = await apiFetch(`/api/patients/${state.currentPatient._id}/planning/bulk`, {
+      method: 'POST',
+      body: JSON.stringify({ steps: novasEtapas }),
+    });
+
+    // Tenta pegar IDs reais da resposta do bulk
+    let stepsComId = null;
+    if (bulkRes && bulkRes.ok) {
+      try { stepsComId = await bulkRes.json(); } catch(e) {}
+    }
+
+    if (Array.isArray(stepsComId) && stepsComId.length > 0) {
+      // Resposta já tem os dados com _id — usa direto
+      if (modo === 'substituir') planningSteps = stepsComId.map(normalizarStep);
+      else planningSteps = [...planningSteps, ...stepsComId.map(normalizarStep)];
+    } else {
+      // Fallback: popula localmente com os dados que já temos (sem _id real)
+      if (modo === 'substituir') planningSteps = novasEtapas.map(s => normalizarStep({...s, _id: 'tmp_'+Math.random()}));
+      else planningSteps = [...planningSteps, ...novasEtapas.map(s => normalizarStep({...s, _id: 'tmp_'+Math.random()}))];
+      // Re-fetch em background para trocar IDs reais sem travar a tela
+      setTimeout(async () => {
+        try {
+          const pr = await apiFetch(`/api/patients/${state.currentPatient._id}/planning`);
+          if (pr && pr.ok) { const f = await pr.json(); if (f.length > 0) { planningSteps = f.map(normalizarStep); renderPlanning(); } }
+        } catch(e) {}
+      }, 1500);
+    }
+
+    // Fecha modal e renderiza IMEDIATAMENTE com dados já disponíveis
+    document.getElementById('modal-importar-plano').classList.remove('open');
+    renderPlanning();
+
   } finally {
-    if (impBtnConfirmar) { impBtnConfirmar.disabled = false; impBtnConfirmar.textContent = '✅ Confirmar'; }
+    if (impBtnConfirmar) { impBtnConfirmar.disabled = false; impBtnConfirmar.textContent = '✅ Adicionar ao Planejamento'; }
   }
 
   // Salvar dentistas extraídos pelo OCR no perfil do paciente
@@ -4562,9 +4605,11 @@ async function impConfirmar() {
     }
   }
 
-  renderPlanning();
-  document.getElementById('modal-importar-plano').classList.remove('open');
-  alert(`✅ ${etapas.length} etapa(s) ${modo === 'substituir' ? 'substituíram' : 'adicionadas a'} o planejamento!`);
+  const _toast = document.createElement('div');
+  _toast.style.cssText = 'position:fixed;bottom:28px;right:28px;background:#059669;color:#fff;padding:14px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 18px rgba(0,0,0,.2);transition:opacity .4s';
+  _toast.textContent = `✅ ${etapas.length} etapa(s) ${modo === 'substituir' ? 'substituíram o planejamento!' : 'adicionadas ao planejamento!'}`;
+  document.body.appendChild(_toast);
+  setTimeout(() => { _toast.style.opacity = '0'; setTimeout(() => _toast.remove(), 500); }, 4000);
 }
 
 function _abrirImportarFotosLegado() {
@@ -4700,7 +4745,7 @@ async function efProcessarOCR() {
     const formData = new FormData();
     for (const file of _efImportFiles) formData.append('files', file);
     const token = getToken();
-    const resp = await fetch('/api/ocr-planejamento', {
+    const resp = await fetch(API + '/api/ocr-planejamento', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token },
       body: formData,
@@ -4895,7 +4940,7 @@ function _toothShape(n) {
   return { w, h, svg: `
     ${raizes}
     <rect x="1" y="${crY}" width="${w-2}" height="${crH}" rx="3" fill="${coronaColor}" stroke="#C4955A" stroke-width="1.5"/>
-    <text x="${w/2}" y="${sup?h-1:10}" text-anchor="middle" font-size="7" fill="#8B2D42" font-family="Josefin Sans,sans-serif">${n}</text>
+    <text x="${w/2}" y="${sup?h-1:10}" text-anchor="middle" font-size="7" fill="#8B2D42" font-family="Nunito,sans-serif">${n}</text>
   `};
 }
 
@@ -5001,7 +5046,7 @@ async function efOcrDocumento(files) {
     for (const file of Array.from(files)) {
       const formData = new FormData();
       formData.append('file', file);
-      const resp = await fetch('/api/ocr-paciente', {
+      const resp = await fetch(API + '/api/ocr-paciente', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + getToken() },
         body: formData,
@@ -5455,7 +5500,7 @@ function renderStepCard(step, i, _numMap) {
         ${(canEdit && step.status !== 'concluido') ? `
         <textarea id="sf-descricao-proc-${step._id}" rows="2"
           placeholder="Descreva o procedimento realizado nesta etapa... (ou use o microfone)"
-          style="width:100%;background:#fff;border:1.5px solid #c4b5fd;border-radius:6px;padding:6px 10px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#1A0F0A;resize:vertical;outline:none;transition:border .2s;"
+          style="width:100%;background:#fff;border:1.5px solid #c4b5fd;border-radius:6px;padding:6px 10px;font-family:'Nunito',sans-serif;font-size:11px;color:#1A0F0A;resize:vertical;outline:none;transition:border .2s;"
           onfocus="this.style.borderColor='#7c3aed'"
           onblur="this.style.borderColor='#c4b5fd'; salvarDescricaoProc('${step._id}', this.value)"
         >${step.descricaoProc||''}</textarea>` :
@@ -7965,6 +8010,128 @@ async function exportPDF(){
   finally{if(btn){btn.textContent='⬇️ PDF';btn.disabled=false;}}
 }
 
+// ── Backup Completo ─────────────────────────────────────────────
+// Camada 1: backup manual (botão)
+// Camada 2: backup automático no login (se o dia mudou desde o último)
+// Camada 3: backup automático a cada 4h enquanto o sistema está aberto
+// Camada 4: cópia de segurança salva no localStorage (emergência offline)
+
+const BACKUP_LS_KEY = 'athena_backup_ultima_data';
+const BACKUP_LS_DADOS = 'athena_backup_emergencia';
+
+async function _coletarDadosBackup() {
+  const r = await apiFetch('/api/patients');
+  if (!r || !r.ok) throw new Error('Falha ao buscar pacientes');
+  const pacientes = await r.json();
+  const somenteProntuario = pacientes.filter(p => {
+    const src = (typeof p.perfil === 'string' ? JSON.parse(p.perfil || '{}') : p.perfil || {}).source;
+    return src !== 'dio';
+  });
+  return {
+    gerado_em: new Date().toISOString(),
+    total_pacientes: somenteProntuario.length,
+    sistema: 'Athena — Oral Unic Carlos Barbosa',
+    pacientes: somenteProntuario,
+  };
+}
+
+function _baixarBackupJSON(backup) {
+  const json = JSON.stringify(backup, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const data = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  a.href = url;
+  a.download = `backup-prontuario-${data}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function _salvarBackupEmergencia(backup) {
+  // Guarda cópia compacta no localStorage (sem imagens base64 para não estourar)
+  try {
+    const compacto = {
+      ...backup,
+      pacientes: backup.pacientes.map(p => {
+        const { images, overlays, drawings, ...resto } = p;
+        return { ...resto, _tem_imagens: (images?.length || 0) };
+      }),
+    };
+    localStorage.setItem(BACKUP_LS_DADOS, JSON.stringify(compacto));
+    localStorage.setItem(BACKUP_LS_KEY, new Date().toDateString());
+  } catch(e) { /* localStorage cheio — ignora */ }
+}
+
+async function fazerBackup() {
+  const btn = document.getElementById('btn-backup');
+  if (btn) { btn.textContent = '⏳ Gerando...'; btn.disabled = true; }
+  try {
+    const backup = await _coletarDadosBackup();
+    _baixarBackupJSON(backup);
+    _salvarBackupEmergencia(backup);
+    if (btn) { btn.textContent = '✅ Backup salvo!'; setTimeout(() => { btn.textContent = '💾 Backup'; }, 3000); }
+  } catch (e) {
+    alert('Erro ao gerar backup: ' + e.message);
+    if (btn) btn.textContent = '💾 Backup';
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Backup automático silencioso (sem download — só localStorage + notificação discreta)
+async function _backupSilencioso(motivo) {
+  try {
+    const backup = await _coletarDadosBackup();
+    _salvarBackupEmergencia(backup);
+    console.log(`[Backup] ${motivo} — ${backup.total_pacientes} pacientes salvos em ${backup.gerado_em}`);
+    // Mostra notificação discreta no header
+    const el = document.getElementById('backup-status');
+    if (el) {
+      el.textContent = `💾 Backup: ${new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+      el.style.opacity = '1';
+      setTimeout(() => { el.style.opacity = '0'; }, 4000);
+    }
+  } catch(e) {
+    console.warn('[Backup automático falhou]', e.message);
+  }
+}
+
+// Backup diário automático: baixa arquivo se hoje ainda não foi feito
+async function _backupDiarioAuto() {
+  const hoje = new Date().toDateString();
+  const ultimo = localStorage.getItem(BACKUP_LS_KEY);
+  if (ultimo === hoje) return; // já fez hoje
+  // Aguarda 8 segundos após login para não travar a inicialização
+  setTimeout(async () => {
+    try {
+      const backup = await _coletarDadosBackup();
+      _baixarBackupJSON(backup);
+      _salvarBackupEmergencia(backup);
+      // Mostra toast de confirmação
+      _mostrarToastBackup(`Backup diário gerado — ${backup.total_pacientes} pacientes`);
+    } catch(e) {
+      console.warn('[Backup diário falhou]', e.message);
+    }
+  }, 8000);
+}
+
+function _mostrarToastBackup(msg) {
+  const toast = document.createElement('div');
+  toast.style.cssText = `position:fixed;bottom:24px;right:24px;background:#4f46e5;color:#fff;padding:12px 20px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:12px;letter-spacing:.06em;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .4s;`;
+  toast.textContent = '💾 ' + msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 5000);
+}
+
+function _iniciarBackupPeriodico() {
+  // A cada 4 horas, faz backup silencioso no localStorage
+  setInterval(() => _backupSilencioso('Periódico 4h'), 4 * 60 * 60 * 1000);
+  // Backup silencioso após 2 minutos do login (dados já carregados)
+  setTimeout(() => _backupSilencioso('Pós-login'), 2 * 60 * 1000);
+}
+
 // ── PDF Anamnese com Hash SHA-256 ─────────────────────────────
 async function gerarHashSHA256(texto) {
   const enc = new TextEncoder();
@@ -8304,6 +8471,9 @@ async function init(){
   document.getElementById('tab-bar').style.display = 'flex';
   // Carrega planejamentos em paralelo e abre a agenda do dia
   agendaCarregarPlanejamentos().then(() => abrirAgendaDia());
+  // Proteção de dados: backup automático diário + periódico
+  _backupDiarioAuto();
+  _iniciarBackupPeriodico();
 }
 
 init();
@@ -8417,7 +8587,7 @@ setInterval(carregarAlertas, 60000);
   <div style="background:#fff;border-radius:20px;padding:28px 32px;width:90vw;max-width:900px;box-shadow:0 24px 80px rgba(0,0,0,.5);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div>
-        <div id="maf-titulo" style="font-family:'Josefin Sans',sans-serif;font-size:18px;font-weight:800;color:#7c3aed;letter-spacing:.06em;">✍️ ASSINAR</div>
+        <div id="maf-titulo" style="font-family:'Nunito',sans-serif;font-size:18px;font-weight:800;color:#7c3aed;letter-spacing:.06em;">✍️ ASSINAR</div>
         <div id="maf-subtitulo" style="font-size:12px;color:#6b7280;margin-top:2px;">Assine com a caneta na área abaixo</div>
       </div>
       <button onclick="fecharModalAssinatura()" style="background:#fee2e2;border:none;color:#dc2626;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:700;">✕ Cancelar</button>
@@ -8425,7 +8595,7 @@ setInterval(carregarAlertas, 60000);
     <canvas id="maf-canvas" width="1600" height="400"
       style="display:block;width:100%;height:300px;border:3px solid #7c3aed;border-radius:12px;cursor:crosshair;touch-action:none;background:#faf5ff;"></canvas>
     <div id="maf-dentistas-rapidos" style="display:none;margin-top:12px;padding:10px 14px;background:#f5f3ff;border-radius:10px;border:1px solid #e9d5ff;">
-      <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:8px;font-family:'Josefin Sans',sans-serif;letter-spacing:.05em;">⚡ USAR ASSINATURA CADASTRADA</div>
+      <div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:8px;font-family:'Nunito',sans-serif;letter-spacing:.05em;">⚡ USAR ASSINATURA CADASTRADA</div>
       <div id="maf-dentistas-lista" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
@@ -8433,7 +8603,7 @@ setInterval(carregarAlertas, 60000);
         <button onclick="limparModalAssinatura()" style="background:#f3f4f6;border:1.5px solid #d1d5db;color:#374151;border-radius:8px;padding:8px 20px;cursor:pointer;font-size:13px;font-weight:600;">🗑️ Limpar</button>
         <button id="maf-btn-minha-assinatura" onclick="colarMinhaAssinatura()" style="display:none;background:#ede9fe;border:1.5px solid #c4b5fd;color:#7c3aed;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:700;">✍️ Minha Assinatura</button>
       </div>
-      <button onclick="confirmarModalAssinatura()" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:10px 32px;cursor:pointer;font-size:14px;font-weight:800;font-family:'Josefin Sans',sans-serif;letter-spacing:.08em;">✅ CONFIRMAR ASSINATURA</button>
+      <button onclick="confirmarModalAssinatura()" style="background:#7c3aed;border:none;color:#fff;border-radius:8px;padding:10px 32px;cursor:pointer;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;letter-spacing:.08em;">✅ CONFIRMAR ASSINATURA</button>
     </div>
   </div>
 </div>
@@ -8500,7 +8670,7 @@ setInterval(carregarAlertas, 60000);
     ctx.font = 'italic bold ' + Math.round(h * 0.22) + 'px "Brush Script MT", cursive';
     ctx.fillText(nomeCompleto, w / 2, h * 0.45);
     // Título e CRO
-    ctx.font = '600 ' + Math.round(h * 0.13) + 'px "Josefin Sans", sans-serif';
+    ctx.font = '600 ' + Math.round(h * 0.13) + 'px "Nunito", sans-serif';
     ctx.fillStyle = '#4c1d95';
     ctx.fillText(titulo + '  ·  ' + cro, w / 2, h * 0.72);
     ctx.restore();
@@ -8608,7 +8778,7 @@ setInterval(carregarAlertas, 60000);
       ).join('') +
       `<div style="display:flex;gap:6px;align-items:center;margin-top:4px;width:100%;">
         <input id="maf-nome-livre" type="text" placeholder="Outro nome..."
-          style="border:1.5px solid #c4b5fd;border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Josefin Sans',sans-serif;outline:none;flex:1;"
+          style="border:1.5px solid #c4b5fd;border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Nunito',sans-serif;outline:none;flex:1;"
           onkeydown="if(event.key==='Enter'){colarAssinaturaNomelivre();}" />
         <button onclick="colarAssinaturaNomelivre()"
           style="background:#ede9fe;border:1.5px solid #c4b5fd;color:#7c3aed;border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;">
@@ -8664,9 +8834,9 @@ setInterval(carregarAlertas, 60000);
   };
 
   window.selecionarDentistaBtn = function(ev, nome, id) {
-    const btn = ev.currentTarget;
+    const btn = (ev.target || ev).closest ? (ev.target || ev).closest('.maf-dent-btn') : document.getElementById('maf-btn-dentista-' + id);
     document.querySelectorAll('#maf-dentistas-lista .maf-dent-btn').forEach(b => b.classList.remove('selecionado'));
-    btn.classList.add('selecionado');
+    if (btn) btn.classList.add('selecionado');
     colarAssinaturaDentista(nome, id);
   };
 
@@ -8715,7 +8885,7 @@ setInterval(carregarAlertas, 60000);
   position:fixed;inset:0;z-index:9000;
   background:#f5f0ea;
   display:none;flex-direction:column;
-  font-family:'Josefin Sans','Segoe UI',sans-serif;
+  font-family:'Nunito','Segoe UI',sans-serif;
 ">
   <!-- Header da agenda -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px 12px;border-bottom:1px solid #d6cec4;flex-shrink:0;background:#ede8e1;">
@@ -8730,15 +8900,15 @@ setInterval(carregarAlertas, 60000);
         <input type="file" id="agenda-import-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="agendaImportarPlanilha(this)">
       </label>
       <!-- Reconhecimento facial -->
-      <button onclick="abrirModalFacialAgenda()" style="background:#3a1f3a;border:1.5px solid #8B2D42;border-radius:8px;padding:7px 14px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:700;color:#e0b0c0;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#5a2d4a'" onmouseout="this.style.background='#3a1f3a'" title="Check-in por reconhecimento facial">
+      <button onclick="abrirModalFacialAgenda()" style="background:#3a1f3a;border:1.5px solid #8B2D42;border-radius:8px;padding:7px 14px;font-size:11px;font-family:'Nunito',sans-serif;font-weight:700;color:#e0b0c0;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#5a2d4a'" onmouseout="this.style.background='#3a1f3a'" title="Check-in por reconhecimento facial">
         🎭 Facial
       </button>
       <!-- Limpar chegadas -->
-      <button onclick="agendaLimparChegadas()" style="background:transparent;border:1.5px solid #c8b99e;border-radius:8px;padding:7px 12px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:400;color:#9b8878;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;" title="Apagar todas as marcações de chegada de hoje">
+      <button onclick="agendaLimparChegadas()" style="background:transparent;border:1.5px solid #c8b99e;border-radius:8px;padding:7px 12px;font-size:11px;font-family:'Nunito',sans-serif;font-weight:400;color:#9b8878;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;" title="Apagar todas as marcações de chegada de hoje">
         🗑 Limpar
       </button>
       <!-- Botão entrar no sistema -->
-      <button onclick="fecharAgendaDia()" style="background:#9b7340;border:none;border-radius:8px;padding:7px 18px;font-size:11px;font-family:'Josefin Sans',sans-serif;font-weight:700;color:#fff;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#7c5c30'" onmouseout="this.style.background='#9b7340'">
+      <button onclick="fecharAgendaDia()" style="background:#9b7340;border:none;border-radius:8px;padding:7px 18px;font-size:11px;font-family:'Nunito',sans-serif;font-weight:700;color:#fff;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#7c5c30'" onmouseout="this.style.background='#9b7340'">
         Entrar no Sistema →
       </button>
     </div>
@@ -9489,13 +9659,13 @@ async function agendaAtualizarDentistasAtivos() {
     <div id="camera-foto-status" style="font-size:11px;color:#3D2A20;letter-spacing:.06em;min-height:16px;"></div>
     <!-- Botões -->
     <div id="camera-foto-btns-vivo" style="display:flex;gap:12px;">
-      <button onclick="cameraFotoCapturar()" style="background:#8B2D42;color:#FDF9F4;border:none;border-radius:8px;padding:9px 28px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">📸 Capturar</button>
-      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
+      <button onclick="cameraFotoCapturar()" style="background:#8B2D42;color:#FDF9F4;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">📸 Capturar</button>
+      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Nunito',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
     </div>
     <div id="camera-foto-btns-preview" style="display:none;gap:12px;">
-      <button onclick="cameraFotoUsar()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Usar esta foto</button>
-      <button onclick="cameraFotoRepetir()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">🔄 Repetir</button>
-      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 16px;font-family:'Josefin Sans',sans-serif;font-size:11px;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
+      <button onclick="cameraFotoUsar()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Usar esta foto</button>
+      <button onclick="cameraFotoRepetir()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 20px;font-family:'Nunito',sans-serif;font-size:11px;color:#8B2D42;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">🔄 Repetir</button>
+      <button onclick="fecharModalCameraFoto()" style="background:none;border:1.5px solid #E0C9B8;border-radius:8px;padding:9px 16px;font-family:'Nunito',sans-serif;font-size:11px;color:#9ca3af;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">Cancelar</button>
     </div>
   </div>
 </div>
@@ -9510,7 +9680,7 @@ async function agendaAtualizarDentistasAtivos() {
       <button onclick="fecharModalFacialAgenda()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af;line-height:1;">✕</button>
     </div>
     <!-- Status de carregamento / detecção -->
-    <div id="facial-status" style="font-size:12px;color:#8B2D42;letter-spacing:.08em;background:#F5EDE2;border-radius:8px;padding:7px 18px;min-width:260px;text-align:center;font-family:'Josefin Sans',sans-serif;">⏳ Inicializando câmera...</div>
+    <div id="facial-status" style="font-size:12px;color:#8B2D42;letter-spacing:.08em;background:#F5EDE2;border-radius:8px;padding:7px 18px;min-width:260px;text-align:center;font-family:'Nunito',sans-serif;">⏳ Inicializando câmera...</div>
     <!-- Vídeo -->
     <div style="position:relative;display:inline-block;">
       <video id="facial-video" autoplay playsinline style="width:380px;height:285px;object-fit:cover;border-radius:10px;border:2px solid #E0C9B8;background:#1a1a1a;display:block;"></video>
@@ -9520,7 +9690,7 @@ async function agendaAtualizarDentistasAtivos() {
     <div id="facial-match-card" style="display:none;background:#fff;border:2px solid #059669;border-radius:12px;padding:14px 20px;width:100%;text-align:center;">
       <div id="facial-match-nome" style="font-family:'Cormorant SC',serif;font-size:18px;color:#1A0F0A;letter-spacing:.1em;margin-bottom:4px;"></div>
       <div id="facial-match-conf" style="font-size:11px;color:#059669;letter-spacing:.08em;margin-bottom:12px;"></div>
-      <button id="facial-match-btn" onclick="facialConfirmarCheckin()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 28px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Confirmar Check-in</button>
+      <button id="facial-match-btn" onclick="facialConfirmarCheckin()" style="background:#059669;color:#fff;border:none;border-radius:8px;padding:9px 28px;font-family:'Nunito',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;">✅ Confirmar Check-in</button>
     </div>
   </div>
 </div>
