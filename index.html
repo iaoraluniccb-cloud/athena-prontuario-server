@@ -3063,30 +3063,9 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
             ${c.retorno ? `<br><span style="font-size:12px;font-weight:700;color:#dc2626;margin-top:4px;display:inline-block;">📅 Retorno em: ${c.retorno}</span>` : ''}
             ${c.observacao ? `<br><span style="font-size:11px;color:#6b7280;font-style:italic;margin-top:4px;display:inline-block;">${c.observacao}</span>` : ''}
           </div>
-          <!-- Editor inline de retorno -->
-          <div id="edit-retorno-${c._id}" style="display:none;margin-top:8px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:10px 12px;">
-            <div style="font-size:11px;font-weight:700;color:#b45309;margin-bottom:8px;">✏️ Editar informações de retorno</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-              <div>
-                <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:3px;">📅 Retorno em</label>
-                <input type="text" id="inp-retorno-${c._id}" value="${(c.retorno||'').replace(/"/g,'&quot;')}" placeholder="Ex: 10 dias, 3 semanas..."
-                  style="width:100%;border:1.5px solid #fde68a;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;">
-              </div>
-              <div>
-                <label style="font-size:10px;color:#6b7280;display:block;margin-bottom:3px;">⏱️ Tempo da próxima consulta</label>
-                <input type="text" id="inp-tempo-${c._id}" value="${(c.tempo||'').replace(/"/g,'&quot;')}" placeholder="Ex: 1 HR, 30min..."
-                  style="width:100%;border:1.5px solid #fde68a;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;">
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="salvarEdicaoComanda('${c._id}')">💾 Salvar</button>
-              <button class="btn btn-sm btn-outline" onclick="document.getElementById('edit-retorno-${c._id}').style.display='none'">Cancelar</button>
-            </div>
-          </div>
           <div style="font-size:11px;color:#6b7280;margin-top:6px;">✍️ Gerado por: <strong>${c.assinaturaNome || c.assinatura || '—'}</strong></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-          ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;" onclick="toggleEditRetornoComanda('${c._id}')">✏️ Editar Retorno</button>` : ''}
           ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="marcarComandaStatus('${c._id}','agendado')">📅 Agendado</button>` : ''}
           ${status !== 'pendente' ? `<button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="marcarComandaStatus('${c._id}','pendente')">⏳ Pendente</button>` : ''}
           ${(currentUser?.role === 'admin' || currentUser?.role === 'dentist') ? `<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;" onclick="excluirComanda('${c._id}')">🗑️ Excluir</button>` : ''}
