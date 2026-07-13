@@ -8,10 +8,10 @@
 <meta http-equiv="Expires" content="0">
 <title>Athena — Prontuário Digital | Oral Unic</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" defer></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Inter','Segoe UI',sans-serif; font-weight:300; letter-spacing:0.04em; background:#F5EDE2; color:#1A0F0A; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
@@ -639,9 +639,9 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
           <h3>📝 Planejamento do Tratamento</h3>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span id="ficha-badge" style="display:none;background:#f3f0ff;color:#7c3aed;border:2px solid #c4b5fd;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800;"></span>
-            <button class="btn btn-ghost btn-sm" id="btn-templates" onclick="abrirTemplates()" style="display:none">📋 Usar Template</button>
             <button class="btn btn-ghost btn-sm" id="btn-importar-contrato" onclick="importarDoContrato()" style="display:none;background:#f0fdf4;color:#059669;border-color:#86efac;">📥 Importar do Contrato</button>
             <button class="btn btn-ghost btn-sm" id="btn-adicional" onclick="abrirAdicionalTratamento()" style="display:none;background:#fff7ed;color:#c2410c;border-color:#fdba74;">➕ Adicional</button>
+            <button class="btn btn-ghost btn-sm" id="btn-comanda-especial" onclick="abrirComandaEspecial()" style="display:none;background:#fffbeb;color:#b45309;border-color:#fcd34d;">📤 Comanda Especial</button>
             <button class="btn btn-ghost btn-sm" id="btn-fotos-plano" onclick="abrirImportarFotos()" style="display:none;background:#f0f9ff;color:#0369a1;border-color:#7dd3fc;">📎 Fotos do Plano</button>
             <button class="btn btn-primary btn-sm" id="btn-add-step" onclick="addStep()" style="display:none">+ Etapa</button>
           </div>
@@ -690,13 +690,83 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
       <div id="tab-recepcao">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
           <h3 style="font-size:16px;color:#7c3aed;font-weight:800;">🔔 Pendências</h3>
-          <div style="display:flex;gap:6px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm recep-tab-btn" id="rtab-btn-aguardando" onclick="recepTab('aguardando')">⏳ Aguardando</button>
             <button class="btn btn-sm recep-tab-btn active" id="rtab-btn-comandas" onclick="recepTab('comandas')">📋 Comandas</button>
             <button class="btn btn-sm recep-tab-btn" id="rtab-btn-relacionamento" onclick="recepTab('relacionamento')">💬 Relacionamento</button>
             <button class="btn btn-sm recep-tab-btn" id="rtab-btn-planejador" onclick="recepTab('planejador')">📅 Planejador</button>
             <button class="btn btn-sm recep-tab-btn" id="rtab-btn-impressao" onclick="recepTab('impressao')">🖨️ Impressão</button>
           </div>
           <button class="btn btn-outline btn-sm" onclick="atualizarRecepTab()">🔄 Atualizar</button>
+        </div>
+
+        <!-- Sub-aba Aguardando -->
+        <div id="rtab-aguardando" style="display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <span style="font-size:13px;font-weight:800;color:#d97706;">⏳ Lista de Espera — Hoje</span>
+            <button onclick="abrirModalAguardando()" style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:8px;border:none;background:#d97706;color:#fff;cursor:pointer;">+ Adicionar</button>
+          </div>
+          <div id="aguardando-list" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="text-align:center;color:#9ca3af;padding:30px;font-size:13px;">Nenhum paciente aguardando no momento.</div>
+          </div>
+          <!-- Modal Exames OK — Cirurgia Protocolo -->
+          <div id="modal-exames-ok" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:18px;padding:32px 28px 24px;width:100%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,.22);text-align:center;">
+              <div style="font-size:36px;margin-bottom:10px;">🔬</div>
+              <div style="font-size:17px;font-weight:900;color:#7c3aed;margin-bottom:6px;letter-spacing:.01em;">Exames OK?</div>
+              <div id="modal-exames-ok-paciente" style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px;"></div>
+              <div style="font-size:11px;color:#9ca3af;margin-bottom:20px;">Próximo procedimento: <strong id="modal-exames-ok-proc" style="color:#7c3aed;"></strong></div>
+              <div style="font-size:12px;color:#6b7280;margin-bottom:24px;background:#fdf4ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:12px 16px;">
+                Os exames do paciente para a <strong>Cirurgia Protocolo</strong> estão em dia e aprovados?
+              </div>
+              <div style="display:flex;gap:10px;justify-content:center;">
+                <button onclick="responderExamesOk(false)" style="flex:1;padding:11px 0;border-radius:10px;border:2px solid #dc2626;background:#fff;color:#dc2626;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.04em;">✕ NÃO — Aguardando</button>
+                <button onclick="responderExamesOk(true)" style="flex:1;padding:11px 0;border-radius:10px;border:none;background:#059669;color:#fff;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:.04em;">✓ SIM — Enviar Comanda</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Prova da Barra -->
+          <div id="modal-prova-barra" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10000;align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:20px;padding:36px 32px 28px;width:100%;max-width:420px;box-shadow:0 16px 64px rgba(0,0,0,.28);text-align:center;">
+              <div style="font-size:44px;margin-bottom:10px;">🦷</div>
+              <div style="font-size:20px;font-weight:900;color:#7c3aed;margin-bottom:4px;letter-spacing:.01em;">Prova da Barra</div>
+              <div id="mpb-paciente" style="font-size:13px;font-weight:700;color:#374151;margin-bottom:14px;"></div>
+              <div style="font-size:14px;font-weight:800;color:#374151;margin-bottom:20px;background:#f3e8ff;border:2px solid #c4b5fd;border-radius:12px;padding:14px 18px;">
+                Prova adicional necessária?
+              </div>
+              <div style="display:flex;gap:12px;justify-content:center;">
+                <button onclick="responderProvaBarra(false)" style="flex:1;padding:14px 0;border-radius:12px;border:2.5px solid #dc2626;background:#fff;color:#dc2626;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.04em;transition:all .15s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='#fff'">✕ NÃO</button>
+                <button onclick="responderProvaBarra(true)" style="flex:1;padding:14px 0;border-radius:12px;border:none;background:#059669;color:#fff;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:.04em;transition:all .15s;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">✓ SIM</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal novo aguardando -->
+          <div id="modal-aguardando" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:none;align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:16px;padding:28px 28px 20px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+              <div style="font-size:15px;font-weight:800;color:#d97706;margin-bottom:16px;">⏳ Adicionar à Lista de Espera</div>
+              <div style="margin-bottom:10px;">
+                <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Paciente</label>
+                <input id="ag-nome" type="text" placeholder="Nome do paciente" autocomplete="off"
+                  style="width:100%;border:1.5px solid #e5e7eb;border-radius:8px;padding:7px 10px;font-size:13px;box-sizing:border-box;">
+              </div>
+              <div style="margin-bottom:10px;">
+                <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Horário</label>
+                <input id="ag-horario" type="time"
+                  style="width:100%;border:1.5px solid #e5e7eb;border-radius:8px;padding:7px 10px;font-size:13px;box-sizing:border-box;">
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Observação</label>
+                <input id="ag-obs" type="text" placeholder="Ex: Dor, urgência, retorno..." autocomplete="off"
+                  style="width:100%;border:1.5px solid #e5e7eb;border-radius:8px;padding:7px 10px;font-size:13px;box-sizing:border-box;">
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button onclick="fecharModalAguardando()" style="padding:7px 18px;border-radius:8px;border:1.5px solid #e5e7eb;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#6b7280;">Cancelar</button>
+                <button onclick="salvarAguardando()" style="padding:7px 18px;border-radius:8px;border:none;background:#d97706;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Adicionar</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Sub-aba Comandas -->
@@ -974,7 +1044,7 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
 
 <!-- MODAL ENVIAR COMANDA -->
 <div class="modal-overlay" id="modal-comanda">
-  <div class="modal" id="modal-comanda-inner" style="min-width:480px;max-width:820px;">
+  <div class="modal" id="modal-comanda-inner" style="min-width:480px;max-width:820px;max-height:90vh;overflow-y:auto;">
     <h2>📋 Enviar Comanda para Recepção</h2>
     <input type="hidden" id="comanda-step-id">
 
@@ -1054,9 +1124,108 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
       <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:10px;">Assinatura: <strong id="comanda-assinatura-preview-orto"></strong></div>
     </div>
 
-    <div class="modal-actions">
+    <div class="modal-actions" style="margin-top:18px;justify-content:space-between;align-items:center;position:sticky;bottom:0;background:#FDF9F4;padding-top:10px;border-top:1px solid #E0C9B8;">
       <button class="btn btn-outline" onclick="fecharComanda()">Cancelar</button>
+      <button onclick="fecharComanda();abrirComandaEspecial();" style="background:#fffbeb;color:#b45309;border:1.5px solid #fcd34d;border-radius:20px;padding:6px 18px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;cursor:pointer;">⭐ Comanda Especial</button>
       <button class="btn btn-success" onclick="confirmarEnviarComanda()">📤 Enviar para Recepção</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMANDA ESPECIAL -->
+<div class="modal-overlay" id="modal-comanda-especial" style="z-index:2100;">
+  <div class="modal" style="max-width:520px;width:96%;padding:28px 32px;">
+    <h2 style="margin-bottom:16px;font-size:17px;">⭐ Comanda Especial</h2>
+
+    <!-- Preview / formulário da comanda -->
+    <div style="border:2px solid #b45309;border-radius:12px;padding:18px 20px;margin-bottom:16px;background:#fffbeb;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:800;color:#b45309;">OralUnic</div>
+        <div id="cep-data-label" style="font-size:11px;color:#6b7280;font-weight:600;"></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Controle de procedimento e tempo</div>
+      <div style="height:1px;background:#e5e7eb;margin-bottom:10px;"></div>
+
+      <!-- Dentista -->
+      <div style="font-size:12px;margin-bottom:9px;display:flex;align-items:center;gap:8px;">
+        <span style="color:#9ca3af;white-space:nowrap;min-width:80px;">Profissional:</span>
+        <select id="cep-dentista" style="font-weight:700;color:#374151;border:1.5px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;outline:none;background:#fff;">
+          <option value="">Selecionar dentista…</option>
+          <option>Dr. Narton</option>
+          <option>Dra. Mone</option>
+          <option>Dr. Aurélio</option>
+          <option>Dra. Stéfany</option>
+          <option>Dr. Scharles</option>
+          <option>Dra. Fernanda</option>
+          <option>Dr. Pedro</option>
+          <option>Dra. Ana</option>
+          <option>Clínico Geral</option>
+        </select>
+      </div>
+
+      <!-- Paciente (somente leitura) -->
+      <div style="font-size:12px;margin-bottom:10px;">
+        <span style="color:#9ca3af;">Nome do paciente:</span>
+        <strong id="cep-paciente-label" style="margin-left:4px;"></strong>
+        <span id="cep-ficha-label" style="font-size:11px;color:#7c3aed;margin-left:4px;"></span>
+      </div>
+
+      <!-- Próximo procedimento -->
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:3px;">Próximo procedimento:</div>
+      <input id="cep-proximo" type="text" placeholder="Ex: Consulta de Reavaliação" style="font-size:13px;font-weight:700;color:#374151;border:1.5px solid #d1d5db;border-radius:6px;padding:5px 10px;width:100%;box-sizing:border-box;font-family:inherit;margin-bottom:10px;outline:none;">
+
+      <!-- Tempo + Retorno lado a lado -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;">
+        <div style="font-size:12px;display:flex;align-items:center;gap:6px;">
+          <span style="color:#9ca3af;white-space:nowrap;">Tempo:</span>
+          <input id="cep-tempo" type="text" placeholder="Ex: 30min" style="font-weight:600;color:#374151;border:1.5px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;outline:none;">
+        </div>
+        <div style="font-size:12px;display:flex;align-items:center;gap:6px;">
+          <span style="color:#9ca3af;white-space:nowrap;">Retorno:</span>
+          <input id="cep-retorno" type="text" placeholder="Ex: 6 meses" style="font-weight:700;color:#dc2626;border:1.5px solid #fca5a5;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;width:100%;outline:none;">
+        </div>
+      </div>
+
+      <div style="height:1px;background:#e5e7eb;margin-top:12px;margin-bottom:8px;"></div>
+      <div style="font-size:11px;color:#9ca3af;text-align:center;">Assinatura: <strong id="cep-assinatura-label"></strong></div>
+    </div>
+
+    <!-- Escolha de destino — aparece ao clicar em Confirmar -->
+    <div id="cep-destino-bloco" style="display:none;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;text-align:center;">Para onde enviar?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <button id="cep-btn-recepcao" class="btn" onclick="cepSelecionarDestino('pendente')"
+          style="font-size:13px;background:#fff;color:#059669;border:2px solid #d1fae5;border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all .15s;">
+          <span style="font-size:22px;">📤</span>
+          <span style="font-weight:700;">Recepção</span>
+          <span style="font-size:10px;color:#6b7280;font-weight:400;">Fila de pendentes</span>
+        </button>
+        <button id="cep-btn-aguardar" class="btn" onclick="cepSelecionarDestino('aguardar')"
+          style="font-size:13px;background:#fff;color:#7c3aed;border:2px solid #ede9fe;border-radius:10px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all .15s;">
+          <span style="font-size:22px;">⏳</span>
+          <span style="font-weight:700;">Aguardar</span>
+          <span style="font-size:10px;color:#6b7280;font-weight:400;">Aba aguardando</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bloco de observação — visível apenas ao escolher AGUARDAR -->
+    <div id="cep-obs-bloco" style="display:none;margin-bottom:16px;">
+      <label style="font-size:12px;font-weight:700;color:#7c3aed;display:block;margin-bottom:5px;">
+        📝 Observação <span style="color:#dc2626;">*</span> <span style="font-weight:400;color:#9ca3af;">(obrigatória para aguardar)</span>
+      </label>
+      <textarea id="cep-obs" rows="3" placeholder="Descreva o motivo de aguardar o agendamento…"
+        style="width:100%;box-sizing:border-box;border:2px solid #c4b5fd;border-radius:8px;padding:8px 12px;font-family:inherit;font-size:12px;resize:vertical;outline:none;background:#faf5ff;color:#374151;"></textarea>
+    </div>
+
+    <!-- Botões de ação finais -->
+    <div id="cep-btns-principais" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn btn-outline" style="font-size:12px;" onclick="fecharComandaEspecial()">Cancelar</button>
+      <button class="btn btn-success" style="font-size:12px;" onclick="cepAbrirEscolhaDestino()">✅ Confirmar</button>
+    </div>
+    <div id="cep-btns-confirmar" style="display:none;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn btn-outline" style="font-size:12px;" onclick="cepVoltarEscolha()">← Voltar</button>
+      <button class="btn btn-success" style="font-size:12px;" onclick="confirmarComandaEspecial(_cepDestinoSelecionado)">✅ Enviar</button>
     </div>
   </div>
 </div>
@@ -1910,10 +2079,24 @@ function authHeaders() {
   return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
 }
 
-async function apiFetch(url, opts = {}) {
+async function apiFetch(url, opts = {}, _retry = true) {
   opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
   const r = await fetch(API + url, opts);
-  if (r.status === 401) { logout(); return null; }
+  if (r.status === 401 && _retry) {
+    // Token expirado — renova automaticamente antes de deslogar
+    try {
+      const ar = await fetch(API + '/api/auto-token');
+      if (ar.ok) {
+        const ad = await ar.json();
+        currentToken = ad.token;
+        localStorage.setItem('athena_token', currentToken);
+        localStorage.setItem('dio_token', currentToken);
+        opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
+        return apiFetch(url, opts, false);
+      }
+    } catch {}
+    logout(); return null;
+  }
   return r;
 }
 
@@ -2150,13 +2333,25 @@ function normalizarPaciente(p) {
 
 async function loadPatients() {
   const r = await apiFetch('/api/patients');
-  if (!r) return;
-  const raw = await r.json();
+  if (!r) {
+    // Token falhou — tenta renovar e recarregar
+    setTimeout(loadPatients, 2000);
+    return;
+  }
+  if (!r.ok) { setTimeout(loadPatients, 3000); return; }
+  let raw;
+  try { raw = await r.json(); } catch { setTimeout(loadPatients, 3000); return; }
   // Exclui pacientes criados pelo módulo DIO (odontograma separado)
-  state.patients = (raw || []).filter(p => {
+  const lista = (raw || []).filter(p => {
     const src = (typeof p.perfil === 'string' ? JSON.parse(p.perfil || '{}') : p.perfil || {}).source;
     return src !== 'dio';
   }).map(normalizarPaciente);
+  // Se API retornou 0 pacientes mas existem no banco, recarrega em 3s
+  if (lista.length === 0 && state.patients.length > 0) {
+    setTimeout(loadPatients, 3000);
+    return;
+  }
+  state.patients = lista;
   const searchEl = document.getElementById('patient-search');
   if (searchEl) searchEl.value = '';
   renderPatientList();
@@ -2235,6 +2430,27 @@ function renderPatientList() {
 }
 
 async function selectPatient(id) {
+  // Verifica se há etapa concluída sem comanda enviada no paciente atual
+  if (state.currentPatient && state.currentPatient._id !== id && typeof planningSteps !== 'undefined' && planningSteps.length) {
+    const umaHoraAtras = Date.now() - 60 * 60 * 1000;
+    const semComanda = planningSteps.filter(s => {
+      if (s.semComanda || s.tipo === 'urgencia') return false;
+      if (s.status !== 'concluido' && s.status !== 'signed') return false;
+      if (_stepIdsComComanda && _stepIdsComComanda.has(s._id)) return false;
+      const dt = s.concluido_em ? new Date(s.concluido_em).getTime() : 0;
+      return dt >= umaHoraAtras;
+    });
+    if (semComanda.length) {
+      const nomes = semComanda.map(s => '· ' + (s.procedure || s.tipo || 'Etapa')).join('\n');
+      const ok = confirm(
+        '⚠️ COMANDA NÃO ENVIADA!\n\n' +
+        'O paciente ' + state.currentPatient.nome + ' tem ' + semComanda.length + ' etapa(s) concluída(s) sem comanda enviada à recepção:\n\n' +
+        nomes + '\n\n' +
+        'Deseja trocar de paciente mesmo assim?\n(A comanda não será enviada automaticamente)'
+      );
+      if (!ok) return;
+    }
+  }
   const r = await apiFetch('/api/patients/' + id);
   if (!r) return;
   state.currentPatient = normalizarPaciente(await r.json());
@@ -2357,22 +2573,40 @@ async function salvarDados() {
     origem: document.getElementById('d-origem').value,
     ficha: document.getElementById('d-ficha').value.trim(),
     obs: document.getElementById('d-obs').value,
-    foto: state.currentPatient._fotoBase64 !== undefined ? state.currentPatient._fotoBase64 : (state.currentPatient.foto || ''),
-    fotoDescriptor: state.currentPatient._fotoDescriptor !== undefined ? state.currentPatient._fotoDescriptor : (state.currentPatient.fotoDescriptor || null),
   };
+  // Só inclui foto se foi alterada nesta sessão (evita payload >4MB no Vercel)
+  if (state.currentPatient._fotoBase64 !== undefined) {
+    data.foto = state.currentPatient._fotoBase64;
+    data.fotoDescriptor = state.currentPatient._fotoDescriptor !== undefined ? state.currentPatient._fotoDescriptor : (state.currentPatient.fotoDescriptor || null);
+  }
   if (!data.nome) { alert('Informe o nome do paciente.'); return; }
+
+  // Feedback visual: Salvando…
+  const msg = document.getElementById('dados-save-msg');
+  const btnSalvar = document.querySelector('[onclick="salvarDados()"]');
+  if (msg) { msg.style.color = '#7c3aed'; msg.textContent = '⏳ Salvando…'; }
+  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.style.opacity = '0.7'; }
+
   const r = await apiFetch('/api/patients/' + state.currentPatient._id, {
     method: 'PUT', body: JSON.stringify(data),
   });
+
+  if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.style.opacity = ''; }
+
   if (r && r.ok) {
     Object.assign(state.currentPatient, data);
     renderPatientList();
     document.getElementById('patient-name').textContent = data.nome;
     const nd2 = document.getElementById('d-foto-nome-display');
     if (nd2) nd2.textContent = data.nome;
-    const msg = document.getElementById('dados-save-msg');
-    msg.textContent = '✔ Salvo!';
-    setTimeout(() => msg.textContent = '', 2000);
+    const fd2 = document.getElementById('d-foto-ficha-display');
+    if (fd2) fd2.textContent = data.ficha ? '#' + data.ficha : (state.currentPatient.efetivado ? '' : 'Em Avaliação');
+    if (msg) { msg.style.color = '#059669'; msg.textContent = '✔ Salvo!'; }
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 2500);
+  } else if (r) {
+    const errData = await r.json().catch(() => ({}));
+    if (msg) { msg.style.color = '#dc2626'; msg.textContent = '✕ Erro ao salvar'; setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
+    alert('Erro ao salvar: ' + (errData.error || 'Tente novamente.'));
   }
 }
 
@@ -2609,6 +2843,184 @@ function abrirEnviarComanda(stepId) {
 }
 function fecharComanda() { document.getElementById('modal-comanda').classList.remove('open'); _comandaOrtoSelecionada = null; }
 
+// ── Comanda Especial ──
+function abrirComandaEspecial() {
+  const p = state.currentPatient;
+  if (!p) { alert('Selecione um paciente primeiro.'); return; }
+  document.getElementById('cep-data-label').textContent = new Date().toLocaleDateString('pt-BR');
+  document.getElementById('cep-paciente-label').textContent = p.nome || '';
+  const ficha = p.ficha || '';
+  document.getElementById('cep-ficha-label').textContent = ficha ? '#' + ficha : '';
+  document.getElementById('cep-assinatura-label').textContent = currentUser?.name || '';
+  // Pré-seleciona dentista do paciente se disponível
+  const sel = document.getElementById('cep-dentista');
+  sel.selectedIndex = 0;
+  const dentistaPac = p.dentista || p.dentist || '';
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].text === dentistaPac) { sel.selectedIndex = i; break; }
+  }
+  document.getElementById('cep-proximo').value = '';
+  document.getElementById('cep-tempo').value = '';
+  document.getElementById('cep-retorno').value = '';
+  document.getElementById('cep-obs').value = '';
+  document.getElementById('cep-obs-bloco').style.display = 'none';
+  document.getElementById('cep-destino-bloco').style.display = 'none';
+  document.getElementById('cep-btns-principais').style.display = 'grid';
+  document.getElementById('cep-btns-confirmar').style.display = 'none';
+  _cepDestinoSelecionado = null;
+  document.getElementById('modal-comanda-especial').classList.add('open');
+  setTimeout(() => document.getElementById('cep-proximo').focus(), 120);
+}
+
+function fecharComandaEspecial() {
+  document.getElementById('modal-comanda-especial').classList.remove('open');
+  _cepDestinoSelecionado = null;
+}
+
+let _cepDestinoSelecionado = null;
+
+function cepAbrirEscolhaDestino() {
+  const proximo = document.getElementById('cep-proximo').value.trim();
+  if (!proximo) { alert('Informe o próximo procedimento.'); document.getElementById('cep-proximo').focus(); return; }
+  _cepDestinoSelecionado = null;
+  document.getElementById('cep-destino-bloco').style.display = 'block';
+  document.getElementById('cep-obs-bloco').style.display = 'none';
+  document.getElementById('cep-btns-principais').style.display = 'none';
+  document.getElementById('cep-btns-confirmar').style.display = 'none';
+  // reset visual seleção
+  document.getElementById('cep-btn-recepcao').style.background = '#fff';
+  document.getElementById('cep-btn-recepcao').style.borderColor = '#d1fae5';
+  document.getElementById('cep-btn-aguardar').style.background = '#fff';
+  document.getElementById('cep-btn-aguardar').style.borderColor = '#ede9fe';
+}
+
+function cepSelecionarDestino(destino) {
+  _cepDestinoSelecionado = destino;
+  // Highlight visual
+  const btnR = document.getElementById('cep-btn-recepcao');
+  const btnA = document.getElementById('cep-btn-aguardar');
+  if (destino === 'pendente') {
+    btnR.style.background = '#d1fae5'; btnR.style.borderColor = '#059669';
+    btnA.style.background = '#fff';    btnA.style.borderColor = '#ede9fe';
+  } else {
+    btnA.style.background = '#ede9fe'; btnA.style.borderColor = '#7c3aed';
+    btnR.style.background = '#fff';    btnR.style.borderColor = '#d1fae5';
+  }
+  // Mostra obs obrigatória se aguardar
+  const obs = document.getElementById('cep-obs-bloco');
+  obs.style.display = destino === 'aguardar' ? 'block' : 'none';
+  if (destino === 'aguardar') setTimeout(() => document.getElementById('cep-obs').focus(), 80);
+  // Mostra botão Enviar
+  document.getElementById('cep-btns-confirmar').style.display = 'grid';
+}
+
+function cepVoltarEscolha() {
+  _cepDestinoSelecionado = null;
+  document.getElementById('cep-destino-bloco').style.display = 'none';
+  document.getElementById('cep-obs-bloco').style.display = 'none';
+  document.getElementById('cep-btns-confirmar').style.display = 'none';
+  document.getElementById('cep-btns-principais').style.display = 'grid';
+}
+
+// Mostra/esconde campo de observação conforme ação escolhida
+function _cepAtualizarObs(acao) {
+  const bloco = document.getElementById('cep-obs-bloco');
+  bloco.style.display = acao === 'aguardar' ? 'block' : 'none';
+  if (acao === 'aguardar') setTimeout(() => document.getElementById('cep-obs').focus(), 80);
+}
+
+async function confirmarComandaEspecial(acao) {
+  // acao: 'pendente' (enviar recepção) | 'aguardar'
+  const p = state.currentPatient;
+  if (!p) return;
+  const dentista = document.getElementById('cep-dentista').value;
+  const proximo  = document.getElementById('cep-proximo').value.trim();
+  const tempo    = document.getElementById('cep-tempo').value.trim();
+  const retorno  = document.getElementById('cep-retorno').value.trim();
+  const obs      = document.getElementById('cep-obs').value.trim();
+
+  if (!dentista) { alert('Selecione o profissional.'); document.getElementById('cep-dentista').focus(); return; }
+  if (!proximo)  { alert('Informe o próximo procedimento.'); document.getElementById('cep-proximo').focus(); return; }
+
+  // Se aguardar: mostra bloco de obs e exige preenchimento
+  if (acao === 'aguardar') {
+    _cepAtualizarObs('aguardar');
+    if (!obs) {
+      const obsEl = document.getElementById('cep-obs');
+      obsEl.style.borderColor = '#dc2626';
+      obsEl.focus();
+      obsEl.placeholder = '⚠️ Observação obrigatória para aguardar…';
+      setTimeout(() => { obsEl.style.borderColor = '#c4b5fd'; obsEl.placeholder = 'Descreva o motivo de aguardar o agendamento…'; }, 2500);
+      return;
+    }
+  }
+
+  const status = acao === 'aguardar' ? 'aguardando' : 'pendente';
+  const observacao = obs || `Comanda especial — ${proximo} · ${dentista}${tempo ? ' · ' + tempo : ''}${retorno ? ' · Retorno: ' + retorno : ''}.`;
+
+  const payload = {
+    patientId: p._id,
+    patientName: p.nome,
+    ficha: p.ficha || '',
+    tipoComanda: 'especial',
+    dentista,
+    proximoProcedimento: proximo,
+    tempo,
+    retorno,
+    observacao,
+    status,
+    criadoPor: currentUser?.name || '',
+  };
+
+  try {
+    const r = await apiFetch('/api/comandas', { method: 'POST', body: JSON.stringify(payload) });
+    if (!r || !r.ok) throw new Error('API error');
+  } catch(e) {
+    console.warn('Comanda especial fallback localStorage:', e);
+    try {
+      const key = 'comandas_local';
+      const arr = JSON.parse(localStorage.getItem(key) || '[]');
+      arr.unshift({ ...payload, id: Date.now().toString(), criadaEm: new Date().toISOString() });
+      localStorage.setItem(key, JSON.stringify(arr));
+    } catch {}
+  }
+
+  // Se aguardar: adiciona direto na lista de aguardando (localStorage do dia)
+  if (acao === 'aguardar') {
+    try {
+      const agKey = 'ou_aguardando_' + new Date().toISOString().slice(0, 10);
+      const lista = JSON.parse(localStorage.getItem(agKey) || '[]');
+      lista.push({
+        nome: p.nome || '',
+        ficha: p.ficha || '',
+        dentista,
+        procedimento: proximo,
+        tempo,
+        retorno,
+        obs: observacao,
+        horario: new Date().toTimeString().slice(0, 5),
+        status: 'aguardando',
+        adicionadoEm: new Date().toISOString(),
+        origem: 'comanda-especial'
+      });
+      localStorage.setItem(agKey, JSON.stringify(lista));
+    } catch {}
+  }
+
+  fecharComandaEspecial();
+  if (acao === 'aguardar') {
+    alert('⏳ Paciente adicionado em "Aguardando"!');
+    // Navega para aba Aguardando
+    if (typeof recepTab === 'function') recepTab('aguardando');
+    if (typeof showTab === 'function') showTab('recepcao');
+  } else {
+    alert('✅ Comanda especial enviada para a Recepção!');
+  }
+  if (typeof atualizarBadgeComandas === 'function') atualizarBadgeComandas();
+  if (typeof carregarAguardando === 'function') carregarAguardando();
+  if (typeof renderComandasPendentes === 'function') renderComandasPendentes();
+}
+
 let _comandaOrtoSelecionada = null;
 function selecionarComandaOrto(tipo) {
   _comandaOrtoSelecionada = tipo;
@@ -2659,6 +3071,7 @@ async function confirmarEnviarComanda() {
       stepId, procedimentoConcluido: step.procedure||step.tipo||'',
       ...payloads[tipo],
     }) });
+    if (typeof _stepIdsComComanda !== 'undefined') _stepIdsComComanda.add(stepId);
   } else {
     const isUltimaEtapa = !proxStep || sorted.filter(s => s._id !== stepId).every(s => s.status === 'concluido' || s.status === 'cancelado');
     const payload = {
@@ -2671,9 +3084,88 @@ async function confirmarEnviarComanda() {
       dentista: isUltimaEtapa ? 'Dr. Scharles' : (step ? (step.dentista||currentUser.name) : currentUser.name),
       tipoComanda: 'verde',
     };
+
+    // Se próximo procedimento começa com "Cirurgia Protocolo", pede confirmação de exames
+    const proxNome = payload.proximoProcedimento || '';
+    if (/^cirurgia\s*protocolo/i.test(proxNome)) {
+      fecharComanda();
+      _pendingComandaPayload = payload;
+      document.getElementById('modal-exames-ok-paciente').textContent = p.nome + (p.ficha ? ' — Ficha #' + p.ficha : '');
+      document.getElementById('modal-exames-ok-proc').textContent = proxNome;
+      document.getElementById('modal-exames-ok').style.display = 'flex';
+      return;
+    }
+
+    // Se próximo procedimento é "Prova da Barra", pergunta se precisa prova adicional
+    if (/prova\s*(da|de|do)?\s*barra/i.test(proxNome)) {
+      fecharComanda();
+      _pendingComandaPayload = payload;
+      document.getElementById('mpb-paciente').textContent = p.nome + (p.ficha ? ' — Ficha #' + p.ficha : '');
+      document.getElementById('modal-prova-barra').style.display = 'flex';
+      return;
+    }
+
     await apiFetch('/api/comandas', { method: 'POST', body: JSON.stringify(payload) });
+    if (typeof _stepIdsComComanda !== 'undefined') _stepIdsComComanda.add(payload.stepId);
   }
   fecharComanda();
+  atualizarBadgeComandas();
+  renderPlanning();
+  showTab('recepcao');
+  recepTab('comandas');
+}
+
+// ─── Modal Exames OK (Cirurgia Protocolo) ─────────────────────
+let _pendingComandaPayload = null;
+
+async function responderExamesOk(sim) {
+  document.getElementById('modal-exames-ok').style.display = 'none';
+  const payload = _pendingComandaPayload;
+  _pendingComandaPayload = null;
+  if (!payload) return;
+
+  if (sim) {
+    // Exames OK → envia comanda normalmente
+    await apiFetch('/api/comandas', { method: 'POST', body: JSON.stringify(payload) });
+    atualizarBadgeComandas();
+    showTab('recepcao');
+    recepTab('comandas');
+  } else {
+    // Exames NÃO OK → adiciona na lista Aguardando com observação
+    const lista = JSON.parse(localStorage.getItem(_AGKEY) || '[]');
+    lista.push({
+      nome: payload.patientName + (payload.ficha ? ' — Ficha #' + payload.ficha : ''),
+      horario: new Date().toTimeString().slice(0,5),
+      obs: '⚠️ Aguardando exames para: ' + payload.proximoProcedimento,
+      status: 'aguardando',
+      adicionadoEm: new Date().toISOString(),
+      _cmdPayload: payload,
+    });
+    localStorage.setItem(_AGKEY, JSON.stringify(lista));
+    atualizarBadgeComandas();
+    showTab('recepcao');
+    recepTab('aguardando');
+  }
+}
+
+// ─── Modal Prova da Barra ─────────────────────────────────────
+async function responderProvaBarra(provaAdicional) {
+  document.getElementById('modal-prova-barra').style.display = 'none';
+  const payload = _pendingComandaPayload;
+  _pendingComandaPayload = null;
+  if (!payload) return;
+
+  if (provaAdicional) {
+    // SIM → comanda normal, sem alteração
+    await apiFetch('/api/comandas', { method: 'POST', body: JSON.stringify(payload) });
+  } else {
+    // NÃO → comanda com prefixo especial na observação para exibição destaque
+    const payloadNao = {
+      ...payload,
+      observacao: '__BLOQUEIO_AGENDA__ Prova da Barra sem prova adicional. Liberar agenda do paciente.',
+    };
+    await apiFetch('/api/comandas', { method: 'POST', body: JSON.stringify(payloadNao) });
+  }
   atualizarBadgeComandas();
   showTab('recepcao');
   recepTab('comandas');
@@ -2681,12 +3173,14 @@ async function confirmarEnviarComanda() {
 
 // ─── Sub-abas Recepção ────────────────────────────────────────
 function recepTab(tab) {
-  ['comandas','relacionamento','planejador','impressao'].forEach(t => {
+  ['aguardando','comandas','relacionamento','planejador','impressao'].forEach(t => {
     const el = document.getElementById('rtab-'+t);
     const btn = document.getElementById('rtab-btn-'+t);
+    const cor = t === 'aguardando' ? '#d97706' : '#7c3aed';
     if (el) el.style.display = t === tab ? '' : 'none';
-    if (btn) { btn.style.background = t === tab ? '#7c3aed' : ''; btn.style.color = t === tab ? '#fff' : ''; btn.style.borderColor = t === tab ? '#7c3aed' : ''; }
+    if (btn) { btn.style.background = t === tab ? cor : ''; btn.style.color = t === tab ? '#fff' : ''; btn.style.borderColor = t === tab ? cor : ''; }
   });
+  if (tab === 'aguardando') carregarAguardando();
   if (tab === 'comandas') carregarComandas();
   if (tab === 'relacionamento') {
     const relData = document.getElementById('rel-data');
@@ -2701,7 +3195,15 @@ function recepTab(tab) {
 async function carregarPlanejador() {
   const r = await apiFetch('/api/relacionamento');
   if (!r) return;
-  const items = (await r.json()).filter(i => i.efetivado);
+  const items = (await r.json()).map(it => ({
+    ...it,
+    patientName: it.patientName || it.patient_name || '—',
+    criadoEm:    it.criadoEm    || it.criado_em     || it.created_at || '',
+    criadoPor:   it.criadoPor   || it.criado_por_nome || '',
+    efetivadoEm: it.efetivadoEm || it.efetivado_em  || '',
+    efetivadoPor: it.efetivadoPor || it.efetivado_por_nome || '',
+    ficha:       it.ficha       || '',
+  })).filter(i => i.efetivado);
   const container = document.getElementById('planejador-list');
   if (!container) return;
   if (!items.length) { container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:13px;">Nenhum item efetivado ainda.<br><span style="font-size:11px;">Vá em Relacionamento e clique em "Efetivar".</span></div>'; return; }
@@ -2727,6 +3229,75 @@ function atualizarRecepTab() {
   const tab = ativo?.id?.replace('rtab-btn-','') || 'comandas';
   if (tab === 'comandas') carregarComandas();
   if (tab === 'relacionamento') carregarRelacionamento();
+}
+
+// ─── Lista de Espera (Aguardando) ────────────────────────────
+const _AGKEY = 'ou_aguardando_' + new Date().toISOString().slice(0,10);
+
+function carregarAguardando() {
+  const lista = JSON.parse(localStorage.getItem(_AGKEY) || '[]');
+  const container = document.getElementById('aguardando-list');
+  if (!container) return;
+  if (!lista.length) {
+    container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:13px;">Nenhum paciente aguardando no momento.</div>';
+    return;
+  }
+  container.innerHTML = lista.map((ag, idx) => {
+    const statusCor = ag.status === 'chamado' ? '#059669' : ag.status === 'atendido' ? '#6b7280' : '#d97706';
+    const statusLabel = ag.status === 'chamado' ? '✅ Chamado' : ag.status === 'atendido' ? '🏁 Atendido' : '⏳ Aguardando';
+    return `<div style="background:#fff;border:2px solid ${statusCor};border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;opacity:${ag.status==='atendido'?'0.55':'1'};">
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:800;color:#374151;">${ag.nome}${ag.ficha ? ' <span style="font-size:11px;color:#7c3aed;font-weight:600;">#'+ag.ficha+'</span>' : ''}</div>
+        ${ag.dentista ? `<div style="font-size:11px;color:#b45309;font-weight:700;margin-top:2px;">👨‍⚕️ ${ag.dentista}${ag.procedimento?' · '+ag.procedimento:''}</div>` : ''}
+        ${ag.horario ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">🕐 ${ag.horario}${ag.tempo?' · ⏱ '+ag.tempo:''}</div>` : ''}
+        ${ag.obs ? `<div style="font-size:11px;color:#9ca3af;margin-top:3px;font-style:italic;">📝 ${ag.obs}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+        <span style="font-size:11px;font-weight:700;color:${statusCor};">${statusLabel}</span>
+        <div style="display:flex;gap:5px;">
+          ${ag.status !== 'chamado' && ag.status !== 'atendido' ? `<button onclick="atualizarStatusAguardando(${idx},'chamado')" style="font-size:10px;padding:3px 10px;border-radius:6px;border:none;background:#059669;color:#fff;cursor:pointer;font-weight:700;">Chamar</button>` : ''}
+          ${ag.status === 'chamado' ? `<button onclick="atualizarStatusAguardando(${idx},'atendido')" style="font-size:10px;padding:3px 10px;border-radius:6px;border:none;background:#6b7280;color:#fff;cursor:pointer;font-weight:700;">Atendido</button>` : ''}
+          <button onclick="removerAguardando(${idx})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid #fee2e2;background:#fff;color:#dc2626;cursor:pointer;font-weight:700;">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function abrirModalAguardando() {
+  const agora = new Date();
+  document.getElementById('ag-horario').value = agora.toTimeString().slice(0,5);
+  document.getElementById('ag-nome').value = '';
+  document.getElementById('ag-obs').value = '';
+  // Preenche nome se há paciente selecionado
+  if (state.currentPatient) document.getElementById('ag-nome').value = state.currentPatient.nome;
+  document.getElementById('modal-aguardando').style.display = 'flex';
+}
+
+function fecharModalAguardando() {
+  document.getElementById('modal-aguardando').style.display = 'none';
+}
+
+function salvarAguardando() {
+  const nome = document.getElementById('ag-nome').value.trim();
+  if (!nome) { alert('Informe o nome do paciente.'); return; }
+  const lista = JSON.parse(localStorage.getItem(_AGKEY) || '[]');
+  lista.push({ nome, horario: document.getElementById('ag-horario').value, obs: document.getElementById('ag-obs').value.trim(), status: 'aguardando', adicionadoEm: new Date().toISOString() });
+  localStorage.setItem(_AGKEY, JSON.stringify(lista));
+  fecharModalAguardando();
+  carregarAguardando();
+}
+
+function atualizarStatusAguardando(idx, novoStatus) {
+  const lista = JSON.parse(localStorage.getItem(_AGKEY) || '[]');
+  if (lista[idx]) { lista[idx].status = novoStatus; localStorage.setItem(_AGKEY, JSON.stringify(lista)); carregarAguardando(); }
+}
+
+function removerAguardando(idx) {
+  const lista = JSON.parse(localStorage.getItem(_AGKEY) || '[]');
+  lista.splice(idx, 1);
+  localStorage.setItem(_AGKEY, JSON.stringify(lista));
+  carregarAguardando();
 }
 
 // ─── Adicional de Tratamento ──────────────────────────────────
@@ -2828,7 +3399,16 @@ async function efetivarRelacionamento(id) {
 async function carregarRelacionamento() {
   const r = await apiFetch('/api/relacionamento');
   if (!r) return;
-  const items = await r.json();
+  const raw = await r.json();
+  // Normaliza snake_case → camelCase para compatibilidade
+  const items = (raw || []).map(it => ({
+    ...it,
+    patientName: it.patientName || it.patient_name || '—',
+    patientId:   it.patientId   || it.patient_id   || '',
+    criadoEm:    it.criadoEm    || it.criado_em     || it.created_at || new Date().toISOString(),
+    criadoPor:   it.criadoPor   || it.criado_por_nome || '',
+    ficha:       it.ficha       || '',
+  }));
   const container = document.getElementById('rel-list');
   if (!container) return;
   if (!items.length) { container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:13px;">Nenhum contato registrado.</div>'; return; }
@@ -2994,15 +3574,25 @@ function comandasSubTab(sub) {
   });
 }
 
+let _stepIdsComComanda = new Set();
+
 async function carregarComandas() {
   const r = await apiFetch('/api/comandas');
   if (!r) return;
   const comandas = await r.json();
+  _stepIdsComComanda = new Set(comandas.map(c => c.stepId).filter(Boolean));
   atualizarBadgeComandas(comandas);
   const pendentes = comandas.filter(c => { const s = c.status || (c.lida ? 'agendado' : 'nova'); return s === 'nova' || s === 'pendente'; });
-  const agendados = comandas.filter(c => { const s = c.status || (c.lida ? 'agendado' : 'nova'); return s === 'agendado'; });
+  // Agendados: apenas últimos 7 dias
+  const limite7dias = new Date(); limite7dias.setDate(limite7dias.getDate() - 7);
+  const agendados = comandas.filter(c => {
+    const s = c.status || (c.lida ? 'agendado' : 'nova');
+    if (s !== 'agendado') return false;
+    const dt = new Date(c.status_atualizado_em || c.criadaEm || c.criada_em || c.created_at);
+    return isNaN(dt) || dt >= limite7dias;
+  });
   _renderComandasLista(pendentes, 'comandas-list-pendentes', 'Nenhuma comanda pendente no momento.');
-  _renderComandasLista(agendados, 'comandas-list-agendados', 'Nenhuma comanda agendada no momento.');
+  _renderComandasListaAgendados(agendados);
   // compat legado
   const legado = document.getElementById('comandas-list');
   if (legado) legado.innerHTML = '';
@@ -3016,8 +3606,11 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
     return;
   }
   container.innerHTML = comandas.map(c => {
-    const dt = new Date(c.criadaEm);
-    const dataFmt = dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    const cId = c._id || c.id || '';
+    const nomePaciente = (!c.patientName || c.patientName === 'undefined' || c.patientName === 'null') ? (c.patient_name || '—') : c.patientName;
+    const proxProc = (!c.proximoProcedimento || c.proximoProcedimento === 'undefined') ? (c.proximo_procedimento || '') : c.proximoProcedimento;
+    const dt = new Date(c.criadaEm || c.criada_em || c.created_at);
+    const dataFmt = isNaN(dt) ? '—' : dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
     const status = c.status || (c.lida ? 'agendado' : 'nova');
     // Tipo da comanda define cor da borda e badge visual
     const tipo = c.tipoComanda || 'verde';
@@ -3034,14 +3627,19 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
     } else if (tipo === 'cinza') {
       tipoBadge = '<span style="font-size:11px;background:#f1f5f9;color:#475569;border:1.5px solid #94a3b8;border-radius:20px;padding:2px 10px;font-weight:800;letter-spacing:.04em;">⚪ REAVALIAÇÃO</span>';
       tipoBg = '#f8fafc';
+    } else if (tipo === 'especial') {
+      tipoBadge = '<span style="font-size:11px;background:#fffbeb;color:#b45309;border:1.5px solid #fcd34d;border-radius:20px;padding:2px 10px;font-weight:800;letter-spacing:.04em;">⭐ ESPECIAL</span>';
+      tipoBg = '#fffbeb';
     }
-    let borderColor = tipo === 'verde' ? '#059669' : tipo === 'amarela' ? '#eab308' : tipo === 'laranja' ? '#f97316' : tipo === 'cinza' ? '#94a3b8' : '#7c3aed';
+    let borderColor = tipo === 'verde' ? '#059669' : tipo === 'amarela' ? '#eab308' : tipo === 'laranja' ? '#f97316' : tipo === 'cinza' ? '#94a3b8' : tipo === 'especial' ? '#b45309' : '#7c3aed';
     let bgOpacity = '', statusBadge = '';
     if (status === 'agendado') {
       bgOpacity = 'opacity:0.75;';
       statusBadge = '<span style="font-size:11px;background:#d1fae5;color:#059669;border-radius:4px;padding:1px 7px;font-weight:700;">📅 Agendado</span>';
     } else if (status === 'pendente') {
-      statusBadge = '<span style="font-size:11px;background:#fef3c7;color:#d97706;border-radius:4px;padding:1px 7px;font-weight:700;">⏳ Pendente</span>';
+      statusBadge = '<span style="font-size:11px;background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 7px;font-weight:700;">⏳ Pendente</span>';
+      tipoBg = '#fff5f5';
+      borderColor = '#dc2626';
     } else {
       statusBadge = '<span style="font-size:11px;background:#f3e8ff;color:#7c3aed;border-radius:4px;padding:1px 7px;font-weight:700;">⚡ Nova</span>';
     }
@@ -3049,7 +3647,7 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-            <span style="font-size:14px;font-weight:800;color:#7c3aed;">👤 ${c.patientName}</span>
+            <span style="font-size:14px;font-weight:800;color:#7c3aed;">👤 ${nomePaciente}</span>
             ${c.ficha ? `<span style="font-size:11px;background:#f3e8ff;color:#7c3aed;border-radius:4px;padding:1px 7px;font-weight:700;">#${c.ficha}</span>` : ''}
             ${tipoBadge}
             ${statusBadge}
@@ -3057,22 +3655,104 @@ function _renderComandasLista(comandas, containerId, msgVazia) {
           <div style="font-size:11px;color:#9ca3af;margin-bottom:10px;">${dataFmt}</div>
           <div style="font-size:13px;background:${tipo==='amarela'?'#fefce8':tipo==='laranja'?'#fff7ed':tipo==='cinza'?'#f8fafc':'#f0fdf4'};border:1px solid ${tipo==='amarela'?'#fde047':tipo==='laranja'?'#fb923c':tipo==='cinza'?'#cbd5e1':'#bbf7d0'};border-radius:8px;padding:10px 14px;margin-bottom:8px;">
             ${c.dentista ? `<div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:6px;">🦷 Dentista: ${c.dentista}</div>` : ''}
-            <span style="font-weight:700;color:${tipo==='amarela'?'#854d0e':tipo==='laranja'?'#9a3412':tipo==='cinza'?'#475569':'#059669'};">📅 ${tipo==='amarela'?'Profilaxia (Clínico Geral)':tipo==='laranja'?'Manutenção Ortodôntica (Dra. Fernanda)':tipo==='cinza'?'Reavaliação (Clínico Geral — 6 meses)':'Próximo procedimento'}:</span><br>${c.proximoProcedimento}
+            <span style="font-weight:700;color:${tipo==='amarela'?'#854d0e':tipo==='laranja'?'#9a3412':tipo==='cinza'?'#475569':'#059669'};">📅 ${tipo==='amarela'?'Profilaxia (Clínico Geral)':tipo==='laranja'?'Manutenção Ortodôntica (Dra. Fernanda)':tipo==='cinza'?'Reavaliação (Clínico Geral — 6 meses)':'Próximo procedimento'}:</span><br>${proxProc}
             ${tipo === 'laranja' && c.manutencaoCount !== null && c.manutencaoCount !== undefined ? `<br><span style="font-size:11px;background:#f3e8ff;color:#7c3aed;border-radius:4px;padding:1px 7px;font-weight:700;margin-top:4px;display:inline-block;">🔧 Manutenção nº ${c.manutencaoCount + 1}</span>` : ''}
             ${c.tempo ? `<br><span style="font-size:11px;color:#6b7280;margin-top:4px;display:inline-block;">⏱️ Tempo: ${c.tempo}</span>` : ''}
             ${c.retorno ? `<br><span style="font-size:12px;font-weight:700;color:#dc2626;margin-top:4px;display:inline-block;">📅 Retorno em: ${c.retorno}</span>` : ''}
-            ${c.observacao ? `<br><span style="font-size:11px;color:#6b7280;font-style:italic;margin-top:4px;display:inline-block;">${c.observacao}</span>` : ''}
+            ${(c.observacao||'').startsWith('__BLOQUEIO_AGENDA__') ? `<div style="margin-top:10px;background:#fef2f2;border:2.5px solid #dc2626;border-radius:10px;padding:12px 14px;text-align:center;">
+              <div style="font-size:18px;font-weight:900;color:#dc2626;letter-spacing:.03em;line-height:1.3;">🚨 TIRAR BLOQUEIO DA AGENDA</div>
+              <div style="font-size:12px;color:#991b1b;font-weight:700;margin-top:5px;">Prova da Barra — sem prova adicional</div>
+            </div>` : (c.observacao ? `<br><span style="font-size:11px;color:#6b7280;font-style:italic;margin-top:4px;display:inline-block;">${c.observacao}</span>` : '')}
           </div>
           <div style="font-size:11px;color:#6b7280;margin-top:6px;">✍️ Gerado por: <strong>${c.assinaturaNome || c.assinatura || '—'}</strong></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
-          ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="marcarComandaStatus('${c._id}','agendado')">📅 Agendado</button>` : ''}
-          ${status !== 'pendente' ? `<button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="marcarComandaStatus('${c._id}','pendente')">⏳ Pendente</button>` : ''}
-          ${(currentUser?.role === 'admin' || currentUser?.role === 'dentist') ? `<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;" onclick="excluirComanda('${c._id}')">🗑️ Excluir</button>` : ''}
+          ${status !== 'agendado' ? `<button class="btn btn-sm" style="background:#059669;color:#fff;" onclick="marcarComandaStatus('${cId}','agendado')">📅 Agendado</button>` : ''}
+          ${status !== 'pendente' ? `<button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="marcarComandaStatus('${cId}','pendente')">⏳ Pendente</button>` : ''}
+          ${(currentUser?.role === 'admin' || currentUser?.role === 'dentist') ? `<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;" onclick="excluirComanda('${cId}')">🗑️ Excluir</button>` : ''}
         </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function _renderComandasListaAgendados(agendados) {
+  const container = document.getElementById('comandas-list-agendados');
+  if (!container) return;
+  if (!agendados.length) {
+    container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:30px;font-size:13px;">Nenhuma comanda agendada nos últimos 7 dias.</div>';
+    return;
+  }
+  // Agrupa por data de agendamento (status_atualizado_em ou criadaEm)
+  const grupos = {};
+  agendados.forEach(c => {
+    const dt = new Date(c.status_atualizado_em || c.criadaEm || c.criada_em || c.created_at);
+    const key = isNaN(dt) ? 'Sem data' : dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+    const iso = isNaN(dt) ? '0' : dt.toISOString().slice(0,10);
+    if (!grupos[key]) grupos[key] = { iso, cards: [] };
+    grupos[key].cards.push(c);
+  });
+  // Ordena do mais recente para o mais antigo
+  const dias = Object.entries(grupos).sort((a,b) => b[1].iso.localeCompare(a[1].iso));
+  container.innerHTML = dias.map(([dia, { iso, cards }], i) => {
+    const isHoje = iso === new Date().toISOString().slice(0,10);
+    const isOntem = iso === new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const label = isHoje ? `Hoje — ${dia}` : isOntem ? `Ontem — ${dia}` : dia;
+    const panelId = 'agendados-dia-' + iso.replace(/-/g,'');
+    const aberto = i === 0; // primeiro grupo aberto por padrão
+    return `
+      <div style="border:1.5px solid #d1fae5;border-radius:10px;margin-bottom:10px;overflow:hidden;">
+        <button onclick="toggleAgendadosDia('${panelId}',this)"
+          style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#f0fdf4;border:none;cursor:pointer;font-size:13px;font-weight:800;color:#059669;">
+          <span>📅 ${label} <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px;">${cards.length} comanda${cards.length>1?'s':''}</span></span>
+          <span id="${panelId}-chevron" style="font-size:14px;transition:transform .2s;">${aberto?'▲':'▼'}</span>
+        </button>
+        <div id="${panelId}" style="display:${aberto?'flex':'none'};flex-direction:column;gap:10px;padding:12px 12px;">
+          ${cards.map(c => {
+            const cId = c._id || c.id || '';
+            const nomePaciente = (!c.patientName||c.patientName==='undefined') ? (c.patient_name||'—') : c.patientName;
+            const proxProc = (!c.proximoProcedimento||c.proximoProcedimento==='undefined') ? (c.proximo_procedimento||'') : c.proximoProcedimento;
+            const tipo = c.tipoComanda||'verde';
+            let tipoBadge = '';
+            if (tipo==='verde') tipoBadge='<span style="font-size:10px;background:#d1fae5;color:#059669;border:1px solid #6ee7b7;border-radius:20px;padding:1px 8px;font-weight:800;">🟢 FINAL TRAT.</span>';
+            else if (tipo==='amarela') tipoBadge='<span style="font-size:10px;background:#fef9c3;color:#854d0e;border:1px solid #fde047;border-radius:20px;padding:1px 8px;font-weight:800;">🟡 PROFILAXIA</span>';
+            else if (tipo==='laranja') tipoBadge='<span style="font-size:10px;background:#ffedd5;color:#9a3412;border:1px solid #fb923c;border-radius:20px;padding:1px 8px;font-weight:800;">🟠 MANUTENÇÃO</span>';
+            else if (tipo==='cinza') tipoBadge='<span style="font-size:10px;background:#f1f5f9;color:#475569;border:1px solid #94a3b8;border-radius:20px;padding:1px 8px;font-weight:800;">⚪ REAVALIAÇÃO</span>';
+            else if (tipo==='especial') tipoBadge='<span style="font-size:10px;background:#fffbeb;color:#b45309;border:1px solid #fcd34d;border-radius:20px;padding:1px 8px;font-weight:800;">⭐ ESPECIAL</span>';
+            const borderColor = tipo==='verde'?'#059669':tipo==='amarela'?'#eab308':tipo==='laranja'?'#f97316':tipo==='cinza'?'#94a3b8':tipo==='especial'?'#b45309':'#7c3aed';
+            const tipoBg = tipo==='amarela'?'#fefce8':tipo==='laranja'?'#fff7ed':tipo==='cinza'?'#f8fafc':'#f0fdf4';
+            return `<div style="background:#fff;border:1.5px solid ${borderColor};border-radius:10px;padding:14px 16px;opacity:0.88;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+                <span style="font-size:13px;font-weight:800;color:#7c3aed;">👤 ${nomePaciente}</span>
+                ${c.ficha?`<span style="font-size:10px;background:#f3e8ff;color:#7c3aed;border-radius:4px;padding:1px 6px;font-weight:700;">#${c.ficha}</span>`:''}
+                ${tipoBadge}
+                <span style="font-size:10px;background:#d1fae5;color:#059669;border-radius:4px;padding:1px 6px;font-weight:700;">📅 Agendado</span>
+              </div>
+              <div style="font-size:12px;background:${tipoBg};border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;margin-top:6px;">
+                ${c.dentista?`<div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:4px;">🦷 ${c.dentista}</div>`:''}
+                <span style="font-weight:700;color:#374151;">📋 ${proxProc}</span>
+                ${c.tempo?`<br><span style="font-size:11px;color:#6b7280;">⏱️ Tempo: ${c.tempo}</span>`:''}
+                ${c.retorno?`<br><span style="font-size:11px;font-weight:700;color:#dc2626;">📅 Retorno em: ${c.retorno}</span>`:''}
+                ${(c.observacao||'').startsWith('__BLOQUEIO_AGENDA__')?`<div style="margin-top:8px;background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:8px 12px;text-align:center;"><div style="font-size:15px;font-weight:900;color:#dc2626;">🚨 TIRAR BLOQUEIO DA AGENDA</div></div>`:(c.observacao?`<br><span style="font-size:11px;color:#6b7280;font-style:italic;">${c.observacao}</span>`:'')}
+              </div>
+              <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+                <button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="marcarComandaStatus('${cId}','pendente')">⏳ Pendente</button>
+                ${(currentUser?.role==='admin'||currentUser?.role==='dentist')?`<button class="btn btn-sm" style="background:#fee2e2;color:#dc2626;border:1px solid #fecaca;" onclick="excluirComanda('${cId}')">🗑️ Excluir</button>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleAgendadosDia(panelId, btn) {
+  const panel = document.getElementById(panelId);
+  const chevron = document.getElementById(panelId+'-chevron');
+  if (!panel) return;
+  const aberto = panel.style.display !== 'none';
+  panel.style.display = aberto ? 'none' : 'flex';
+  if (chevron) chevron.textContent = aberto ? '▼' : '▲';
 }
 
 function toggleEditRetornoComanda(id) {
@@ -3598,9 +4278,9 @@ function atualizarEstadoPlanejamento() {
   const efetivado = !!p.efetivado;
   const isEditor = currentUser.role === 'dentist' || currentUser.role === 'admin';
   document.getElementById('btn-add-step').style.display = (efetivado && isEditor) ? '' : 'none';
-  document.getElementById('btn-templates').style.display = (efetivado && isEditor) ? '' : 'none';
   document.getElementById('btn-adicional').style.display = (efetivado && isEditor) ? '' : 'none';
   document.getElementById('btn-fotos-plano').style.display = (efetivado && isEditor) ? '' : 'none';
+  document.getElementById('btn-comanda-especial').style.display = (efetivado && isEditor) ? '' : 'none';
   const temContrato = efetivado && isEditor && p.procedimentosContratados && p.procedimentosContratados.length > 0;
   document.getElementById('btn-importar-contrato').style.display = temContrato ? '' : 'none';
   document.getElementById('banner-efetivar').style.display = (!efetivado && isEditor) ? 'block' : 'none';
@@ -4092,17 +4772,22 @@ function abrirAnamnesePaciente() {
 }
 
 function abrirCameraAnamnese() {
-  // Recria o input com capture para garantir abertura da câmera (não galeria)
-  const old = document.getElementById('anamnese-confirm-foto-input');
-  const novo = document.createElement('input');
-  novo.type = 'file';
-  novo.id = 'anamnese-confirm-foto-input';
-  novo.accept = 'image/*';
-  novo.setAttribute('capture', 'user');
-  novo.style.display = 'none';
-  novo.onchange = anamneseConfirmFotoCarregar;
-  old.parentNode.replaceChild(novo, old);
-  novo.click();
+  // Abre câmera em tempo real via getUserMedia
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    // Fallback: input de arquivo se câmera não disponível
+    const inp = document.getElementById('anamnese-confirm-foto-input');
+    if (inp) inp.click();
+    return;
+  }
+  // Define callback especial: foto vai para a confirmação de identidade, não para o perfil
+  _cameraFotoCallbackOverride = function(base64) {
+    const fotoImg = document.getElementById('anamnese-confirm-foto-img');
+    const placeholder = document.getElementById('anamnese-confirm-foto-placeholder');
+    if (fotoImg) { fotoImg.src = base64; fotoImg.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+    if (state.currentPatient) state.currentPatient._fotoConfirmAnamnese = base64;
+  };
+  abrirModalCameraFotoComCallback();
 }
 
 function anamneseConfirmFotoCarregar(event) {
@@ -4919,7 +5604,7 @@ function _toothShape(n) {
   return { w, h, svg: `
     ${raizes}
     <rect x="1" y="${crY}" width="${w-2}" height="${crH}" rx="3" fill="${coronaColor}" stroke="#C4955A" stroke-width="1.5"/>
-    <text x="${w/2}" y="${sup?h-1:10}" text-anchor="middle" font-size="7" fill="#8B2D42" font-family="Nunito,sans-serif">${n}</text>
+    <text x="${w/2}" y="${sup?h-1:10}" text-anchor="middle" font-size="7" fill="#8B2D42" font-family="Inter,sans-serif">${n}</text>
   `};
 }
 
@@ -5234,8 +5919,13 @@ function normalizarStep(s) {
 
 async function loadPlanning() {
   if (!state.currentPatient) return;
-  const r = await apiFetch('/api/patients/' + state.currentPatient._id + '/planning');
+  // Carrega comandas em paralelo para colorir os botões corretamente
+  const [r, rc] = await Promise.all([
+    apiFetch('/api/patients/' + state.currentPatient._id + '/planning'),
+    apiFetch('/api/comandas'),
+  ]);
   if (!r) return;
+  if (rc) { try { const cmds = await rc.json(); _stepIdsComComanda = new Set(cmds.map(c => c.stepId).filter(Boolean)); } catch(e) {} }
   const raw = await r.json();
   planningSteps = (raw || []).map(normalizarStep);
   renderPlanning();
@@ -5413,7 +6103,7 @@ function renderStepCard(step, i, _numMap) {
       ${(step.retornoEm || (step.notes ? (step.notes.match(/retorno[:\s]+([^\.\n,]+)/i)||[])[1]?.trim() : '')) ? `<span style="font-size:9px;padding:2px 8px;border-radius:20px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;white-space:nowrap;flex-shrink:0;">📅 ${step.retornoEm || (step.notes.match(/retorno[:\s]+([^\.\n,]+)/i)||[])[1]?.trim()}</span>` : ''}
       <span class="step-badge ${badgeClass(statusAtual)}">${badgeLabel(statusAtual)}</span>
       ${(statusAtual === 'concluido' || statusAtual === 'signed') && step.concluido_em ? `<span style="font-size:9px;color:#15803d;font-weight:600;white-space:nowrap;flex-shrink:0;background:#dcfce7;border:1px solid #bbf7d0;border-radius:12px;padding:2px 7px;">✅ ${new Date(step.concluido_em).toLocaleDateString('pt-BR')} ${new Date(step.concluido_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>` : ''}
-      ${step.tipo !== 'urgencia' && !step.semComanda ? `<button class="btn btn-sm" style="background:#059669;color:#fff;font-size:10px;padding:3px 9px;line-height:1.4;flex-shrink:0;" onclick="event.stopPropagation();abrirEnviarComanda('${step._id}')">📋</button>` : ''}
+      ${(()=>{ const _jaTem = _stepIdsComComanda && _stepIdsComComanda.has(step._id); return step.tipo !== 'urgencia' && !step.semComanda ? `<button class="btn btn-sm" style="background:${_jaTem?'#16a34a':'#e5e7eb'};color:${_jaTem?'#fff':'#6b7280'};font-size:10px;padding:3px 9px;line-height:1.4;flex-shrink:0;border:1.5px solid ${_jaTem?'#15803d':'#d1d5db'};font-weight:${_jaTem?'800':'600'};" title="${_jaTem?'Comanda enviada ✓':'Enviar comanda'}" onclick="event.stopPropagation();abrirEnviarComanda('${step._id}')">📋</button>` : ''; })()}
       <span class="step-chevron">▼</span>
     </div>
     <div class="step-card-body">
@@ -5424,6 +6114,13 @@ function renderStepCard(step, i, _numMap) {
       <div class="step-section">
         <div class="step-section-title">Detalhes da Etapa</div>
         <div class="step-fields">
+          ${canEdit ? `
+          <div class="step-field full">
+            <label>✏️ Nome da etapa</label>
+            <input type="text" id="sf-procedure-${step._id}" value="${(step.procedure||'').replace(/"/g,'&quot;')}" placeholder="Nome do procedimento..."
+              style="font-weight:700;border-color:#8B2D42;"
+              onblur="salvarNomeEtapa('${step._id}', this.value)">
+          </div>` : ''}
           <div class="step-field">
             <label>Dentista</label>
             ${canEdit ? `
@@ -5679,6 +6376,20 @@ async function signStep(stepId, type) {
     const step = planningSteps.find(s => s._id === stepId);
     if (step) { step.signatures = data.signatures; step.status = data.status; }
     renderPlanning();
+    // Após dentista assinar, abre automaticamente o modal de assinatura do paciente
+    if (type === 'dentist') {
+      setTimeout(() => signStep(stepId, 'patient'), 350);
+    }
+    // Após paciente assinar, pergunta se quer concluir a consulta
+    if (type === 'patient') {
+      setTimeout(() => {
+        const step = planningSteps.find(s => s._id === stepId);
+        const proc = step ? (step.procedure || step.tipo || 'esta etapa') : 'esta etapa';
+        if (confirm('✅ Deseja marcar "' + proc + '" como Concluído agora?')) {
+          setStepStatus(stepId, 'concluido');
+        }
+      }, 350);
+    }
   });
   // Pré-preenche se o usuário logado tiver assinatura vetorial cadastrada
   if (type === 'dentist' && currentUser) {
@@ -5805,9 +6516,11 @@ async function setStepStatus(stepId, newStatus) {
     }
   }
 
-  // ao concluir, envia comanda automaticamente para Pendências
+  // ao concluir, abre modal de comanda para o dentista revisar e enviar
   if (newStatus === 'concluido') {
-    await _enviarComandaAutomatica(stepId);
+    if (step && step.tipo !== 'urgencia' && !step.semComanda) {
+      setTimeout(() => abrirEnviarComanda(stepId), 300);
+    }
     // Se for cirurgia de implante, abre perguntas
     const proc = (step.procedure || '').toLowerCase();
     const isImplante = step.tipo === 'implante' ||
@@ -6751,7 +7464,7 @@ async function saveStep(stepId) {
     duration: document.getElementById('sf-dur-'+stepId)?.value || '',
     tempoDentista: document.getElementById('sf-dur-'+stepId)?.value || '',
     order: parseInt(document.getElementById('sf-ord-'+stepId).value) || step.order,
-    procedure: coletarProcedimentos(stepId).map(p => p.dente ? `[${p.dente}] ${p.desc}` : p.desc).join(' | ') || document.getElementById('sf-proc-'+stepId).value,
+    procedure: document.getElementById('sf-procedure-'+stepId)?.value.trim() || coletarProcedimentos(stepId).map(p => p.dente ? `[${p.dente}] ${p.desc}` : p.desc).join(' | ') || document.getElementById('sf-proc-'+stepId).value,
     notes: document.getElementById('sf-notes-'+stepId).value,
     retornoEm: document.getElementById('sf-retorno-'+stepId)?.value || '',
     descricaoProc: document.getElementById('sf-descricao-proc-'+stepId)?.value || '',
@@ -6765,6 +7478,9 @@ async function saveStep(stepId) {
   });
   if (r && r.ok) {
     Object.assign(step, update);
+    // Atualiza título visível no card
+    const _titleEl = document.querySelector(`#step-card-${stepId} .step-title-main`);
+    if (_titleEl && update.procedure) _titleEl.textContent = update.procedure.slice(0, 55);
     // Se há adicional de tratamento, registra no relacionamento automaticamente
     if (update.adicionalTratamento) {
       const p = state.currentPatient;
@@ -6804,6 +7520,18 @@ async function salvarDescricaoProc(stepId, valor) {
     method: 'PUT', body: JSON.stringify({ descricaoProc: valor }),
   });
   step.descricaoProc = valor;
+}
+
+async function salvarNomeEtapa(stepId, valor) {
+  const step = planningSteps.find(s => s._id === stepId);
+  if (!step || !valor.trim() || step.procedure === valor.trim()) return;
+  await apiFetch(`/api/patients/${state.currentPatient._id}/planning/${stepId}`, {
+    method: 'PUT', body: JSON.stringify({ procedure: valor.trim() }),
+  });
+  step.procedure = valor.trim();
+  // Atualiza o título visível no cabeçalho do card sem re-renderizar tudo
+  const titleEl = document.querySelector(`#step-card-${stepId} .step-title-main`);
+  if (titleEl) titleEl.textContent = valor.trim().slice(0, 55);
 }
 
 async function deleteStep(stepId) {
@@ -8442,15 +9170,19 @@ async function init(){
   const ok = await initAuth();
   if (!ok) return;
   initOverlayGrids();
-  await loadPatients();
-  atualizarBadgeComandas();
-  carregarAlertas();
-  setInterval(atualizarBadgeComandas, 30000);
-  window.addEventListener('resize',()=>{if((state.currentPatient?.images||[]).length)resizeCanvases();});
   document.getElementById('tab-bar').style.display = 'flex';
-  // Carrega planejamentos em paralelo e abre a agenda do dia
-  agendaCarregarPlanejamentos().then(() => abrirAgendaDia());
-  // Proteção de dados: backup automático diário + periódico
+  // Carrega pacientes + badge + alertas em paralelo
+  await Promise.all([
+    loadPatients(),
+    atualizarBadgeComandas(),
+    carregarAlertas()
+  ]);
+  setInterval(atualizarBadgeComandas, 30000);
+  // Keepalive — evita cold start do Vercel
+  setInterval(function(){ fetch(API + '/api/health').catch(function(){}); }, 4 * 60 * 1000);
+  window.addEventListener('resize',()=>{if((state.currentPatient?.images||[]).length)resizeCanvases();});
+  // Agenda e backups em background, não bloqueiam UI
+  agendaCarregarPlanejamentos().then(() => abrirAgendaDia()).catch(function(){});
   _backupDiarioAuto();
   _iniciarBackupPeriodico();
 }
@@ -8640,22 +9372,18 @@ setInterval(carregarAlertas, 60000);
     ctx.clearRect(0, 0, w, h);
     ctx.save();
     ctx.textAlign = 'center';
-    // Linha separadora
+    // Linha separadora centralizada
     ctx.strokeStyle = '#c4b5fd';
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.55); ctx.lineTo(w * 0.85, h * 0.55); ctx.stroke();
-    // Nome
-    ctx.fillStyle = '#1a0a6e';
-    ctx.font = 'italic bold ' + Math.round(h * 0.22) + 'px "Brush Script MT", cursive';
-    ctx.fillText(nomeCompleto, w / 2, h * 0.45);
-    // Título e CRO
-    ctx.font = '600 ' + Math.round(h * 0.13) + 'px "Nunito", sans-serif';
+    ctx.beginPath(); ctx.moveTo(w * 0.15, h * 0.42); ctx.lineTo(w * 0.85, h * 0.42); ctx.stroke();
+    // Apenas Título e CRO — sem nome (o dentista assina à mão na mesa digitalizadora)
+    ctx.font = '600 ' + Math.round(h * 0.15) + 'px "Inter", sans-serif';
     ctx.fillStyle = '#4c1d95';
-    ctx.fillText(titulo + '  ·  ' + cro, w / 2, h * 0.72);
+    ctx.fillText(titulo + '  ·  ' + cro, w / 2, h * 0.65);
     ctx.restore();
   }
 
-  _regSig(['Stéfany B. Nery','Dra. Stéfany','Stefany B. Nery','stefany','dra. stéfany'], function(ctx, w, h) {
+  _regSig(['Stéfany B. Nery','Dra. Stéfany','Stefany B. Nery','stefany','dra. stéfany','dra. stefany','stefany b. nery','stefany nery','stéfany nery','dra stefany','dra stéfany'], function(ctx, w, h) {
     _desenharCarimbo(ctx, w, h, 'Stéfany B. Nery', 'Cirurgiã-Dentista', 'CRO/RS 30630');
   });
 
@@ -8963,6 +9691,51 @@ function agendaSalvarFaltas() {
   localStorage.setItem(agendaStorageKey() + '_faltas', JSON.stringify(agendaFaltas));
 }
 
+// ── Sync Supabase: salva agendaData + chegadas/faltas para outros dispositivos ──
+async function _agendaSyncSalvar() {
+  if (!window._supa) return;
+  const hoje = new Date().toISOString().slice(0,10);
+  try {
+    await _supa.from('agenda_dia').upsert({
+      data: hoje,
+      agenda_data: JSON.stringify(agendaData),
+      chegadas: JSON.stringify(agendaChegadas),
+      faltas: JSON.stringify(agendaFaltas),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'data' });
+  } catch(e) {}
+}
+
+async function _agendaSyncChegadas() {
+  if (!window._supa) return;
+  const hoje = new Date().toISOString().slice(0,10);
+  try {
+    await _supa.from('agenda_dia').upsert({
+      data: hoje,
+      chegadas: JSON.stringify(agendaChegadas),
+      faltas: JSON.stringify(agendaFaltas),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'data' });
+  } catch(e) {}
+}
+
+async function _agendaSyncCarregar() {
+  if (!window._supa) return false;
+  const hoje = new Date().toISOString().slice(0,10);
+  try {
+    const { data } = await _supa.from('agenda_dia').select('*').eq('data', hoje).single();
+    if (data) {
+      if (data.agenda_data) {
+        const imported = JSON.parse(data.agenda_data);
+        if (Object.keys(imported).length) { agendaData = imported; return true; }
+      }
+      if (data.chegadas) agendaChegadas = { ...JSON.parse(data.chegadas), ...agendaChegadas };
+      if (data.faltas)   agendaFaltas   = { ...JSON.parse(data.faltas),   ...agendaFaltas   };
+    }
+  } catch(e) {}
+  return false;
+}
+
 function agendaCarregarChegadas() {
   const hj = agendaStorageKey();
   // Limpa registros de outros dias
@@ -8971,6 +9744,8 @@ function agendaCarregarChegadas() {
   }
   agendaChegadas = JSON.parse(localStorage.getItem(hj) || '{}');
   agendaFaltas   = JSON.parse(localStorage.getItem(hj + '_faltas') || '{}');
+  // Merge com dados do Supabase (outros dispositivos)
+  _agendaSyncCarregar().then(hadData => { if (hadData) { agendaCruzarComPacientes(); agendaRenderGrid(); } });
 }
 
 function agendaLimparChegadas() {
@@ -8983,22 +9758,21 @@ function agendaLimparChegadas() {
   agendaRenderGrid();
 }
 
-// Check-in: marca chegou, atualiza visual e opcionalmente abre prontuário
+// Check-in: marca chegou, atualiza visual (não abre planejamento)
 async function agendaCheckIn(dentista, fichaOuNome, idPaciente, nomeEnc) {
   const key = agendaChegadaKey(dentista, fichaOuNome);
   agendaChegadas[key] = true;
   delete agendaFaltas[key];
   agendaSalvarChegadas();
   agendaSalvarFaltas();
+  _agendaSyncChegadas();
   if (agendaData[dentista]) {
     const item = agendaData[dentista].find(i => (i.ficha||i.nome) === fichaOuNome);
     if (item) item.chegou = true;
   }
   agendaRenderGrid();
-  if (idPaciente) {
-    fecharAgendaDia();
-    await selectPatient(idPaciente);
-  } else {
+  // Não abre planejamento — apenas confirma se não tem cadastro
+  if (!idPaciente) {
     const nome = decodeURIComponent(nomeEnc);
     if (confirm(`✓ Check-in feito!\n\n"${nome}" não tem prontuário cadastrado.\nDeseja criar um novo cadastro?`)) {
       fecharAgendaDia();
@@ -9586,6 +10360,7 @@ function agendaProcessarLinhas(rows) {
 
   agendaCruzarComPacientes();
   agendaRenderGrid();
+  _agendaSyncSalvar(); // sincroniza com outros dispositivos via Supabase
 
   const semReg = Object.values(agendaData).flat().filter(i => i.naoRegistrado).length;
   status.style.background = 'rgba(134,239,172,.1)';
@@ -9680,38 +10455,61 @@ async function agendaAtualizarDentistasAtivos() {
 // ══════════════════════════════════════════════════════════════
 let _cameraFotoStream = null;
 let _cameraFotoBase64 = null;
+let _cameraFotoCallbackOverride = null;
 
-async function abrirModalCameraFoto() {
+async function _iniciarCameraModal(callbackOverride) {
   if (!state.currentPatient) { alert('Selecione um paciente primeiro.'); return; }
-  // Libera stream anterior se existir
+  // Para stream anterior
   if (_cameraFotoStream) { _cameraFotoStream.getTracks().forEach(t => t.stop()); _cameraFotoStream = null; }
+  if (callbackOverride !== undefined) _cameraFotoCallbackOverride = callbackOverride || null;
+
   const modal = document.getElementById('modal-camera-foto');
+  const video = document.getElementById('camera-foto-video');
+  const statusEl = document.getElementById('camera-foto-status');
+
   modal.style.display = 'flex';
   _cameraFotoBase64 = null;
-  document.getElementById('camera-foto-video').style.display = 'block';
+  video.style.display = 'block';
+  video.srcObject = null;
   document.getElementById('camera-foto-preview').style.display = 'none';
   document.getElementById('camera-foto-btns-vivo').style.display = 'flex';
   document.getElementById('camera-foto-btns-preview').style.display = 'none';
-  document.getElementById('camera-foto-status').textContent = '';
-  try {
-    // Tenta câmera frontal primeiro
-    _cameraFotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-  } catch(e1) {
-    try {
-      // Fallback: qualquer câmera disponível
-      _cameraFotoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    } catch(e2) {
-      document.getElementById('camera-foto-status').textContent = '⚠️ Câmera não disponível: ' + e2.message;
-      return;
-    }
+  statusEl.textContent = '⏳ Iniciando câmera…';
+
+  // Tenta constraints em ordem: frontal → qualquer → básico
+  const constraints = [
+    { video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } },
+    { video: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+    { video: true }
+  ];
+  let stream = null;
+  for (const c of constraints) {
+    try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch(e) {}
   }
-  document.getElementById('camera-foto-video').srcObject = _cameraFotoStream;
+  if (!stream) {
+    statusEl.textContent = '⚠️ Câmera não disponível. Verifique as permissões do navegador.';
+    return;
+  }
+  _cameraFotoStream = stream;
+  video.srcObject = stream;
+  // Espera vídeo ter dados antes de limpar status
+  video.onloadedmetadata = function() {
+    video.play().catch(function(){});
+    statusEl.textContent = '';
+  };
+  // Fallback: se loadedmetadata não disparar em 3s, limpa status mesmo assim
+  setTimeout(function() { if (statusEl.textContent.includes('Iniciando')) statusEl.textContent = ''; }, 3000);
+}
+
+async function abrirModalCameraFoto() {
+  await _iniciarCameraModal(null);
 }
 
 function fecharModalCameraFoto() {
   document.getElementById('modal-camera-foto').style.display = 'none';
   if (_cameraFotoStream) { _cameraFotoStream.getTracks().forEach(t => t.stop()); _cameraFotoStream = null; }
   _cameraFotoBase64 = null;
+  _cameraFotoCallbackOverride = null;
 }
 
 function cameraFotoCapturar() {
@@ -9735,17 +10533,35 @@ function cameraFotoCapturar() {
 function cameraFotoRepetir() {
   _cameraFotoBase64 = null;
   document.getElementById('camera-foto-preview').style.display = 'none';
-  document.getElementById('camera-foto-video').style.display = 'block';
+  const video = document.getElementById('camera-foto-video');
+  video.style.display = 'block';
+  // Garante que o vídeo está tocando ao voltar
+  if (_cameraFotoStream && video.srcObject !== _cameraFotoStream) {
+    video.srcObject = _cameraFotoStream;
+  }
+  if (video.paused) video.play().catch(function(){});
   document.getElementById('camera-foto-btns-vivo').style.display = 'flex';
   document.getElementById('camera-foto-btns-preview').style.display = 'none';
   document.getElementById('camera-foto-status').textContent = '';
 }
 
+async function abrirModalCameraFotoComCallback() {
+  // Usa _cameraFotoCallbackOverride já definido antes de chamar esta função
+  await _iniciarCameraModal(undefined); // undefined = não altera o override já definido
+}
+
 async function cameraFotoUsar() {
   if (!_cameraFotoBase64) return;
-  document.getElementById('camera-foto-status').textContent = '💾 Salvando...';
-  await dadosFotoBase64(_cameraFotoBase64);
-  fecharModalCameraFoto();
+  if (_cameraFotoCallbackOverride) {
+    // Callback especial (ex: confirmação de identidade da anamnese)
+    _cameraFotoCallbackOverride(_cameraFotoBase64);
+    _cameraFotoCallbackOverride = null;
+    fecharModalCameraFoto();
+  } else {
+    document.getElementById('camera-foto-status').textContent = '💾 Salvando...';
+    await dadosFotoBase64(_cameraFotoBase64);
+    fecharModalCameraFoto();
+  }
 }
 
 // Nova função: recebe base64 direto, salva e exibe
