@@ -6095,8 +6095,17 @@ function renderStepCard(step, i, _numMap) {
   <div class="step-card status-${statusAtual}${step.tipo === 'urgencia' ? ' urgencia-card' : ''}" id="step-card-${step._id}">
     <div class="step-card-header" onclick="toggleStepCard('${step._id}')">
       <div class="step-num">${step.tipo === 'urgencia' ? '🚨' : (_numMap?.[step._id] ?? (step.order || i+1))}</div>
-      <div class="step-title">
-        <span class="step-title-main">${step.procedure ? step.procedure.slice(0,55) : 'Nova etapa'}</span>
+      <div class="step-title" style="display:flex;flex-direction:column;flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span class="step-title-main" id="step-title-span-${step._id}">${step.procedure ? step.procedure.slice(0,55) : 'Nova etapa'}</span>
+          ${canEdit ? `<button
+            onclick="event.stopPropagation();_editarNomeEtapaInline('${step._id}')"
+            title="Editar nome da etapa"
+            style="flex-shrink:0;background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:4px;font-size:12px;color:#9b8878;line-height:1;opacity:.7;transition:opacity .15s;"
+            onmouseover="this.style.opacity='1';this.style.background='#ede8e1'"
+            onmouseout="this.style.opacity='.7';this.style.background='none'"
+          >✏️</button>` : ''}
+        </div>
         ${step.dentista ? `<span class="step-dentista-hint">${step.dentista}${step.duration ? ' · '+step.duration : ''}</span>` : ''}
       </div>
       ${sigPills}
@@ -7529,9 +7538,43 @@ async function salvarNomeEtapa(stepId, valor) {
     method: 'PUT', body: JSON.stringify({ procedure: valor.trim() }),
   });
   step.procedure = valor.trim();
-  // Atualiza o título visível no cabeçalho do card sem re-renderizar tudo
   const titleEl = document.querySelector(`#step-card-${stepId} .step-title-main`);
   if (titleEl) titleEl.textContent = valor.trim().slice(0, 55);
+  const sfField = document.getElementById('sf-procedure-'+stepId);
+  if (sfField) sfField.value = valor.trim();
+}
+
+function _editarNomeEtapaInline(stepId) {
+  const span = document.getElementById('step-title-span-' + stepId);
+  if (!span) return;
+  const step = planningSteps.find(s => s._id === stepId);
+  const valorAtual = step ? (step.procedure || '') : span.textContent;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = valorAtual;
+  input.style.cssText = 'font-size:13px;font-weight:700;color:#3a2418;border:1.5px solid #8B2D42;border-radius:6px;padding:2px 8px;width:220px;max-width:100%;font-family:inherit;background:#fff;outline:none;';
+
+  span.style.display = 'none';
+  span.parentNode.insertBefore(input, span);
+  input.focus();
+  input.select();
+
+  async function _confirmar() {
+    const novo = input.value.trim();
+    input.remove();
+    span.style.display = '';
+    if (novo && novo !== valorAtual) {
+      span.textContent = novo.slice(0, 55);
+      await salvarNomeEtapa(stepId, novo);
+    }
+  }
+
+  input.addEventListener('blur', _confirmar);
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = valorAtual; input.blur(); }
+  });
 }
 
 async function deleteStep(stepId) {
