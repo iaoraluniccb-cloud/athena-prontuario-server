@@ -1758,7 +1758,11 @@ button.maf-dent-btn.selecionado span { color:#e9d5ff !important; }
     <div id="anamnese-ocr-status" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:12px;"></div>
 
     <!-- Dados físicos — topo da anamnese -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:12px;font-weight:700;color:#0369a1;">🎂 Idade <span style="font-weight:400;color:#9ca3af;">opcional</span></label>
+        <input type="number" id="anamnese-idade" placeholder="Ex: 35" min="0" max="120" step="1" style="font-size:13px;padding:6px 10px;width:100%;box-sizing:border-box;">
+      </div>
       <div class="form-group" style="margin:0;">
         <label style="font-size:12px;font-weight:700;color:#0369a1;">🩸 Tipo Sanguíneo</label>
         <select id="anamnese-tipo-sanguineo" style="font-size:13px;padding:6px 10px;width:100%;box-sizing:border-box;">
@@ -4341,8 +4345,9 @@ function renderAnamneseViewPerfil(dados) {
   }
   let html = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn btn-outline btn-sm" onclick="abrirAnamnesePaciente()">✏️ Editar Anamnese</button></div>`;
   // Bloco de dados físicos no topo
-  if (dados._tipoSanguineo || dados._peso || dados._altura) {
+  if (dados._tipoSanguineo || dados._peso || dados._altura || dados._idade) {
     html += `<div style="display:flex;gap:16px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:8px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;">`;
+    if (dados._idade) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">🎂 Idade</span><br><strong style="font-size:13px;color:#0c4a6e;">${dados._idade} anos</strong></div>`;
     if (dados._tipoSanguineo) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">🩸 Tipo Sanguíneo</span><br><strong style="font-size:14px;color:#0c4a6e;">${dados._tipoSanguineo}</strong></div>`;
     if (dados._peso) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">⚖️ Peso</span><br><strong style="font-size:13px;color:#0c4a6e;">${dados._peso} kg</strong></div>`;
     if (dados._altura) html += `<div><span style="font-size:10px;color:#0369a1;text-transform:uppercase;font-weight:700;">📏 Altura</span><br><strong style="font-size:13px;color:#0c4a6e;">${dados._altura} cm</strong></div>`;
@@ -4721,9 +4726,24 @@ function abrirAnamnesePaciente() {
   const tsEl = document.getElementById('anamnese-tipo-sanguineo');
   const pesoEl = document.getElementById('anamnese-peso');
   const altEl = document.getElementById('anamnese-altura');
+  const idadeEl = document.getElementById('anamnese-idade');
   if (tsEl) tsEl.value = p.tipoSanguineo || p.anamnese?._tipoSanguineo || '';
   if (pesoEl) pesoEl.value = p.peso || p.anamnese?._peso || '';
   if (altEl) altEl.value = p.altura || p.anamnese?._altura || '';
+  if (idadeEl) {
+    let idadeVal = p.idade || p.anamnese?._idade || '';
+    if (!idadeVal && (p.dataNascimento || p.nascimento)) {
+      const nasc = new Date((p.dataNascimento || p.nascimento) + 'T12:00:00');
+      if (!isNaN(nasc.getTime())) {
+        const hoje = new Date();
+        let calc = hoje.getFullYear() - nasc.getFullYear();
+        const aindaNaoFezAniversario = (hoje.getMonth() < nasc.getMonth()) || (hoje.getMonth() === nasc.getMonth() && hoje.getDate() < nasc.getDate());
+        if (aindaNaoFezAniversario) calc--;
+        if (calc >= 0 && calc < 130) idadeVal = calc;
+      }
+    }
+    idadeEl.value = idadeVal;
+  }
   document.getElementById('anamnese-cpf').value = p.cpf || '';
   document.getElementById('anamnese-resp-nome').value = p.respNome || p.nome || '';
   const agora = new Date();
@@ -4867,9 +4887,11 @@ async function salvarAnamnesePreop() {
   const tipoSanguineo = document.getElementById('anamnese-tipo-sanguineo')?.value || '';
   const peso = document.getElementById('anamnese-peso')?.value || '';
   const altura = document.getElementById('anamnese-altura')?.value || '';
+  const idade = document.getElementById('anamnese-idade')?.value || '';
   dados._tipoSanguineo = tipoSanguineo;
   dados._peso = peso;
   dados._altura = altura;
+  dados._idade = idade;
 
   // Gera PDF + hash antes de salvar (para incluir no mesmo objeto)
   let anamneseHash = null, anamnesePdfB64 = null;
@@ -4884,6 +4906,7 @@ async function salvarAnamnesePreop() {
     _tipoSanguineo: tipoSanguineo,
     _peso: peso,
     _altura: altura,
+    _idade: idade,
     _assinatura: assinaturaImg,
     _data: anamneseDataHora,
     _respNome: respNome,
@@ -8938,15 +8961,17 @@ async function gerarPDFAnamnese(p, dados, assinaturaImg, respNome, assData, assH
   const tSang = dados._tipoSanguineo || '';
   const peso  = dados._peso || '';
   const alt   = dados._altura || '';
-  if (tSang || peso || alt) {
+  const idadeF = dados._idade || '';
+  if (tSang || peso || alt || idadeF) {
     doc.setFillColor(224, 242, 254);
     doc.roundedRect(M, y, PW - M*2, 8, 2, 2, 'F');
     doc.setTextColor(3, 105, 161);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     let fx = M + 3;
-    if (tSang) { doc.text(`Tipo Sanguíneo: ${tSang}`, fx, y + 5); fx += 55; }
-    if (peso)  { doc.text(`Peso: ${peso} kg`, fx, y + 5); fx += 35; }
+    if (idadeF) { doc.text(`Idade: ${idadeF} anos`, fx, y + 5); fx += 32; }
+    if (tSang) { doc.text(`Tipo Sanguíneo: ${tSang}`, fx, y + 5); fx += 45; }
+    if (peso)  { doc.text(`Peso: ${peso} kg`, fx, y + 5); fx += 30; }
     if (alt)   { doc.text(`Altura: ${alt} cm`, fx, y + 5); }
     y += 12;
   } else {
